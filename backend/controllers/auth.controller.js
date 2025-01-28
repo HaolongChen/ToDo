@@ -4,8 +4,7 @@ import User from '../models/user.model.js';
 
 export const signup = async (req, res) => {
     try {
-        const username = req.body.username;
-        const password = req.body.password;
+        const { username, password } = req.body;
         const existingUser = await User.findOne({username});
         if(existingUser){
             return res.status(400).json({message: 'User already exists'});
@@ -14,7 +13,7 @@ export const signup = async (req, res) => {
             return res.status(400).json({message: 'Password must be at least 6 characters long'});
         }
         const hashedPassword = await bcrypt.hash(password, 12);
-        const user = new User({username, password: hashedPassword});
+        const user = new User({username: username, password: hashedPassword});
         await user.save();
         generateToken(user._id, res);
         // res.status(201).json({message: 'User created successfully'});
@@ -29,6 +28,12 @@ export const signin = async (req, res) => {
     try {
         const username = req.body.username;
         const password = req.body.password;
+        if(!username){
+            return res.status(400).json({message: 'Username cannot be empty'});
+        }
+        if(!password){
+            return res.status(400).json({message: 'Password cannot be empty'});
+        }
         if(password.length < 6){
             return res.status(400).json({message: 'Password must be at least 6 characters long'});
         }
@@ -36,12 +41,17 @@ export const signin = async (req, res) => {
         if(!user){
             return res.status(400).json({message: 'Username or password is incorrect'});
         }
-        const isMatch = await bcrypt.compare(password, user.password);
+        const isMatch = await bcrypt.compare(password, user?.password || '');
         if(!isMatch){
             return res.status(400).json({message: 'Username or password is incorrect'});
         }
         generateToken(user._id, res);
-        res.status(200).json({user});
+        console.log(req.cookies.jwt);
+        res.status(200).json({
+            username: user.username,
+            teams: user.team,
+            coverImage: user.coverImg
+        });
     } catch (error) {
         console.log(error);
         
@@ -49,8 +59,14 @@ export const signin = async (req, res) => {
 }
 
 export const logout = (req, res) => {
-    res.clearCookie('jwt');
-    res.status(200).json({message: 'Logged out successfully'});
+    try {
+        console.log(req.cookies.jwt);
+        res.cookie('jwt', '', {maxAge: 0});
+        res.status(200).json({message: 'Logged out successfully'});
+    } catch (error) {
+        console.log(error);
+        
+    }
 }
 
 export const getUser = async (req, res) => {

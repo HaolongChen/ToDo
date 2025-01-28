@@ -14,7 +14,12 @@ const userSchema = new mongoose.Schema({
     team:[{
         type: mongoose.Schema.Types.ObjectId,
         ref: 'User'
-    }]
+    }],
+    coverImg:{
+        type: String,
+        required: false,
+        default: ''
+    }
 });
 
 const User = mongoose.model('User', userSchema);

@@ -1,18 +1,24 @@
-import cookies from 'cookie-parser';
 import jwt from 'jsonwebtoken';
 import User from '../models/user.model.js';
 
-export const authMiddleware = (req, res, next) => {
+export const authMiddleware = async (req, res, next) => {
     try {
+        if(!req.cookies){
+            console.log("No cookie");
+            console.log(req);
+            return res.status(401).json({message: 'Unauthorized'});
+        }
         const token = req.cookies.jwt;
         if(!token){
+            console.log("No token");
             return res.status(401).json({message: 'Unauthorized'});
         }
         const decoded = jwt.verify(token, process.env.JWT_SECRET);
         if(!decoded){
+            console.log("verify failed");
             return res.status(401).json({message: 'Unauthorized'});
         }
-        const user = User.findById(decoded.userId).select('-password');
+        const user = await User.findById(decoded.userId).select('-password');
         if(!user){
             return res.status(401).json({message: 'User not found'});
         }

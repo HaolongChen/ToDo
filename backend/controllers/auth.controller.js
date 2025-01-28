@@ -46,7 +46,6 @@ export const signin = async (req, res) => {
             return res.status(400).json({message: 'Username or password is incorrect'});
         }
         generateToken(user._id, res);
-        console.log(req.cookies.jwt);
         res.status(200).json({
             username: user.username,
             teams: user.team,

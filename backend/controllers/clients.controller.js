@@ -46,7 +46,7 @@ export const sendAssignment = async (req, res) => {
                 flag = false;
                 continue;
             }
-            const partnerUser = await User.findOne({ name: partner });
+            const partnerUser = await User.findOne({ name: partner }).select('-password');
             if(!partnerUser) return res.status(404).json({ message: 'Partner user not found' });
             const todo = new Todo({ description, completed, assigned, important, due, message, user: partnerUser._id });
             await todo.save();
@@ -71,9 +71,9 @@ export const sendRequest = async (req, res) => {
         const userId = req.user._id;
         const toUserId = req.body.toUser;
         if(!userId) return res.status(400).json({ message: 'User ID is required' });
-        const user = await User.findById(userId);
+        const user = await User.findById(userId).select('-password');
         if(!user) return res.status(404).json({ message: 'User not found' });
-        const toUser = await User.findById(toUserId);
+        const toUser = await User.findById(toUserId).select('-password');
         if(!toUser) return res.status(404).json({ message: 'User not found' });
         if(userId == toUserId) return res.status(400).json({ message: 'Cannot send request to yourself' });
         if(user.team.length != 0){
@@ -100,9 +100,9 @@ export const acceptRequest = async (req, res) => {
         const id = req.params.id;
         const waitlist = await Waitlist.findById(id);
         if(!waitlist) return res.status(404).json({ message: 'Request not found' });
-        const user = await User.findById(userId);
+        const user = await User.findById(userId).select('-password');
         if(!user) return res.status(404).json({ message: 'User not found' });
-        const fromUser = await User.findById(waitlist.fromUser);
+        const fromUser = await User.findById(waitlist.fromUser).select('-password');
         if(!fromUser) return res.status(404).json({ message: 'User not found' });
         user.team.push(fromUser._id);
         await user.save();

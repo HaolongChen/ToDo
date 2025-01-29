@@ -6,7 +6,16 @@ import dotenv from 'dotenv';
 import authRoutes from './routes/auth.route.js';
 import cookieParser from 'cookie-parser';
 import clientsRoutes from './routes/clients.route.js';
+import imageRoutes from './routes/image.route.js';
+import { v2 as cloudinary } from 'cloudinary';
+
 dotenv.config();
+
+cloudinary.config({
+    cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
+    api_key: process.env.CLOUDINARY_API_KEY,
+    api_secret: process.env.CLOUDINARY_API_SECRET,
+});
 
 const app = express();
 app.use(cors());
@@ -23,6 +32,7 @@ app.get('/', (req, res) => {
 app.use('/api/todo', todoRoutes);
 app.use('/api/auth', authRoutes);
 app.use('/api/notification', clientsRoutes);
+app.use('/api/image', imageRoutes);
 
 app.listen(port, () => {
     connectDB();

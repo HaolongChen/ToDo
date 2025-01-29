@@ -2,10 +2,11 @@ import bcrypt from 'bcryptjs';
 import { generateToken } from '../utils/generateToken.js';
 import User from '../models/user.model.js';
 import Group from '../models/group.model.js';
+import { v2 as cloudinary } from 'cloudinary';
 
 export const signup = async (req, res) => {
     try {
-        const { username, password } = req.body;
+        let { username, password, coverImage } = req.body;
         const existingUser = await User.findOne({username});
         if(existingUser){
             return res.status(400).json({message: 'User already exists'});
@@ -13,8 +14,13 @@ export const signup = async (req, res) => {
         if(password.length < 6){
             return res.status(400).json({message: 'Password must be at least 6 characters long'});
         }
+        if(!coverImage){
+            coverImage = 'https://icon-icons.com/icons2/1378/PNG/512/avatardefault_92824.png';
+        }
+        const status = await cloudinary.uploader.upload(coverImage)
+        coverImage = status.secure_url;
         const hashedPassword = await bcrypt.hash(password, 12);
-        const user = new User({username: username, password: hashedPassword});
+        const user = new User({username: username, password: hashedPassword, coverImg: coverImage});
         await user.save();
         generateToken(user._id, res);
         const myDay = new Group({name: 'My Day', user: user._id});

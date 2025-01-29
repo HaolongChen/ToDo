@@ -17,7 +17,7 @@ export const authMiddleware = async (req, res, next) => {
             console.log("verify failed");
             return res.status(401).json({message: 'Unauthorized'});
         }
-        const user = await User.findById(decoded.userId).select('-password');
+        const user = await User.findById(decoded.userId);
         if(!user){
             return res.status(401).json({message: 'User not found'});
         }

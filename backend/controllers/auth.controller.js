@@ -77,3 +77,23 @@ export const getUser = async (req, res) => {
         
     }
 }
+
+export const changePassword = async (req, res) => {
+    try {
+        const password = req.body.oldPassword;
+        const newPassword = req.body.newPassword;
+        if(password.length < 6){
+            return res.status(400).json({message: 'Password must be at least 6 characters long'});
+        }
+        const isMatch = await bcrypt.compare(password, req.user.password);
+        if(!isMatch){
+            return res.status(400).json({message: 'Original password is incorrect'});
+        }
+        const hashedPassword = await bcrypt.hash(newPassword, 12);
+        await User.findByIdAndUpdate(req.user._id, {password: hashedPassword});
+        generateToken(req.user._id, res);
+        res.status(200).json({message: 'Password changed successfully'});
+    } catch (error) {
+        
+    }
+}

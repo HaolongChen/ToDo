@@ -4,7 +4,11 @@ const waitlistSchema = new mongoose.Schema({
     group:[{
         type: mongoose.Schema.Types.ObjectId,
         ref: 'User'
-    }]
+    }],
+    user:{
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'User'
+    }
 })
 
 const Waitlist = mongoose.model('Waitlist', waitlistSchema); 

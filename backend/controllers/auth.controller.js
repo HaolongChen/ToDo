@@ -1,6 +1,7 @@
 import bcrypt from 'bcryptjs';
 import { generateToken } from '../utils/generateToken.js';
 import User from '../models/user.model.js';
+import Group from '../models/group.model.js';
 
 export const signup = async (req, res) => {
     try {
@@ -16,7 +17,14 @@ export const signup = async (req, res) => {
         const user = new User({username: username, password: hashedPassword});
         await user.save();
         generateToken(user._id, res);
-        // res.status(201).json({message: 'User created successfully'});
+        const myDay = new Group({name: 'My Day', user: user._id});
+        await myDay.save();
+        const important = new Group({name: 'Important', user: user._id});
+        await important.save();
+        const planned = new Group({name: 'Planned', user: user._id});
+        await planned.save();
+        const assignedToMe = new Group({name: 'Assigned to me', user: user._id});
+        await assignedToMe.save();
         res.status(201).json({user});
     } catch (error) {
         console.log(error);
@@ -94,6 +102,6 @@ export const changePassword = async (req, res) => {
         generateToken(req.user._id, res);
         res.status(200).json({message: 'Password changed successfully'});
     } catch (error) {
-        
+        console.log(error);
     }
 }

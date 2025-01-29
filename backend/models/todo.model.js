@@ -28,6 +28,10 @@ const todoSchema = new mongoose.Schema({
         type: String,
         required: false // message is unnecessary if not assigned
                         // if assigned, message is optional
+    },
+    user:{
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'User'
     }
 }, {timestamps: true});
 

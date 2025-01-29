@@ -1,5 +1,4 @@
 import mongoose from "mongoose";
-import { todo } from "node:test";
 
 const groupSchema = new mongoose.Schema({
     name:{
@@ -9,7 +8,11 @@ const groupSchema = new mongoose.Schema({
     todo:[{
         type: mongoose.Schema.Types.ObjectId,
         ref: 'Todo'
-    }]
+    }],
+    user:{
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'User'
+    }
 });
 
 const Group = mongoose.model('Group', groupSchema); 

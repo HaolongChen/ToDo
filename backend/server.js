@@ -5,6 +5,7 @@ import todoRoutes from './routes/todo.route.js';
 import dotenv from 'dotenv';
 import authRoutes from './routes/auth.route.js';
 import cookieParser from 'cookie-parser';
+import clientsRoutes from './routes/clients.route.js';
 dotenv.config();
 
 const app = express();
@@ -21,6 +22,7 @@ app.get('/', (req, res) => {
 
 app.use('/api/todo', todoRoutes);
 app.use('/api/auth', authRoutes);
+app.use('/api/notification', clientsRoutes);
 
 app.listen(port, () => {
     connectDB();

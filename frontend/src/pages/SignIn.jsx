@@ -41,14 +41,14 @@ export function SignIn() {
               <form onSubmit={handleSubmit}>
                 <div className=''>
                   <div><p className="text-3xl text-gray-600">Username</p></div>
-                  <input type="text" required placeholder="Username" className="input disabled:{loading} block validator w-115 h-16 rounded-[22px] mt-7 text-[20px] validator backdrop-blur-md bg-white/0 text-gray-600" value={ formData.username } onChange={(e) => {
+                  <input type="text" required placeholder="Username" className="input disabled:{loading} block w-115 h-16 rounded-[22px] mt-7 text-[20px] validator backdrop-blur-md bg-white/0 text-gray-600" value={ formData.username } onChange={(e) => {
                     setFormData({...formData, username: e.target.value});
                   }}></input>
                   {error && <div><p className="text-[16px] text-red-600">{error}</p></div>}
                 </div>
                 <div className={error ? 'mt-6' : 'mt-12'}>
                   <div><p className="text-3xl text-gray-600">Password</p></div>
-                  <input type="password" required placeholder="Password" className="input disabled:{loading} block validator w-115 h-16 rounded-[22px] mt-7 text-[20px] validator backdrop-blur-md bg-white/0 text-gray-600" title="Must be more than 8 characters, including number, lowercase letter, uppercase letter"  pattern="(?=.*\d)(?=.*[a-z])(?=.*[A-Z]).{8,}" minLength={ 6 } value={ formData.password } onChange={(e) => {
+                  <input type="password" required placeholder="Password" className="input disabled:{loading} block w-115 h-16 rounded-[22px] mt-7 text-[20px] validator backdrop-blur-md bg-white/0 text-gray-600" title="Must be more than 8 characters, including number, lowercase letter, uppercase letter"  pattern="(?=.*\d)(?=.*[a-z])(?=.*[A-Z]).{8,}" minLength={ 6 } value={ formData.password } onChange={(e) => {
                     setFormData({...formData, password: e.target.value});
                   }}></input>
                   <div><p><a href='/signup' className='text-[16px] text-gray-600 hover:underline hover:text-gray-700 hover:cursor-pointer'>Account already exists?</a></p></div>

@@ -1,3 +1,7 @@
+import { NavBar } from "../components/NavBar";
+
 export function DashBoard() {
-  return <div>Dashboard</div>;
+  return (
+    <NavBar />
+  );
 }

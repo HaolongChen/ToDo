@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 64 64">
+  <!-- Clipboard body -->
+  <rect x="8" y="12" width="48" height="44" rx="4" fill="#f9f9f9" stroke="#e0e0e0" stroke-width="2"/>
+  <!-- Rounded Clipboard top -->
+  <rect x="20" y="4" width="24" height="12" rx="2" fill="#f9f9f9" stroke="#e0e0e0" stroke-width="2"/>
+  <!-- Centered check mark -->
+  <path d="M22 34 L30 42 L42 26" stroke="#4CAF50" stroke-width="4" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+</svg>

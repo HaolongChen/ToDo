@@ -1,6 +1,6 @@
 import express from 'express';
 import { authMiddleware } from '../middleware/auth.middleware.js';
-import { getNotifications, sendAssignment, sendRequest, acceptRequest, deleteWaitlist, rejectRequest, getRequests } from '../controllers/clients.controller.js';
+import { getNotifications, sendAssignment, sendRequest, acceptRequest, deleteWaitlist, rejectRequest, getRequests, getAllTeamates, getUserInfo } from '../controllers/clients.controller.js';
 
 const router = express.Router();
 
@@ -11,5 +11,7 @@ router.post('/accept/:id', authMiddleware, acceptRequest);
 router.post('/delete/:id', authMiddleware, deleteWaitlist);
 router.post('/reject/:id', authMiddleware, rejectRequest);
 router.get('/get-requests', authMiddleware, getRequests);
+router.get('/get-teamates', authMiddleware, getAllTeamates);
+router.get('/get-user-info/:id', authMiddleware, getUserInfo);
 
 export default router

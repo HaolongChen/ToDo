@@ -26,6 +26,18 @@ export const getTodos = async (req, res) => {
     }
 }
 
+export const getAllTodos = async (req, res) => {
+    try {
+        const userId = req.user._id;
+        const todos = await Todo.find({ user: userId });
+        if(!todos) return res.status(404).json({ message: 'Todos not found' });
+        res.status(200).json({ todos });
+    } catch (error) {
+        console.log(error);
+        
+    }
+}
+
 export const deleteTodo = async (req, res) => {
     try {
         const todoId = req.params.id || req.body.todoId;

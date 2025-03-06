@@ -3,6 +3,13 @@ import User from "../models/user.model.js";
 import Group from "../models/group.model.js";
 import Todo from "../models/todo.model.js";
 
+/**
+ * @description Get all notifications of the user
+ * @param {Object} req - Express request object
+ * @param {Object} res - Express response object
+ * @returns {Array<Waitlist>} - List of notifications
+ * @throws {Error} - If there is an error in getting notifications
+ */
 export const getNotifications = async (req, res) => {
     try {
         const userId = req.user._id;
@@ -30,8 +37,17 @@ export const getNotifications = async (req, res) => {
     }
 }
 
+
+/**
+ * @description Send an assignment to other users
+ * @param {Object} req - Express request object
+ * @param {Object} res - Express response object
+ * @returns {Object} - Message indicating whether the assignment was sent successfully
+ * @throws {Error} - If there is an error in sending the assignment
+ */
 export const sendAssignment = async (req, res) => {
     try {
+        // TODO: send emails to the users
         const userId = req.user._id;
         const { description, completed, assigned, important, due, message } = req.body;
         if(!userId) return res.status(400).json({ message: 'User ID is required' });
@@ -66,8 +82,16 @@ export const sendAssignment = async (req, res) => {
     }
 }
 
+/**
+ * @description Send a request to join a team
+ * @param {Object} req - Express request object
+ * @param {Object} res - Express response object
+ * @returns {Object} - Message indicating whether the request was sent successfully
+ * @throws {Error} - If there is an error in sending the request
+ */
 export const sendRequest = async (req, res) => {
     try {
+        // TODO: send emails to the users
         const userId = req.user._id;
         const toUserId = req.body.toUser;
         if(!userId) return res.status(400).json({ message: 'User ID is required' });
@@ -94,8 +118,16 @@ export const sendRequest = async (req, res) => {
     }
 }
 
+/**
+ * @description Accept a request to join a team
+ * @param {Object} req - Express request object
+ * @param {Object} res - Express response object
+ * @returns {Object} - Message indicating whether the request was accepted successfully
+ * @throws {Error} - If there is an error in accepting the request
+ */
 export const acceptRequest = async (req, res) => {
     try {
+        // TODO: send emails to the users
         const userId = req.user._id;
         const id = req.params.id;
         const waitlist = await Waitlist.findById(id);
@@ -119,6 +151,13 @@ export const acceptRequest = async (req, res) => {
     }
 }
 
+/**
+ * @description Delete a request to join a team
+ * @param {Object} req - Express request object
+ * @param {Object} res - Express response object
+ * @returns {Object} - Message indicating whether the request was deleted successfully
+ * @throws {Error} - If there is an error in deleting the request
+ */
 export const deleteWaitlist = async (req, res) => {
     try {
         const id = req.params.id;
@@ -131,8 +170,17 @@ export const deleteWaitlist = async (req, res) => {
     }
 }
 
+/**
+ * @description Reject a request to join a team
+ * @param {Object} req - Express request object
+ * @param {Object} res - Express response object
+ * @returns {Object} - Message indicating whether the request was rejected successfully
+ * @throws {Error} - If there is an error in rejecting the request
+ */
+
 export const rejectRequest = async (req, res) => {
     try {
+        // TODO: send emails to the users
         const userId = req.user._id;
         const id = req.params.id;
         const waitlist = await Waitlist.findById(id);
@@ -148,6 +196,13 @@ export const rejectRequest = async (req, res) => {
     }
 }
 
+/**
+ * @description Get all requests to join a team
+ * @param {Object} req - Express request object
+ * @param {Object} res - Express response object
+ * @returns {Array<Waitlist>} - List of requests
+ * @throws {Error} - If there is an error in getting requests
+ */
 export const getRequests = async (req, res) => {
     try {
         const userId = req.user._id;
@@ -157,6 +212,50 @@ export const getRequests = async (req, res) => {
             await list.save();
         }
         res.status(200).json(waitlist);
+    } catch (error) {
+        res.status(500).json({ message: error.message });
+        
+    }
+}
+
+/**
+ * @description Get all teamates of a user
+ * @param {Object} req - Express request object
+ * @param {Object} res - Express response object
+ * @returns {Array<User>} - List of teamates
+ * @throws {Error} - If there is an error in getting teamates
+ */
+export const getAllTeamates = async (req, res) => {
+    try {
+        const userId = req.user._id;
+        const team = await User.findById(userId).select('team');
+        if(!team) return res.status(404).json({ message: 'Team not found' });
+        return res.status(200).json(team);
+    } catch (error) {
+        res.status(500).json({ message: error.message });
+        
+    }
+}
+
+/**
+ * @description Retrieve information about a user
+ * @param {Object} req - Express request object
+ * @param {Object} res - Express response object
+ * @returns {Object} - Information about the user including if the user is the requester or a teammate
+ * @throws {Error} - If there is an error in retrieving the user information
+ */
+
+export const getUserInfo = async (req, res) => {
+    try {
+        const myId = req.user._id;
+        const userId = req.params.id;
+        const user = await User.findById(userId).select('-password');
+        if(!user) return res.status(404).json({ message: 'User not found' });
+        if(myId == userId) return res.status(200).json({ personal: true, teamate: false, user });
+        const isTeamate = await User.findById(myId).select('team');
+        if(!isTeamate) return res.status(200).json({ personal: false, teamate: false, user });
+        if(isTeamate.team.includes(userId)) return res.status(200).json({ personal: false, teamate: true, user });
+        return res.status(200).json({ personal: false, teamate: false, user });
     } catch (error) {
         res.status(500).json({ message: error.message });
         

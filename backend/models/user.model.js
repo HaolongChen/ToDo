@@ -1,4 +1,5 @@
 import mongoose from "mongoose";
+import { type } from "os";
 
 const userSchema = new mongoose.Schema({
     username:{
@@ -16,6 +17,11 @@ const userSchema = new mongoose.Schema({
         ref: 'User'
     }],
     coverImg:{
+        type: String,
+        required: false,
+        default: ''
+    },
+    email:{
         type: String,
         required: false,
         default: ''

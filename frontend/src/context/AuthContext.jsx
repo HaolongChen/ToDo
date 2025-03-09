@@ -1,5 +1,6 @@
 import { createContext, useState, useEffect, useContext } from 'react';
 import axios from 'axios';
+import { set } from 'mongoose';
 
 const AuthContext = createContext();
 
@@ -7,6 +8,12 @@ export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [notifications, setNotifications] = useState([]);
+  const [profile, setProfile] = useState(null);
+  const [teamates, setTeamates] = useState([]);
+  const [todos, setTodos] = useState([]);
+  const [allTodos, setAllTodos] = useState([]);
+  const [groups, setGroups] = useState([]);
 
   // Check if user is logged in on component mount
   useEffect(() => {
@@ -70,15 +77,268 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
+  const changePassword = async (oldPassword, newPassword) => {
+    try {
+      setLoading(true);
+      setError(null);
+      await axios.post('/api/auth/change-password', { oldPassword, newPassword });
+    } catch (error) {
+      setError(error.response?.data?.message || "Failed to change password");
+      throw error;
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  const getNotifications = async () => {
+    try {
+      setLoading(true);
+      setError(null);
+      const response = await axios.get('/api/notification/get-notifications');
+      setNotifications(response.data);
+    } catch (error) {
+      setError(error.response?.data?.message || "Failed to get notifications");
+      throw error;
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  const sendAssignment = async (assignment) => {
+    try {
+      setLoading(true);
+      setError(null);
+      const response = await axios.post('/api/notification/send-assignment', assignment);
+    } catch (error) {
+      setError(error.response?.data?.message || "Failed to send assignment");
+      throw error;
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  const sendRequest = async (request) => {
+    try {
+      setLoading(true);
+      setError(null);
+      const response = await axios.post('/api/notification/send-request', request);
+    } catch (error) {
+      setError(error.response?.data?.message || "Failed to send request");
+      throw error;
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  const acceptRequest = async (requestId) => {
+    try {
+      setLoading(true);
+      setError(null);
+      const response = await axios.post('/api/notification/accept-request', { requestId });
+    } catch (error) {
+      setError(error.response?.data?.message || "Failed to accept request");
+      throw error;
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  const deleteWaitlist = async (waitlistId) => {
+    try {
+      setLoading(true);
+      setError(null);
+      const response = await axios.post('/api/notification/delete-waitlist', { waitlistId });
+    } catch (error) {
+      setError(error.response?.data?.message || "Failed to delete waitlist");
+      throw error;
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  const rejectRequest = async (requestId) => {
+    try {
+      setLoading(true);
+      setError(null);
+      const response = await axios.post('/api/notification/reject-request', { requestId });
+    } catch (error) {
+      setError(error.response?.data?.message || "Failed to reject request");
+      throw error;
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  const getRequests = async () => {
+    try {
+      setLoading(true);
+      setError(null);
+      const response = await axios.get('/api/notification/get-requests');
+      setNotifications(response.data);
+    } catch (error) {
+      setError(error.response?.data?.message || "Failed to get requests");
+      throw error;
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  const getAllTeamates = async () => {
+    try {
+      setLoading(true);
+      setError(null);
+      const response = await axios.get('/api/notification/get-teamates');
+      setTeamates(response.data);
+    } catch (error) {
+      setError(error.response?.data?.message || "Failed to get teamates");
+      throw error;
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  const getWaitlists = async () => {
+    try {
+      setLoading(true);
+      setError(null);
+      const response = await axios.get('/api/notification/get-waitlists');
+      setNotifications(response.data);
+    } catch (error) {
+      setError(error.response?.data?.message || "Failed to get waitlists");
+      throw error;
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  const getUserInfo = async (userId) => {
+    try {
+      setLoading(true);
+      setError(null);
+      const response = await axios.get(`/api/notification/get-user-info/${userId}`);
+      setProfile(response.data);
+    } catch (error) {
+      setError(error.response?.data?.message || "Failed to get user info");
+      throw error;
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  const createTodo = async (todo) => {
+    try {
+      setLoading(true);
+      setError(null);
+      const response = await axios.post('/api/todo/create-todo', todo);
+    } catch (error) {
+      setError(error.response?.data?.message || "Failed to create todo");
+      throw error;
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  const getTodos = async (groupId) => {
+    try {
+      setLoading(true);
+      setError(null);
+      const response = await axios.get(`/api/todo/get-todos/${groupId}`);
+      setTodos(response.data);
+    } catch (error) {
+      setError(error.response?.data?.message || "Failed to get todos");
+      throw error;
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  const getAllTodos = async () => {
+    try {
+      setLoading(true);
+      setError(null);
+      const response = await axios.get('/api/todo/get-all-todos');
+      setAllTodos(response.data);
+    } catch (error) {
+      setError(error.response?.data?.message || "Failed to get all todos");
+      throw error;
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  const deleteTodo = async (todoId) => {
+    try {
+      setLoading(true);
+      setError(null);
+      const response = await axios.post('/api/todo/delete-todo', { todoId });
+    } catch (error) {
+      setError(error.response?.data?.message || "Failed to delete todo");
+      throw error;
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  const updateTodo = async (todoId, todo) => {
+    try {
+      setLoading(true);
+      setError(null);
+      const response = await axios.post(`/api/todo/update-todo/${todoId}`, todo);
+    } catch (error) {
+      setError(error.response?.data?.message || "Failed to update todo");
+      throw error;
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  const getAllGroups = async () => {
+    try {
+      setLoading(true);
+      setError(null);
+      const response = await axios.get('/api/todo/get-groups');
+      console.log(response.data.groups[0].todo.length);
+      setGroups(response.data.groups);
+    } catch (error) {
+      setError(error.response?.data?.message || "Failed to get groups");
+      throw error;
+    } finally {
+      setLoading(false);
+    }
+  }
+
   return (
     <AuthContext.Provider 
       value={{ 
         user, 
         loading, 
         error, 
+        teamates, 
+        notifications, 
+        profile, 
+        todos, 
+        allTodos,
+        groups,
         login, 
         signup, 
         logout, 
+        changePassword,
+        getNotifications,
+        sendAssignment,
+        sendRequest,
+        acceptRequest,
+        deleteWaitlist,
+        rejectRequest,
+        getRequests,
+        getAllTeamates,
+        getWaitlists,
+        getUserInfo,
+        createTodo,
+        getTodos,
+        getAllTodos,
+        deleteTodo,
+        updateTodo,
+        getAllGroups,
         isAuthenticated: !!user 
       }}
     >

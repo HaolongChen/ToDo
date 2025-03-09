@@ -66,3 +66,14 @@ export const updateTodo = async (req, res) => {
         console.log(error);
     }
 }
+
+export const getAllGroups = async (req, res) => {
+    try {
+        const userId = req.user._id;
+        const groups = await Group.find({ user: userId });
+        if(!groups) return res.status(404).json({ message: 'Groups not found' });
+        res.status(200).json({ groups });
+    } catch (error) {
+        console.log(error);
+    }
+}

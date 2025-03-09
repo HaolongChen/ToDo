@@ -5,8 +5,15 @@ import { LoadingIcon } from './LoadingIcon';
 
 export function ProtectedRoute({ children }) {
   const { isAuthenticated, loading } = useAuth();
+  const [initialLoading, setInitialLoading] = useState(true);
+
+  useEffect(() => {
+    if (!loading) {
+      setInitialLoading(false);
+    }
+  }, [loading]);
   
-  if (loading) {
+  if (initialLoading) {
     return <LoadingIcon />;
   }
   

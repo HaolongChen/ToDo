@@ -15,7 +15,7 @@ export function SignIn() {
     event.preventDefault();
     setError("");
     try {
-      const result = await login(formData);
+      const result = await login(formData.username, formData.password);
       if (result) {
         navigate('/');
       }

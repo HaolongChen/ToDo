@@ -10,7 +10,7 @@ export const AuthProvider = ({ children }) => {
   const [error, setError] = useState(null);
   const [notifications, setNotifications] = useState([]);
   const [profile, setProfile] = useState(null);
-  const [teamates, setTeamates] = useState([]);
+  const [teammates, setteammates] = useState([]);
   const [todos, setTodos] = useState([]);
   const [allTodos, setAllTodos] = useState([]);
   const [groups, setGroups] = useState([]);
@@ -183,14 +183,14 @@ export const AuthProvider = ({ children }) => {
     }
   }
 
-  const getAllTeamates = async () => {
+  const getAllteammates = async () => {
     try {
       setLoading(true);
       setError(null);
-      const response = await axios.get('/api/notification/get-teamates');
-      setTeamates(response.data);
+      const response = await axios.get('/api/notification/get-teammates');
+      setteammates(response.data);
     } catch (error) {
-      setError(error.response?.data?.message || "Failed to get teamates");
+      setError(error.response?.data?.message || "Failed to get teammates");
       throw error;
     } finally {
       setLoading(false);
@@ -313,7 +313,7 @@ export const AuthProvider = ({ children }) => {
         user, 
         loading, 
         error, 
-        teamates, 
+        teammates, 
         notifications, 
         profile, 
         todos, 
@@ -330,7 +330,7 @@ export const AuthProvider = ({ children }) => {
         deleteWaitlist,
         rejectRequest,
         getRequests,
-        getAllTeamates,
+        getAllteammates,
         getWaitlists,
         getUserInfo,
         createTodo,

@@ -28,7 +28,7 @@ export function NavBar() {
   }, []);
 
   return (
-    <div className="fixed top-0 left-0 w-full shadow-md h-14 justify-between items-center flex flex-row">
+    <div className="fixed top-0 left-0 w-full shadow-md h-14 justify-between items-center flex flex-row z-50">
       <div className="flex justify-start items-center flex-row space-x-4">
         <div></div>
         <svg xmlns="http://www.w3.org/2000/svg" className="w-10 h-10" viewBox="0 0 64 64" onClick={() => navigate('/')}>

@@ -297,7 +297,6 @@ export const AuthProvider = ({ children }) => {
       setLoading(true);
       setError(null);
       const response = await axios.get('/api/todo/get-groups');
-      console.log(response.data.groups[0].todo.length);
       setGroups(response.data.groups);
     } catch (error) {
       setError(error.response?.data?.message || "Failed to get groups");

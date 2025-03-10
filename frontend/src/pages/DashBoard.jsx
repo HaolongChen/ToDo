@@ -10,20 +10,66 @@ import { CiCalendarDate } from "react-icons/ci";
 import { Task } from "../components/Task";
 
 export function DashBoard() {
-  const { getAllGroups, groups } = useAuth(); // Destructure what we need
+  const { getAllGroups, groups, createTodo, user, loading, error, teammates, setGroups } = useAuth(); // Destructure what we need
   const [drawerOpen, setDrawerOpen] = useState(true);
   const [selectedGroup, setSelectedGroup] = useState(0);
   const [inputValue, setInputValue] = useState("");
   const [todo, setTodo] = useState([]);
+  const [newTodo, setNewTodo] = useState({
+    description: "",
+    completed: false,
+    assigned: false,
+    important: false,
+    user: user._id,
+  });
   
   useEffect(() => {
     getAllGroups();
+    // console.log(groups);
   }, []);
 
   useEffect(() => {
     setTodo(groups[selectedGroup]?.todo || []);
-    console.log(todo);
   }, [groups, selectedGroup]);
+
+  useEffect(() => {
+    setNewTodo({...newTodo, description: inputValue});
+  }, [inputValue]);
+
+  const handleCreateTodo = async (event) => {
+    event.preventDefault();
+    // Get the current groupId directly instead of using state
+    const currentGroupId = groups[selectedGroup]?._id;
+    
+    // Create a todo object with the current groupId
+    const todoToCreate = {
+      ...newTodo,
+      groupId: currentGroupId
+    };
+    
+    await createTodo(todoToCreate);
+    
+    setInputValue("");
+    setGroups(prevGroups => {
+      let updatedGroups = [...prevGroups];
+      updatedGroups[selectedGroup] = {
+        ...updatedGroups[selectedGroup],
+        todo: [...(updatedGroups[selectedGroup].todo || []), todoToCreate]
+      };
+      return updatedGroups;
+    });
+
+    setNewTodo({
+      description: "",
+      completed: false,
+      assigned: false,
+      important: false,
+      user: user._id, // Keep the user ID
+    });
+    
+    console.log("Todo created");
+    console.log(groups);
+  }
   
   return (
     <>
@@ -33,7 +79,7 @@ export function DashBoard() {
           <div className="flex flex-row flex-1 h-full overflow-hidden">
             {drawerOpen && (
               <div className="flex-shrink-0 flex flex-col h-full overflow-y-auto overflow-x-hidden w-70">
-                <ul className="bg-base-100 rounded-box shadow-md w-full h-full">
+                <ul className="bg-base-100 shadow-md w-full h-full">
                   <div className="h-14 px-8 flex items-center">
                     <FiMenu size={24} />
                     <div 
@@ -77,6 +123,15 @@ export function DashBoard() {
                   </div>
                 </div>
               )}
+
+              <div className={`select-none h-14 px-8 flex items-center ${drawerOpen ? "" : "translate-x-[60px]"}`}>
+                {selectedGroup == 0 && (<span className="text-[24px] mr-2">☀️</span>)}
+                {selectedGroup == 1 && (<span className="text-[24px] mr-2">⭐</span>)}
+                {selectedGroup == 2 && (<span className="text-[24px] mr-2">📅</span>)}
+                {selectedGroup == 3 && (<span className="text-[24px] mr-2">👤</span>)}
+                {selectedGroup > 3 && (<span className="text-[24px] mr-2"><Task /></span>)}
+                <span className="text-[24px]">{groups[selectedGroup]?.name}</span>
+              </div>
               
               {/* Main content with consistent positioning */}
               <div className="flex-1 flex flex-col relative">
@@ -121,7 +176,7 @@ export function DashBoard() {
                       </button>
                       <button 
                         className="btn btn-primary btn-sm rounded-full px-3"
-                        onClick={() => {/* Add task logic */}}
+                        onClick={(event) => {handleCreateTodo(event)}}
                       >
                         Add
                       </button>

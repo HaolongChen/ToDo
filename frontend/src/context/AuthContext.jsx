@@ -229,7 +229,8 @@ export const AuthProvider = ({ children }) => {
     try {
       setLoading(true);
       setError(null);
-      const response = await axios.post('/api/todo/create-todo', todo);
+      console.log(todo);
+      const response = await axios.post('/api/todo/create', todo);
     } catch (error) {
       setError(error.response?.data?.message || "Failed to create todo");
       throw error;
@@ -242,10 +243,12 @@ export const AuthProvider = ({ children }) => {
     try {
       setLoading(true);
       setError(null);
-      const response = await axios.get(`/api/todo/get-todos/${groupId}`);
+      const response = await axios.get(`/api/todo/get/${groupId}`);
       setTodos(response.data);
+      console.log(response.data);
     } catch (error) {
       setError(error.response?.data?.message || "Failed to get todos");
+      console.log(error);
       throw error;
     } finally {
       setLoading(false);
@@ -256,7 +259,7 @@ export const AuthProvider = ({ children }) => {
     try {
       setLoading(true);
       setError(null);
-      const response = await axios.get('/api/todo/get-all-todos');
+      const response = await axios.get('/api/todo/getall');
       setAllTodos(response.data);
     } catch (error) {
       setError(error.response?.data?.message || "Failed to get all todos");
@@ -270,7 +273,7 @@ export const AuthProvider = ({ children }) => {
     try {
       setLoading(true);
       setError(null);
-      const response = await axios.post('/api/todo/delete-todo', { todoId });
+      const response = await axios.post(`/api/todo/delete/${todoId}`);
     } catch (error) {
       setError(error.response?.data?.message || "Failed to delete todo");
       throw error;
@@ -283,7 +286,7 @@ export const AuthProvider = ({ children }) => {
     try {
       setLoading(true);
       setError(null);
-      const response = await axios.post(`/api/todo/update-todo/${todoId}`, todo);
+      const response = await axios.post(`/api/todo/update/${todoId}`, todo);
     } catch (error) {
       setError(error.response?.data?.message || "Failed to update todo");
       throw error;
@@ -296,10 +299,49 @@ export const AuthProvider = ({ children }) => {
     try {
       setLoading(true);
       setError(null);
+      
+      // First, get all groups
       const response = await axios.get('/api/todo/get-groups');
-      setGroups(response.data.groups);
+      const groupsData = response.data.groups;
+      
+      // Then sequentially fetch todos for each group
+      const groupsWithTodos = await Promise.all(
+        groupsData.map(async (group) => {
+          try {
+            const todosResponse = await axios.get(`/api/todo/get/${group._id}`);
+            // Create a new group object with todos included
+            return {
+              ...group,
+              todo: todosResponse.data
+            };
+          } catch (err) {
+            console.error(`Failed to fetch todos for group ${group._id}:`, err);
+            return {
+              ...group,
+              todo: []
+            };
+          }
+        })
+      );
+      
+      // Set groups with todos already loaded
+      setGroups(groupsWithTodos);
+      
     } catch (error) {
       setError(error.response?.data?.message || "Failed to get groups");
+      throw error;
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  const createGroup = async (group) => {
+    try {
+      setLoading(true);
+      setError(null);
+      const response = await axios.post('/api/todo/create-group', group);
+    } catch (error) {
+      setError(error.response?.data?.message || "Failed to create group");
       throw error;
     } finally {
       setLoading(false);
@@ -338,6 +380,8 @@ export const AuthProvider = ({ children }) => {
         deleteTodo,
         updateTodo,
         getAllGroups,
+        setGroups,
+        createGroup,
         isAuthenticated: !!user 
       }}
     >

@@ -29,10 +29,10 @@ export function DashBoard() {
     <>
       <div className="flex flex-col h-screen overflow-hidden">
         <NavBar />
-        <div className="flex flex-col z-10 flex-1 overflow-hidden">
-          <div className="flex flex-row flex-1 h-full overflow-hidden"> {/* Remove flex-wrap */}
+        <div className="flex flex-col flex-1 overflow-hidden">
+          <div className="flex flex-row flex-1 h-full overflow-hidden">
             {drawerOpen && (
-              <div className="flex-shrink-0 flex flex-col h-full overflow-y-auto overflow-x-hidden w-70"> {/* Add flex-shrink-0 and fixed width */}
+              <div className="flex-shrink-0 flex flex-col h-full overflow-y-auto overflow-x-hidden w-70">
                 <ul className="bg-base-100 rounded-box shadow-md w-full h-full">
                   <div className="h-14 px-8 flex items-center">
                     <FiMenu size={24} />

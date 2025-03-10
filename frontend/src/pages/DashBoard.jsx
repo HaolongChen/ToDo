@@ -27,13 +27,13 @@ export function DashBoard() {
   
   return (
     <>
-      <div className="flex flex-col h-screen">
+      <div className="flex flex-col h-screen overflow-hidden">
         <NavBar />
-        <div className="flex flex-col z-10 flex-1">
-          <div className="flex flex-row flex-1 ">
+        <div className="flex flex-col z-10 flex-1 overflow-hidden">
+          <div className="flex flex-row flex-1 h-full overflow-hidden"> {/* Remove flex-wrap */}
             {drawerOpen && (
-              <div className="flex flex-col">
-                <ul className="bg-base-100 rounded-box shadow-md w-70 h-full">
+              <div className="flex-shrink-0 flex flex-col h-full overflow-y-auto overflow-x-hidden w-70"> {/* Add flex-shrink-0 and fixed width */}
+                <ul className="bg-base-100 rounded-box shadow-md w-full h-full">
                   <div className="h-14 px-8 flex items-center">
                     <FiMenu size={24} />
                     <div 
@@ -42,9 +42,8 @@ export function DashBoard() {
                     </div>
                   </div>
                   {groups.map((group, index) => (
-                    <>
+                    <div key={group._id}>
                       <li 
-                        key={group._id}
                         className={`select-none list-row ${index === selectedGroup ? "hover:bg-[#bcbcbc31]" : "hover:bg-[#7f7f7f2b]"} hover:cursor-pointer rounded-box h-10 px-4 mx-4 text-[16px] flex items-center ${index === selectedGroup ? "bg-[#bcbcbc31]" : ""}`}
                         onClick={() => setSelectedGroup(index)}
                       >
@@ -62,12 +61,12 @@ export function DashBoard() {
                           <div className="h-3.5"></div>
                         </>
                       )}
-                    </>
+                    </div>
                   ))}
                 </ul>
               </div>
             )}
-            <div className="flex-1 bg-base-200 flex flex-col relative h-full w-full">
+            <div className="flex-1 bg-base-200 flex flex-col relative h-full w-full overflow-y-auto overflow-x-hidden">
               {/* Position menu absolutely when drawer is closed so it doesn't take vertical space */}
               {!drawerOpen && (
                 <div className="absolute top-0 left-0 h-14 px-8 flex items-center z-10">

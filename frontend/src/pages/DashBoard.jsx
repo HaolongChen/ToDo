@@ -27,12 +27,12 @@ export function DashBoard() {
   
   return (
     <>
-        <div className="z-50"><NavBar /></div>
-        <div className="flex flex-col h-screen z-10">
-          <div className="h-14"></div>
+      <div className="flex flex-col h-screen">
+        <NavBar />
+        <div className="flex flex-col z-10 flex-1">
           <div className="flex flex-row flex-1 ">
             {drawerOpen && (
-              <div className="flex flex-col sticky top-14">
+              <div className="flex flex-col">
                 <ul className="bg-base-100 rounded-box shadow-md w-70 h-full">
                   <div className="h-14 px-8 flex items-center">
                     <FiMenu size={24} />
@@ -133,6 +133,7 @@ export function DashBoard() {
             </div>
           </div>
         </div>
+      </div>
     </>
   );
 }

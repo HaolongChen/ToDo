@@ -256,15 +256,15 @@ export function DashBoard() {
               <div className="flex-1 flex flex-col relative">
                 <div className="flex-1 flex items-center justify-center">
                   <>
-                    {(todo.length === 0) ? (
+                    {(todo.length === 0) ? ( // TODO: condition needs to be changed for those selectedGroup <= 3
                       <div className="flex flex-col items-center">
                         <h1 className="text-6xl font-bold text-gray-800 select-none">Dashboard</h1>
-                        <p className="mt-4 text-lg text-gray-600 select-none">Add tasks to get started</p>
+                        <p className="mt-4 text-lg text-gray-600 select-none">{selectedGroup == 3 ? "Tasks assigned to you show up here": "Add tasks to get started"}</p>
                       </div>
                     ) : (
                       <div className="w-full h-full">
                         <ul>
-                          {todo.map((task, index) => (
+                          {selectedGroup > 3 && todo.map((task, index) => (
                             <div key={task._id} className="px-8 h-18">
                               <li className="flex items-center h-14 rounded-2xl shadow-white shadow-sm hover:cursor-pointer hover:bg-[#7f7f7f2b] border-gray-200 py-2 px-4"
                                 onClick={() => editingTaskId !== task._id && handleToggleTask(task._id, index)}
@@ -341,7 +341,7 @@ export function DashBoard() {
                 </div>
                 
                 {/* Input box with sticky positioning */}
-                <div className="sticky bottom-6 flex justify-center w-full pb-4">
+                {selectedGroup != 3 && <div className="sticky bottom-6 flex justify-center w-full pb-4">
                   <div className="relative flex items-center w-3/5">
                     <input 
                       type="text" 
@@ -374,7 +374,7 @@ export function DashBoard() {
                       </button>
                     </div>
                   </div>
-                </div>
+                </div>}
               </div>
             </div>
           </div>

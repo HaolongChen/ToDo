@@ -13,6 +13,8 @@ export function DashBoard() {
   const [selectedGroup, setSelectedGroup] = useState(0);
   const [inputValue, setInputValue] = useState("");
   const [todo, setTodo] = useState([]);
+  const [editingTaskId, setEditingTaskId] = useState(null);
+  const [editValue, setEditValue] = useState("");
   const [newTodo, setNewTodo] = useState({
     description: "",
     completed: false,
@@ -32,6 +34,28 @@ export function DashBoard() {
   useEffect(() => {
     setNewTodo({...newTodo, description: inputValue});
   }, [inputValue]);
+
+  // Click outside listener to cancel edit mode
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      // Check if we have an active editing task, the click was not on an edit field, 
+      // and not on a complete edit button (checkmark button)
+      if (
+        editingTaskId && 
+        !event.target.closest('.editing-task') && 
+        !event.target.closest('.edit-confirm-btn')
+      ) {
+        setEditingTaskId(null);
+        setEditValue("");
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, [editingTaskId]);
 
   const handleCreateTodo = async (event) => {
     event.preventDefault();
@@ -91,8 +115,53 @@ export function DashBoard() {
     }
   }
 
-  const handleEditTask = async (taskId) => {
+  const handleEditTask = async (taskId, taskDescription) => {
+    // If we're already editing, don't do anything
+    if (editingTaskId) return;
+    
+    // Set the task ID we're editing and initialize the edit value
+    setEditingTaskId(taskId);
+    setEditValue(taskDescription);
+  }
 
+  const completeEdit = async (e) => {
+    // Stop the event from bubbling up to prevent the click outside handler from being triggered
+    if (e) {
+      e.preventDefault();
+      e.stopPropagation();
+    }
+    
+    try {
+      if (!editingTaskId || editValue.trim() === '') return;
+      
+      // Find the index of the task being edited
+      const taskIndex = todo.findIndex(task => task._id === editingTaskId);
+      if (taskIndex === -1) return;
+
+      // Update local state
+      setGroups(prevGroups => {
+        let updatedGroups = [...prevGroups];
+        let updatedTodo = [...updatedGroups[selectedGroup].todo];
+        updatedTodo[taskIndex] = {
+          ...updatedTodo[taskIndex],
+          description: editValue
+        };
+        updatedGroups[selectedGroup] = {
+          ...updatedGroups[selectedGroup],
+          todo: updatedTodo
+        };
+        return updatedGroups;
+      });
+
+      // Update in the database
+      await updateTodo(editingTaskId, { description: editValue });
+      
+      // Exit edit mode
+      setEditingTaskId(null);
+      setEditValue("");
+    } catch (error) {
+      console.error(error);
+    }
   }
 
   const handleDeleteTask = async (taskId) => {
@@ -189,21 +258,70 @@ export function DashBoard() {
                           {todo.map((task, index) => (
                             <div key={task._id} className="px-8 h-18">
                               <li className="flex items-center h-14 rounded-2xl shadow-white shadow-sm hover:cursor-pointer hover:bg-[#7f7f7f2b] border-gray-200 py-2 px-4"
-                                onClick={() => handleToggleTask(task._id, index)}
+                                onClick={() => editingTaskId !== task._id && handleToggleTask(task._id, index)}
                               >
                                 <input
                                   type="checkbox"
                                   checked={task.completed}
-                                  onChange={(e) => handleToggleTask(task._id, e.target.checked)}
+                                  onChange={(e) => {
+                                    e.stopPropagation();
+                                    handleToggleTask(task._id, index);
+                                  }}
                                   className="mr-2"
+                                  onClick={(e) => e.stopPropagation()}
                                 />
-                                <span className={`flex-1 truncate ${task.completed ? "line-through text-gray-400" : ""}`}>{task.description}</span>
-                                <button className="btn btn-circle btn-sm bg-transparent border-none hover:bg-gray-200/30 z-50" onClick={() => handleEditTask(task._id)}>
-                                  <span className="text-lg">✏️</span>
-                                </button>
-                                <button className="btn btn-circle btn-sm bg-transparent border-none hover:bg-gray-200/30 z-50" onClick={() => handleDeleteTask(task._id)}>
-                                  <span className="text-lg">❌</span>
-                                </button>
+                                {editingTaskId === task._id ? (
+                                  <div className="flex-1 editing-task" onClick={(e) => e.stopPropagation()}>
+                                    <input
+                                      type="text"
+                                      value={editValue}
+                                      onChange={(e) => setEditValue(e.target.value)}
+                                      className="input w-full focus:outline-none bg-transparent"
+                                      autoFocus
+                                      onKeyDown={(e) => {
+                                        if (e.key === 'Enter') {
+                                          completeEdit(e);
+                                        }
+                                      }}
+                                    />
+                                  </div>
+                                ) : (
+                                  <span className={`flex-1 truncate ${task.completed ? "line-through text-gray-400" : ""}`}>
+                                    {task.description}
+                                  </span>
+                                )}
+                                {editingTaskId === task._id ? (
+                                  <button 
+                                    className="btn btn-circle btn-sm bg-transparent border-none hover:bg-gray-200/30 edit-confirm-btn" 
+                                    onClick={(e) => {
+                                      e.stopPropagation();
+                                      completeEdit(e);
+                                    }}
+                                  >
+                                    <span className="text-lg">✔️</span>
+                                  </button>
+                                ) : (
+                                  <>
+                                    <button 
+                                      className="btn btn-circle btn-sm bg-transparent border-none hover:bg-gray-200/30" 
+                                      onClick={(e) => {
+                                        e.stopPropagation();
+                                        handleEditTask(task._id, task.description);
+                                      }}
+                                    >
+                                      <span className="text-lg">✏️</span>
+                                    </button>
+                                    <button 
+                                      className="btn btn-circle btn-sm bg-transparent border-none hover:bg-gray-200/30" 
+                                      onClick={(e) => {
+                                        e.stopPropagation();
+                                        handleDeleteTask(task._id);
+                                      }}
+                                    >
+                                      <span className="text-lg">❌</span>
+                                    </button>
+                                  </>
+                                )}
                               </li>
                             </div>
                           ))}
@@ -222,6 +340,7 @@ export function DashBoard() {
                       onChange={(e) => setInputValue(e.target.value)}
                       placeholder="Add a new task..." 
                       maxLength={180}
+                      onKeyDown={(e) => e.key === 'Enter' && handleCreateTodo(e)}
                       className="input input-bordered w-full h-15 rounded-4xl bg-white/10 backdrop-blur-md focus:outline-none shadow-md pr-24"
                     />
                     <div className="absolute right-3 flex space-x-2">

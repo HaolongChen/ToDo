@@ -229,8 +229,8 @@ export const AuthProvider = ({ children }) => {
     try {
       setLoading(true);
       setError(null);
-      console.log(todo);
       const response = await axios.post('/api/todo/create', todo);
+      return response.data;
     } catch (error) {
       setError(error.response?.data?.message || "Failed to create todo");
       throw error;
@@ -245,7 +245,6 @@ export const AuthProvider = ({ children }) => {
       setError(null);
       const response = await axios.get(`/api/todo/get/${groupId}`);
       setTodos(response.data);
-      console.log(response.data);
     } catch (error) {
       setError(error.response?.data?.message || "Failed to get todos");
       console.log(error);

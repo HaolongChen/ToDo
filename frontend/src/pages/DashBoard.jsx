@@ -3,14 +3,11 @@ import { NavBar } from "../components/NavBar";
 import { useAuth } from "../context/AuthContext";
 import { FiMenu } from "react-icons/fi";
 import { useState } from "react";
-import { IoSunnyOutline } from "react-icons/io5";
-import { CiStar } from "react-icons/ci";
-import { CiUser } from "react-icons/ci";
-import { CiCalendarDate } from "react-icons/ci";
 import { Task } from "../components/Task";
+import { NotImportant } from "../components/NotImportant";
 
 export function DashBoard() {
-  const { getAllGroups, groups, createTodo, user, loading, error, teammates, setGroups } = useAuth(); // Destructure what we need
+  const { getAllGroups, groups, createTodo, user, loading, error, teammates, setGroups, deleteTodo } = useAuth(); // Destructure what we need
   const [drawerOpen, setDrawerOpen] = useState(true);
   const [selectedGroup, setSelectedGroup] = useState(0);
   const [inputValue, setInputValue] = useState("");
@@ -20,12 +17,11 @@ export function DashBoard() {
     completed: false,
     assigned: false,
     important: false,
-    user: user._id,
+    user: user?._id || "",
   });
   
   useEffect(() => {
     getAllGroups();
-    // console.log(groups);
   }, []);
 
   useEffect(() => {
@@ -45,16 +41,19 @@ export function DashBoard() {
     const todoToCreate = {
       ...newTodo,
       groupId: currentGroupId
-    };
-    
-    await createTodo(todoToCreate);
+    };    
     
     setInputValue("");
+    
+    // First call createTodo and await the response to get the server-generated _id
+    const createdTodo = await createTodo(todoToCreate);
+    
+    // Then update the local state with the todo that has the _id
     setGroups(prevGroups => {
       let updatedGroups = [...prevGroups];
       updatedGroups[selectedGroup] = {
         ...updatedGroups[selectedGroup],
-        todo: [...(updatedGroups[selectedGroup].todo || []), todoToCreate]
+        todo: [...(updatedGroups[selectedGroup].todo || []), createdTodo]
       };
       return updatedGroups;
     });
@@ -67,10 +66,33 @@ export function DashBoard() {
       user: user._id, // Keep the user ID
     });
     
-    console.log("Todo created");
-    console.log(groups);
   }
-  
+
+  const handleToggleTask = async (taskId) => {
+
+  }
+
+  const handleEditTask = async (taskId) => {
+
+  }
+
+  const handleDeleteTask = async (taskId) => {
+    try {
+      setGroups(prevGroups => {
+        let updatedGroups = [...prevGroups];
+        updatedGroups[selectedGroup] = {
+          ...updatedGroups[selectedGroup],
+          todo: updatedGroups[selectedGroup].todo.filter(todo => todo._id !== taskId)
+        };
+        return updatedGroups;
+      });
+      await deleteTodo(taskId);
+    } catch (error) {
+      console.error(error);
+      
+    }
+  }
+
   return (
     <>
       <div className="flex flex-col h-screen overflow-hidden">
@@ -155,6 +177,9 @@ export function DashBoard() {
                                   className="mr-2"
                                 />
                                 <span className="flex-1">{task.description}</span>
+                                <button className="btn btn-circle btn-sm bg-transparent border-none hover:bg-gray-200/30" onClick={() => handleEditTask(task._id)}>
+                                  <span className="text-lg">✏️</span>
+                                </button>
                                 <button className="btn btn-circle btn-sm bg-transparent border-none hover:bg-gray-200/30" onClick={() => handleDeleteTask(task._id)}>
                                   <span className="text-lg">❌</span>
                                 </button>
@@ -187,9 +212,10 @@ export function DashBoard() {
                       </button>
                       <button 
                         className="btn btn-circle btn-sm bg-transparent border-none hover:bg-gray-200/30"
-                        onClick={() => {/* Your action here */}}
+                        onClick={() => {setNewTodo({...newTodo, important: !newTodo.important})}}
                       >
-                        <span className="text-lg">⭐</span>
+                        {/* <span className="text-lg">⭐</span> */}
+                        {newTodo.important ? <span className="text-lg">⭐</span> : <NotImportant />}  
                       </button>
                       <button 
                         className="btn btn-primary btn-sm rounded-full px-3"

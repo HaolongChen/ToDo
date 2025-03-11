@@ -10,7 +10,7 @@ export const createTodo = async (req, res) => {
         if(!group) return res.status(404).json({ message: 'Group not found' });
         group.todo.push(todo._id);
         await group.save();
-        res.status(201).json({ message: 'Todo created successfully' });
+        res.status(201).json(todo);
     } catch (error) {
         console.log(error);
         console.log(req.body);

@@ -80,10 +80,10 @@ export function DashBoard() {
             {drawerOpen && (
               <div className="flex-shrink-0 flex flex-col h-full overflow-y-auto overflow-x-hidden w-70">
                 <ul className="bg-base-100 shadow-md w-full h-full">
-                  <div className="h-14 px-8 flex items-center">
-                    <FiMenu size={24} />
+                  <div className="h-18 px-8 flex items-center">
+                    <FiMenu size={36} />
                     <div 
-                      className="hover:bg-[#bcbcbc31] relative left-[-26px] w-7 h-7 rounded-[4px] hover:cursor-pointer" 
+                      className="hover:bg-[#bcbcbc31] relative left-[-38px] w-10 h-10 rounded-[10px] hover:cursor-pointer" 
                       onClick={() => setDrawerOpen(!drawerOpen)}>
                     </div>
                   </div>
@@ -115,22 +115,22 @@ export function DashBoard() {
             <div className="flex-1 bg-base-200 flex flex-col relative h-full w-full overflow-y-auto overflow-x-hidden">
               {/* Position menu absolutely when drawer is closed so it doesn't take vertical space */}
               {!drawerOpen && (
-                <div className="absolute top-0 left-0 h-14 px-8 flex items-center z-10">
-                  <FiMenu size={24} />
+                <div className="absolute top-0 left-0 h-18 px-8 flex items-center z-10">
+                  <FiMenu size={36} />
                   <div 
-                    className="hover:bg-[#bcbcbc31] relative left-[-27px] w-7 h-7 rounded-[4px] hover:cursor-pointer" 
+                    className="hover:bg-[#bcbcbc31] relative left-[-38px] w-10 h-10 rounded-[10px] hover:cursor-pointer" 
                     onClick={() => setDrawerOpen(!drawerOpen)}>
                   </div>
                 </div>
               )}
 
-              <div className={`select-none h-14 px-8 flex items-center ${drawerOpen ? "" : "translate-x-[60px]"}`}>
-                {selectedGroup == 0 && (<span className="text-[24px] mr-2">☀️</span>)}
-                {selectedGroup == 1 && (<span className="text-[24px] mr-2">⭐</span>)}
-                {selectedGroup == 2 && (<span className="text-[24px] mr-2">📅</span>)}
-                {selectedGroup == 3 && (<span className="text-[24px] mr-2">👤</span>)}
-                {selectedGroup > 3 && (<span className="text-[24px] mr-2"><Task /></span>)}
-                <span className="text-[24px]">{groups[selectedGroup]?.name}</span>
+              <div className={`select-none h-14 px-8 flex items-center mt-1.5 mb-3 ${drawerOpen ? "" : "translate-x-[60px]"}`}>
+                {selectedGroup == 0 && (<span className="text-[36px] mr-2">☀️</span>)}
+                {selectedGroup == 1 && (<span className="text-[36px] mr-2">⭐</span>)}
+                {selectedGroup == 2 && (<span className="text-[36px] mr-2">📅</span>)}
+                {selectedGroup == 3 && (<span className="text-[36px] mr-2">👤</span>)}
+                {selectedGroup > 3 && (<span className="text-[36px] mr-2"><Task /></span>)}
+                <span className="text-[32px]">{groups[selectedGroup]?.name}</span>
               </div>
               
               {/* Main content with consistent positioning */}
@@ -144,7 +144,24 @@ export function DashBoard() {
                       </div>
                     ) : (
                       <div className="w-full h-full">
-                        {/* Your tasks content here */}
+                        <ul>
+                          {todo.map((task, index) => (
+                            <div key={task._id} className="px-8 h-18">
+                              <li className="flex items-center h-14 rounded-2xl shadow-white shadow-sm hover:cursor-pointer hover:bg-[#7f7f7f2b] border-gray-200 py-2 px-4">
+                                <input
+                                  type="checkbox"
+                                  checked={task.completed}
+                                  onChange={(e) => handleToggleTask(task._id, e.target.checked)}
+                                  className="mr-2"
+                                />
+                                <span className="flex-1">{task.description}</span>
+                                <button className="btn btn-circle btn-sm bg-transparent border-none hover:bg-gray-200/30" onClick={() => handleDeleteTask(task._id)}>
+                                  <span className="text-lg">❌</span>
+                                </button>
+                              </li>
+                            </div>
+                          ))}
+                        </ul>
                       </div>
                     )}
                   </>

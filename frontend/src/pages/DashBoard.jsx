@@ -209,7 +209,7 @@ export function DashBoard() {
                   {groups.map((group, index) => (
                     <div key={group._id}>
                       <li 
-                        className={`select-none list-row ${index === selectedGroup ? "hover:bg-[#bcbcbc31]" : "hover:bg-[#7f7f7f2b]"} hover:cursor-pointer rounded-box h-10 px-4 mx-4 text-[16px] flex items-center ${index === selectedGroup ? "bg-[#bcbcbc31]" : ""}`}
+                        className={`select-none list-row ${index === selectedGroup ? "hover:bg-[#bcbcbc31]" : "hover:bg-[#7f7f7f2b]"} hover:cursor-pointer rounded-box h-10 px-4 mx-4 my-2 text-[16px] flex items-center ${index === selectedGroup ? "bg-[#bcbcbc31]" : ""}`}
                         onClick={() => setSelectedGroup(index)}
                       >
                         {index == 0 && (<span className="text-lg mr-2">☀️</span>)}

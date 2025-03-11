@@ -28,7 +28,15 @@ export function DashBoard() {
   }, []);
 
   useEffect(() => {
-    setTodo(groups[selectedGroup]?.todo || []);
+    setTodo(() => {
+      let currentTodos = groups[selectedGroup]?.todo || [];
+      currentTodos.sort((a, b) => {
+        if(a.completed && !b.completed) return 1;
+        if(!a.completed && b.completed) return -1;
+        return (new Date(b.createdAt)).getTime() - (new Date(a.createdAt)).getTime();
+      });
+      return currentTodos;
+    });
   }, [groups, selectedGroup]);
 
   useEffect(() => {

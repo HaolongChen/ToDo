@@ -5,9 +5,10 @@ import { FiMenu } from "react-icons/fi";
 import { useState } from "react";
 import { Task } from "../components/Task";
 import { NotImportant } from "../components/NotImportant";
+import { set } from "mongoose";
 
 export function DashBoard() {
-  const { getAllGroups, groups, createTodo, user, loading, error, teammates, setGroups, deleteTodo } = useAuth(); // Destructure what we need
+  const { getAllGroups, groups, createTodo, user, loading, error, teammates, setGroups, deleteTodo, updateTodo } = useAuth(); // Destructure what we need
   const [drawerOpen, setDrawerOpen] = useState(true);
   const [selectedGroup, setSelectedGroup] = useState(0);
   const [inputValue, setInputValue] = useState("");
@@ -68,8 +69,26 @@ export function DashBoard() {
     
   }
 
-  const handleToggleTask = async (taskId) => {
-
+  const handleToggleTask = async (taskId, index) => {
+    try {
+      setGroups(prevGroups => {
+        let updatedGroups = [...prevGroups];
+        let updatedTodo = [...updatedGroups[selectedGroup].todo]; 
+        updatedTodo[index] = {
+          ...updatedTodo[index],
+          completed: !updatedTodo[index].completed
+        };
+        updatedGroups[selectedGroup] = {
+          ...updatedGroups[selectedGroup],
+          todo: updatedTodo
+        };
+        return updatedGroups;
+      });
+      await updateTodo(taskId, { completed: !todo[index].completed });
+    } catch (error) {
+      console.error(error);
+      
+    }
   }
 
   const handleEditTask = async (taskId) => {
@@ -169,18 +188,20 @@ export function DashBoard() {
                         <ul>
                           {todo.map((task, index) => (
                             <div key={task._id} className="px-8 h-18">
-                              <li className="flex items-center h-14 rounded-2xl shadow-white shadow-sm hover:cursor-pointer hover:bg-[#7f7f7f2b] border-gray-200 py-2 px-4">
+                              <li className="flex items-center h-14 rounded-2xl shadow-white shadow-sm hover:cursor-pointer hover:bg-[#7f7f7f2b] border-gray-200 py-2 px-4"
+                                onClick={() => handleToggleTask(task._id, index)}
+                              >
                                 <input
                                   type="checkbox"
                                   checked={task.completed}
                                   onChange={(e) => handleToggleTask(task._id, e.target.checked)}
                                   className="mr-2"
                                 />
-                                <span className="flex-1">{task.description}</span>
-                                <button className="btn btn-circle btn-sm bg-transparent border-none hover:bg-gray-200/30" onClick={() => handleEditTask(task._id)}>
+                                <span className={`flex-1 truncate ${task.completed ? "line-through text-gray-400" : ""}`}>{task.description}</span>
+                                <button className="btn btn-circle btn-sm bg-transparent border-none hover:bg-gray-200/30 z-50" onClick={() => handleEditTask(task._id)}>
                                   <span className="text-lg">✏️</span>
                                 </button>
-                                <button className="btn btn-circle btn-sm bg-transparent border-none hover:bg-gray-200/30" onClick={() => handleDeleteTask(task._id)}>
+                                <button className="btn btn-circle btn-sm bg-transparent border-none hover:bg-gray-200/30 z-50" onClick={() => handleDeleteTask(task._id)}>
                                   <span className="text-lg">❌</span>
                                 </button>
                               </li>

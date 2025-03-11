@@ -95,12 +95,13 @@ export function DashBoard() {
 
   const handleToggleTask = async (taskId, index) => {
     try {
+      const completedStatus = !todo[index].completed;
       setGroups(prevGroups => {
         let updatedGroups = [...prevGroups];
         let updatedTodo = [...updatedGroups[selectedGroup].todo]; 
         updatedTodo[index] = {
           ...updatedTodo[index],
-          completed: !updatedTodo[index].completed
+          completed: completedStatus
         };
         updatedGroups[selectedGroup] = {
           ...updatedGroups[selectedGroup],
@@ -108,7 +109,7 @@ export function DashBoard() {
         };
         return updatedGroups;
       });
-      await updateTodo(taskId, { completed: !todo[index].completed });
+      await updateTodo(taskId, { completed: completedStatus });
     } catch (error) {
       console.error(error);
       

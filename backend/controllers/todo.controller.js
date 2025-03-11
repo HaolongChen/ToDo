@@ -58,9 +58,9 @@ export const updateTodo = async (req, res) => {
         const todo = await Todo.findById(todoId);
         if(!todo) return res.status(404).json({ message: 'Todo not found' });
         if(req.body.description) todo.description = req.body.description;
-        if(req.body.completed) todo.completed = req.body.completed;
-        if(req.body.assigned) todo.assigned = req.body.assigned;
-        if(req.body.important) todo.important = req.body.important;
+        if(req.body.completed !== undefined) todo.completed = req.body.completed;
+        if(req.body.assigned !== undefined) todo.assigned = req.body.assigned;
+        if(req.body.important !== undefined) todo.important = req.body.important;
         if(req.body.due) todo.due = req.body.due;
         if(req.body.message) todo.message = req.body.message;
         await todo.save();

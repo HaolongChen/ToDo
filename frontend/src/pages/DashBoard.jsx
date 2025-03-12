@@ -5,7 +5,6 @@ import { FiMenu } from "react-icons/fi";
 import { useState } from "react";
 import { Task } from "../components/Task";
 import { NotImportant } from "../components/NotImportant";
-import { set } from "mongoose";
 
 export function DashBoard() {
   const { getAllGroups, groups, createTodo, user, loading, error, teammates, setGroups, deleteTodo, updateTodo } = useAuth(); // Destructure what we need
@@ -22,6 +21,10 @@ export function DashBoard() {
     important: false,
     user: user?._id || "",
   });
+  const [datePickerOpen, setDatePickerOpen] = useState(false);
+  const [selectedDate, setSelectedDate] = useState(null);
+  const [dateInput, setDateInput] = useState("");
+  const [isDateConfirmed, setIsDateConfirmed] = useState(false);
   
   useEffect(() => {
     getAllGroups();
@@ -56,6 +59,18 @@ export function DashBoard() {
         setEditingTaskId(null);
         setEditValue("");
       }
+
+      // Close date picker only when clicking outside and not on any input fields
+      if (
+        datePickerOpen && 
+        !event.target.closest('.date-picker-container') && 
+        !event.target.closest('.calendar-button') &&
+        !event.target.closest('.date-input-field') &&
+        isDateConfirmed
+      ) {
+        setDatePickerOpen(false);
+        setIsDateConfirmed(false);
+      }
     };
 
     document.addEventListener('mousedown', handleClickOutside);
@@ -63,7 +78,7 @@ export function DashBoard() {
     return () => {
       document.removeEventListener('mousedown', handleClickOutside);
     };
-  }, [editingTaskId]);
+  }, [editingTaskId, datePickerOpen, isDateConfirmed]);
 
   const handleCreateTodo = async (event) => {
     event.preventDefault();
@@ -97,9 +112,81 @@ export function DashBoard() {
       assigned: false,
       important: false,
       user: user._id, // Keep the user ID
+      due: undefined,
     });
     
   }
+
+  // Date picker handlers
+  const handleDateChange = (e) => {
+    setDateInput(e.target.value);
+    setSelectedDate(e.target.value);
+  };
+
+  const handleDateSelect = () => {
+    if (selectedDate) {
+      // Convert the selected date to a date with time set to 23:59
+      const dateWithTime = setDateWithEndOfDay(selectedDate);
+      
+      // Ensure date is valid before applying
+      if (dateWithTime && !isNaN(dateWithTime.getTime())) {
+        setNewTodo({...newTodo, due: dateWithTime});
+        setDatePickerOpen(false);
+        setIsDateConfirmed(true);
+      }
+    }
+  };
+
+  const clearSelectedDate = (e) => {
+    e.stopPropagation();
+    setNewTodo({...newTodo, due: undefined});
+    setSelectedDate(null);
+    setDateInput("");
+  };
+
+  const toggleDatePicker = () => {
+    setDatePickerOpen(!datePickerOpen);
+    setIsDateConfirmed(false);
+    
+    // If opening the picker and there's an existing date, set it to the input
+    if (!datePickerOpen && newTodo.due) {
+      const formattedDate = formatDateForInput(newTodo.due);
+      setDateInput(formattedDate);
+      setSelectedDate(formattedDate);
+    }
+  };
+
+  // Format date for display (MM/DD/YYYY)
+  const formatDate = (date) => {
+    if (!date) return "";
+    return `${date.getMonth() + 1}/${date.getDate()}/${date.getFullYear()}`;
+  };
+
+  // Format date for input field (YYYY-MM-DD)
+  const formatDateForInput = (date) => {
+    if (!date) return "";
+    const year = date.getFullYear();
+    // Month and day need to be padded with leading zeros
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const day = String(date.getDate()).padStart(2, '0');
+    return `${year}-${month}-${day}`;
+  };
+
+  // Set time to 23:59 for the selected date in user's local timezone
+  const setDateWithEndOfDay = (dateString) => {
+    if (!dateString) return null;
+    
+    // Parse the date string carefully to ensure we get the correct day
+    const [year, month, day] = dateString.split('-').map(num => parseInt(num, 10));
+    
+    // Create date using user's local timezone (months are 0-indexed in JS Date)
+    const date = new Date(year, month - 1, day, 23, 59, 0, 0);
+    
+    // Verify the date is valid
+    if (isNaN(date.getTime())) return null;
+    
+    return date;
+  };
 
   const handleToggleTask = async (taskId, index) => {
     try {
@@ -353,17 +440,62 @@ export function DashBoard() {
                       className="input input-bordered w-full h-15 rounded-4xl bg-white/10 backdrop-blur-md focus:outline-none shadow-md pr-24"
                     />
                     <div className="absolute right-3 flex space-x-2">
-                      <button 
-                        className="btn btn-circle btn-sm bg-transparent border-none hover:bg-gray-200/30"
-                        onClick={() => {/* Your action here */}}
-                      >
-                        <span className="text-lg">📅</span>
-                      </button>
+                      {/* Date picker button and implementation */}
+                      <div className="relative calendar-button">
+                        {!newTodo.due ? (
+                          <button 
+                            className="btn btn-circle btn-sm bg-transparent border-none hover:bg-gray-200/30"
+                            onClick={toggleDatePicker}
+                          >
+                            <span className="text-lg">📅</span>
+                          </button>
+                        ) : (
+                          <button 
+                            className="btn btn-sm bg-cyan-400/20 border-none hover:bg-cyan-400/30 rounded-md px-2 flex items-center"
+                            onClick={toggleDatePicker}
+                          >
+                            <span className="text-sm mr-1">{formatDate(newTodo.due)}</span>
+                            <span 
+                              className="text-xs cursor-pointer"
+                              onClick={clearSelectedDate}
+                            >❌</span>
+                          </button>
+                        )}
+                        {datePickerOpen && (
+                          <div className="absolute bottom-10 right-0 z-50 date-picker-container">
+                            <div className="bg-base-100 border border-base-300 shadow-lg rounded-box p-2">
+                              <div className="p-2">
+                                <input 
+                                  type="date" 
+                                  value={dateInput}
+                                  onChange={handleDateChange}
+                                  onClick={(e) => e.stopPropagation()}
+                                  className="input input-bordered w-full date-input-field"
+                                />
+                                <div className="flex justify-between mt-2">
+                                  <button 
+                                    className="btn btn-sm btn-ghost"
+                                    onClick={() => setDatePickerOpen(false)}
+                                  >
+                                    Cancel
+                                  </button>
+                                  <button 
+                                    className="btn btn-sm btn-primary"
+                                    onClick={handleDateSelect}
+                                  >
+                                    Apply
+                                  </button>
+                                </div>
+                              </div>
+                            </div>
+                          </div>
+                        )}
+                      </div>
+
                       <button 
                         className="btn btn-circle btn-sm bg-transparent border-none hover:bg-gray-200/30"
                         onClick={() => {setNewTodo({...newTodo, important: !newTodo.important})}}
                       >
-                        {/* <span className="text-lg">⭐</span> */}
                         {newTodo.important ? <span className="text-lg">⭐</span> : <NotImportant />}  
                       </button>
                       <button 

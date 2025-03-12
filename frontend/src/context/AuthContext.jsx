@@ -339,6 +339,7 @@ export const AuthProvider = ({ children }) => {
       setLoading(true);
       setError(null);
       const response = await axios.post('/api/todo/create-group', group);
+      return response.data;
     } catch (error) {
       setError(error.response?.data?.message || "Failed to create group");
       throw error;

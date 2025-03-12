@@ -5,9 +5,11 @@ import { FiMenu } from "react-icons/fi";
 import { useState } from "react";
 import { Task } from "../components/Task";
 import { NotImportant } from "../components/NotImportant";
+import { AssignedToMe } from "../components/AssignedToMe";
+import { AssignedByMe } from "../components/AssignedByme";
 
 export function DashBoard() {
-  const { getAllGroups, groups, createTodo, user, loading, error, teammates, setGroups, deleteTodo, updateTodo } = useAuth(); // Destructure what we need
+  const { getAllGroups, groups, createTodo, user, loading, error, teammates, setGroups, deleteTodo, updateTodo, createGroup } = useAuth(); // Destructure what we need
   const [drawerOpen, setDrawerOpen] = useState(true);
   const [selectedGroup, setSelectedGroup] = useState(0);
   const [inputValue, setInputValue] = useState("");
@@ -25,7 +27,8 @@ export function DashBoard() {
   const [selectedDate, setSelectedDate] = useState(null);
   const [dateInput, setDateInput] = useState("");
   const [isDateConfirmed, setIsDateConfirmed] = useState(false);
-  
+  const [newGroup, setNewGroup] = useState("");
+
   useEffect(() => {
     getAllGroups();
   }, []);
@@ -277,6 +280,16 @@ export function DashBoard() {
     }
   }
 
+  const handleCreateGroup = async () => {
+    if (newGroup.trim() === "") return;
+    const newGroupObj = {
+      name: newGroup
+    };
+    const createdGroup = await createGroup(newGroupObj);
+    setGroups([...groups, createdGroup]);
+    setNewGroup("");
+  }
+
   return (
     <>
       <div className="flex flex-col h-screen overflow-hidden">
@@ -285,7 +298,7 @@ export function DashBoard() {
           <div className="flex flex-row flex-1 h-full overflow-hidden">
             {drawerOpen && (
               <div className="flex-shrink-0 flex flex-col h-full overflow-y-auto overflow-x-hidden w-70">
-                <ul className="bg-base-100 shadow-md w-full h-full">
+                <ul className="bg-base-100 w-full h-full shadow-none">
                   <div className="h-18 px-8 flex items-center">
                     <FiMenu size={36} />
                     <div 
@@ -302,20 +315,45 @@ export function DashBoard() {
                         {index == 0 && (<span className="text-lg mr-2">☀️</span>)}
                         {index == 1 && (<span className="text-lg mr-2">⭐</span>)}
                         {index == 2 && (<span className="text-lg mr-2">📅</span>)}
-                        {index == 3 && (<span className="text-lg mr-2">👤</span>)}
-                        {index > 3 && (<span className="text-lg mr-2"><Task /></span>)}
+                        {index == 3 && (<span className="mr-2"><AssignedToMe size={18} /></span>)}
+                        {index == 4 && (<span className="mr-2"><AssignedByMe size={18} /></span>)}
+                        {index > 4 && (<span className="mr-2"><Task size={18} /></span>)}
                         <p className="truncate">{group.name}</p>
                       </li>
-                      {index == 3 && (
+                      {index == 4 && (
                         <>
                           <div className="h-3.5"></div>
                           <div className="bg-[#484644] h-[1px] w-[230px] mx-auto"></div>
                           <div className="h-3.5"></div>
                         </>
-                      )}
+                      )} 
+                      {/* TODO: when index > 4, add a delete button for each group. 
+                                when not hover, bg should be set to blur like input box and text should set to red
+                                when hover, set bgcolor to red and text to white. always set border color to red*/}
                     </div>
                   ))}
                 </ul>
+                  <div className="sticky bottom-6 flex justify-center w-full pb-4">
+                    <div className="relative flex items-center w-4/5 h-15 rounded-4xl bg-white/5">
+                      <input
+                        type="text"
+                        placeholder="New Group"
+                        className="input input-bordered w-full h-15 rounded-4xl bg-white/10 backdrop-blur-md focus:outline-none shadow-md pr-24"
+                        value={newGroup}
+                        maxLength={20}
+                        onKeyDown={(e) => e.key === "Enter" && handleCreateGroup()}
+                        onChange={(e) => setNewGroup(e.target.value)}
+                      />
+                      <div className="absolute right-3">
+                        <button
+                          className="btn btn-circle"
+                          onClick={handleCreateGroup}
+                        >
+                          ➕
+                        </button>
+                      </div>
+                    </div>
+                  </div>
               </div>
             )}
             <div className="flex-1 bg-base-200 flex flex-col relative h-full w-full overflow-y-auto overflow-x-hidden">
@@ -334,8 +372,9 @@ export function DashBoard() {
                 {selectedGroup == 0 && (<span className="text-[36px] mr-2">☀️</span>)}
                 {selectedGroup == 1 && (<span className="text-[36px] mr-2">⭐</span>)}
                 {selectedGroup == 2 && (<span className="text-[36px] mr-2">📅</span>)}
-                {selectedGroup == 3 && (<span className="text-[36px] mr-2">👤</span>)}
-                {selectedGroup > 3 && (<span className="text-[36px] mr-2"><Task /></span>)}
+                {selectedGroup == 3 && (<span className="mr-2"><AssignedToMe size={36} /></span>)}
+                {selectedGroup == 4 && (<span className="mr-2"><AssignedByMe size={36} /></span>)}
+                {selectedGroup > 4 && (<span className="mr-2"><Task size={36} /></span>)}
                 <span className="text-[32px]">{groups[selectedGroup]?.name}</span>
               </div>
               
@@ -346,12 +385,12 @@ export function DashBoard() {
                     {(todo.length === 0) ? ( // TODO: condition needs to be changed for those selectedGroup <= 3
                       <div className="flex flex-col items-center">
                         <h1 className="text-6xl font-bold text-gray-800 select-none">Dashboard</h1>
-                        <p className="mt-4 text-lg text-gray-600 select-none">{selectedGroup == 3 ? "Tasks assigned to you show up here": "Add tasks to get started"}</p>
+                        <p className="mt-4 text-lg text-gray-600 select-none">{selectedGroup == 3 ? "Tasks assigned to you show up here": (selectedGroup === 4 ? "Tasks assigned by you show up here" : "Add tasks to get started")}</p>
                       </div>
                     ) : (
                       <div className="w-full h-full">
                         <ul>
-                          {selectedGroup > 3 && todo.map((task, index) => (
+                          {selectedGroup > 4 && todo.map((task, index) => (
                             <div key={task._id} className="px-8 h-18">
                               <li className="flex items-center h-14 rounded-2xl shadow-white shadow-sm hover:cursor-pointer hover:bg-[#7f7f7f2b] border-gray-200 py-2 px-4"
                                 onClick={() => editingTaskId !== task._id && handleToggleTask(task._id, index)}

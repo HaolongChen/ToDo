@@ -86,7 +86,7 @@ export const createGroup = async (req, res) => {
         const { name } = req.body;
         const group = new Group({ name, user: req.user._id });
         await group.save();
-        res.status(201).json({ message: 'Group created successfully' });
+        res.status(201).json(group);
     } catch (error) {
         console.log(error);
     }

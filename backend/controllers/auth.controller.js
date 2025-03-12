@@ -31,6 +31,8 @@ export const signup = async (req, res) => {
         await planned.save();
         const assignedToMe = new Group({name: 'Assigned to me', user: user._id});
         await assignedToMe.save();
+        const assignedByMe = new Group({name: 'Assigned by me', user: user._id});
+        await assignedByMe.save();
         res.status(201).json({user});
     } catch (error) {
         console.log(error);

@@ -9,13 +9,15 @@ import { AssignedToMe } from "../components/AssignedToMe";
 import { AssignedByMe } from "../components/AssignedByme";
 
 export function DashBoard() {
-  const { getAllGroups, groups, createTodo, user, loading, error, teammates, setGroups, deleteTodo, updateTodo, createGroup } = useAuth(); // Destructure what we need
+  const { getAllGroups, groups, createTodo, user, loading, error, teammates, setGroups, deleteTodo, updateTodo, createGroup, updateGroup, deleteGroup } = useAuth(); // Added deleteGroup
   const [drawerOpen, setDrawerOpen] = useState(true);
   const [selectedGroup, setSelectedGroup] = useState(0);
   const [inputValue, setInputValue] = useState("");
   const [todo, setTodo] = useState([]);
   const [editingTaskId, setEditingTaskId] = useState(null);
   const [editValue, setEditValue] = useState("");
+  const [editingGroupIndex, setEditingGroupIndex] = useState(null); // Track which group name is being edited
+  const [editGroupValue, setEditGroupValue] = useState(""); // Store the edited group name
   const [newTodo, setNewTodo] = useState({
     description: "",
     completed: false,
@@ -63,6 +65,16 @@ export function DashBoard() {
         setEditValue("");
       }
 
+      // Add similar logic for group name editing
+      if (
+        editingGroupIndex !== null && 
+        !event.target.closest('.editing-group') && 
+        !event.target.closest('.edit-group-confirm-btn')
+      ) {
+        setEditingGroupIndex(null);
+        setEditGroupValue("");
+      }
+
       // Close date picker only when clicking outside and not on any input fields
       if (
         datePickerOpen && 
@@ -81,7 +93,47 @@ export function DashBoard() {
     return () => {
       document.removeEventListener('mousedown', handleClickOutside);
     };
-  }, [editingTaskId, datePickerOpen, isDateConfirmed]);
+  }, [editingTaskId, editingGroupIndex, datePickerOpen, isDateConfirmed]);
+
+  // New function for handling group name edits
+  const handleEditGroupName = (index, groupName) => {
+    // Don't allow editing of the first 5 default groups
+    if (index <= 4) return;
+    
+    setEditingGroupIndex(index);
+    setEditGroupValue(groupName);
+  };
+
+  // Function to complete group name edit
+  const completeGroupEdit = async (e, groupId, index) => {
+    if (e) {
+      e.preventDefault();
+      e.stopPropagation();
+    }
+
+    try {
+      if (editGroupValue.trim() === '') return;
+
+      // Update the local state
+      setGroups(prevGroups => {
+        const updatedGroups = [...prevGroups];
+        updatedGroups[index] = {
+          ...updatedGroups[index],
+          name: editGroupValue
+        };
+        return updatedGroups;
+      });
+
+      // Update the database
+      await updateGroup(groupId, { name: editGroupValue });
+
+      // Exit edit mode
+      setEditingGroupIndex(null);
+      setEditGroupValue("");
+    } catch (error) {
+      console.error(error);
+    }
+  };
 
   const handleCreateTodo = async (event) => {
     event.preventDefault();
@@ -290,6 +342,25 @@ export function DashBoard() {
     setNewGroup("");
   }
 
+  const handleDeleteGroup = async (groupId) => {
+    try {
+      // Find the group to be deleted
+      const groupToDelete = groups.find(group => group._id === groupId);
+      
+      if (groupToDelete && groupToDelete.todo && groupToDelete.todo.length > 0) {
+        // Delete all todos in the group first
+        const deletePromises = groupToDelete.todo.map(task => deleteTodo(task._id));
+        await Promise.all(deletePromises);
+      }
+
+      // Then delete the group itself
+      setGroups(prevGroups => prevGroups.filter(group => group._id !== groupId));
+      await deleteGroup(groupId);
+    } catch (error) {
+      console.error(error);
+    }
+  }
+
   return (
     <>
       <div className="flex flex-col h-screen overflow-hidden">
@@ -309,16 +380,55 @@ export function DashBoard() {
                   {groups.map((group, index) => (
                     <div key={group._id}>
                       <li 
-                        className={`select-none list-row ${index === selectedGroup ? "hover:bg-[#bcbcbc31]" : "hover:bg-[#7f7f7f2b]"} hover:cursor-pointer rounded-box h-10 px-4 mx-4 my-2 text-[16px] flex items-center ${index === selectedGroup ? "bg-[#bcbcbc31]" : ""}`}
-                        onClick={() => setSelectedGroup(index)}
+                        className={`select-none list-row group ${index === selectedGroup ? "hover:bg-[#bcbcbc31]" : "hover:bg-[#7f7f7f2b]"} hover:cursor-pointer rounded-box h-10 px-4 mx-4 my-2 text-[16px] flex items-center justify-between ${index === selectedGroup ? "bg-[#bcbcbc31]" : ""}`}
+                        onClick={() => editingGroupIndex !== index && setSelectedGroup(index)}
                       >
-                        {index == 0 && (<span className="text-lg mr-2">☀️</span>)}
+                        <div className="flex items-center">{index == 0 && (<span className="text-lg mr-2">☀️</span>)}
                         {index == 1 && (<span className="text-lg mr-2">⭐</span>)}
                         {index == 2 && (<span className="text-lg mr-2">📅</span>)}
                         {index == 3 && (<span className="mr-2"><AssignedToMe size={18} /></span>)}
                         {index == 4 && (<span className="mr-2"><AssignedByMe size={18} /></span>)}
                         {index > 4 && (<span className="mr-2"><Task size={18} /></span>)}
-                        <p className="truncate">{group.name}</p>
+                        {editingGroupIndex === index ? (
+                          <div className="flex-1 editing-group" onClick={(e) => e.stopPropagation()}>
+                            <input
+                              type="text"
+                              value={editGroupValue}
+                              onChange={(e) => setEditGroupValue(e.target.value)}
+                              className="input input-sm w-full focus:outline-none bg-transparent rounded-[12px]"
+                              autoFocus
+                              maxLength={20}
+                              onKeyDown={(e) => {
+                                if (e.key === 'Enter') {
+                                  completeGroupEdit(e, group._id, index);
+                                }
+                              }}
+                            />
+                          </div>
+                        ) : (
+                          <p className="truncate" onDoubleClick={() => handleEditGroupName(index, group.name)}>{group.name}</p>
+                        )}</div>
+                        {index > 4 && <button 
+                          className="btn btn-circle btn-sm bg-transparent border-none hover:bg-gray-200/30 hidden group-hover:flex" 
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleDeleteGroup(groups[index]._id);
+                            setSelectedGroup(selectedGroup == index ? selectedGroup - 1 : (selectedGroup > index ? selectedGroup - 1 : selectedGroup));
+                          }}
+                        >
+                          <span className="text-lg">❌</span>
+                        </button>}
+                        {editingGroupIndex === index && index > 4 && (
+                          <button 
+                            className="btn btn-circle btn-xs bg-transparent border-none hover:bg-gray-200/30 edit-group-confirm-btn" 
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              completeGroupEdit(e, group._id, index);
+                            }}
+                          >
+                            <span className="text-sm">✔️</span>
+                          </button>
+                        )}
                       </li>
                       {index == 4 && (
                         <>
@@ -368,14 +478,57 @@ export function DashBoard() {
                 </div>
               )}
 
-              <div className={`select-none h-14 px-8 flex items-center mt-1.5 mb-3 ${drawerOpen ? "" : "translate-x-[60px]"}`}>
+              <div className={`h-14 px-8 flex items-center justify-between mt-1.5 mb-3 ${drawerOpen ? "" : "translate-x-[60px]"}`}>
+                <div className="flex items-center">
                 {selectedGroup == 0 && (<span className="text-[36px] mr-2">☀️</span>)}
                 {selectedGroup == 1 && (<span className="text-[36px] mr-2">⭐</span>)}
                 {selectedGroup == 2 && (<span className="text-[36px] mr-2">📅</span>)}
                 {selectedGroup == 3 && (<span className="mr-2"><AssignedToMe size={36} /></span>)}
                 {selectedGroup == 4 && (<span className="mr-2"><AssignedByMe size={36} /></span>)}
                 {selectedGroup > 4 && (<span className="mr-2"><Task size={36} /></span>)}
-                <span className="text-[32px]">{groups[selectedGroup]?.name}</span>
+                {editingGroupIndex === selectedGroup && selectedGroup > 4 ? (
+                  <div className="editing-group flex items-center">
+                    <input
+                      type="text"
+                      value={editGroupValue}
+                      onChange={(e) => setEditGroupValue(e.target.value)}
+                      className="input input-lg w-full focus:outline-none bg-transparent text-[32px] rounded-2xl"
+                      autoFocus
+                      maxLength={20}
+                      onKeyDown={(e) => {
+                        if (e.key === 'Enter') {
+                          completeGroupEdit(e, groups[selectedGroup]._id, selectedGroup);
+                        }
+                      }}
+                    />
+                    <button 
+                      className="btn btn-circle ml-2 edit-group-confirm-btn"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        completeGroupEdit(e, groups[selectedGroup]._id, selectedGroup);
+                      }}
+                    >
+                      <span className="text-lg">✔️</span>
+                    </button>
+                  </div>
+                ) : (
+                  <span 
+                    className="text-[32px]"
+                    onDoubleClick={() => selectedGroup > 4 && handleEditGroupName(selectedGroup, groups[selectedGroup]?.name)}
+                  >
+                    {groups[selectedGroup]?.name}
+                  </span>
+                )}</div>
+                {selectedGroup > 4 && <button 
+                  className="btn btn-circle btn-sm bg-transparent border-none hover:bg-gray-200/30" 
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    handleDeleteGroup(groups[selectedGroup]._id);
+                    setSelectedGroup(selectedGroup - 1);
+                  }}
+                >
+                  <span className="text-lg">❌</span>
+                </button>}
               </div>
               
               {/* Main content with consistent positioning */}
@@ -392,7 +545,7 @@ export function DashBoard() {
                         <ul>
                           {selectedGroup > 4 && todo.map((task, index) => (
                             <div key={task._id} className="px-8 h-18">
-                              <li className="flex items-center h-14 rounded-2xl shadow-white shadow-sm hover:cursor-pointer hover:bg-[#7f7f7f2b] border-gray-200 py-2 px-4"
+                              <li className="flex items-center h-14 rounded-2xl shadow-white shadow-sm hover:cursor-pointer hover:bg-[#7f7f7f2b] border-gray-200 py-2 px-4 group"
                                 onClick={() => editingTaskId !== task._id && handleToggleTask(task._id, index)}
                               >
                                 <input
@@ -438,7 +591,7 @@ export function DashBoard() {
                                 ) : (
                                   <>
                                     <button 
-                                      className="btn btn-circle btn-sm bg-transparent border-none hover:bg-gray-200/30" 
+                                      className="btn btn-circle btn-sm bg-transparent border-none hover:bg-gray-200/30 hidden group-hover:flex" 
                                       onClick={(e) => {
                                         e.stopPropagation();
                                         handleEditTask(task._id, task.description);
@@ -447,7 +600,7 @@ export function DashBoard() {
                                       <span className="text-lg">✏️</span>
                                     </button>
                                     <button 
-                                      className="btn btn-circle btn-sm bg-transparent border-none hover:bg-gray-200/30" 
+                                      className="btn btn-circle btn-sm bg-transparent border-none hover:bg-gray-200/30 hidden group-hover:flex" 
                                       onClick={(e) => {
                                         e.stopPropagation();
                                         handleDeleteTask(task._id);

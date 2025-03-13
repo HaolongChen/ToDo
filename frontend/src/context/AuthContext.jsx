@@ -347,6 +347,31 @@ export const AuthProvider = ({ children }) => {
       setLoading(false);
     }
   }
+  const updateGroup = async (groupId, group) => {
+    try {
+      setLoading(true);
+      setError(null);
+      const response = await axios.post(`/api/todo/update-group/${groupId}`, group);
+    } catch (error) {
+      setError(error.response?.data?.message || "Failed to update group");
+      throw error;
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  const deleteGroup = async (groupId) => {
+    try {
+      setLoading(true);
+      setError(null);
+      await axios.delete(`/api/todo/delete-group/${groupId}`);
+    } catch (error) {
+      setError(error.response?.data?.message || "Failed to delete group");
+      throw error;
+    } finally {
+      setLoading(false);
+    }
+  }
 
   return (
     <AuthContext.Provider 
@@ -382,6 +407,8 @@ export const AuthProvider = ({ children }) => {
         getAllGroups,
         setGroups,
         createGroup,
+        updateGroup,
+        deleteGroup,
         isAuthenticated: !!user 
       }}
     >

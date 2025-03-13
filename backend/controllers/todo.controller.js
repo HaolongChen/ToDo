@@ -91,3 +91,27 @@ export const createGroup = async (req, res) => {
         console.log(error);
     }
 }
+
+export const updateGroup = async (req, res) => {
+    try {
+        const groupId = req.params.id || req.body.groupId;
+        const group = await Group.findById(groupId);
+        if(!group) return res.status(404).json({ message: 'Group not found' });
+        if(req.body.name) group.name = req.body.name;
+        await group.save();
+        res.status(200).json(group);
+    } catch (error) {
+        console.log(error);
+    }
+}
+
+export const deleteGroup = async (req, res) => {
+    try {
+        const groupId = req.params.id || req.body.groupId;
+        const status = await Group.findByIdAndDelete(groupId);
+        if(!status) return res.status(404).json({ message: 'Group not found' });
+        res.status(200).json({ message: 'Group deleted successfully' });
+    } catch (error) {
+        console.log(error);
+    }
+}

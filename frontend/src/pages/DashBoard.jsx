@@ -648,10 +648,7 @@ export function DashBoard() {
                           <div className="bg-[#484644] h-[1px] w-[230px] mx-auto"></div>
                           <div className="h-3.5"></div>
                         </>
-                      )} 
-                      {/* TODO: when index > 4, add a delete button for each group. 
-                                when not hover, bg should be set to blur like input box and text should set to red
-                                when hover, set bgcolor to red and text to white. always set border color to red*/}
+                      )}
                     </div>
                   ))}
                 </ul>

@@ -30,21 +30,127 @@ export function DashBoard() {
   const [dateInput, setDateInput] = useState("");
   const [isDateConfirmed, setIsDateConfirmed] = useState(false);
   const [newGroup, setNewGroup] = useState("");
+  // Add state to track the source group of a task for special views
+  const [taskSourceGroups, setTaskSourceGroups] = useState({});
 
   useEffect(() => {
     getAllGroups();
   }, []);
 
-  useEffect(() => {
-    setTodo(() => {
-      let currentTodos = groups[selectedGroup]?.todo || [];
-      currentTodos.sort((a, b) => {
-        if(a.completed && !b.completed) return 1;
-        if(!a.completed && b.completed) return -1;
-        return (new Date(b.createdAt)).getTime() - (new Date(a.createdAt)).getTime();
+  // Helper functions for special groups
+  const getMyDayTasks = () => {
+    // Get tasks from all groups that were created in the last 24 hours
+    const now = new Date();
+    const oneDayAgo = new Date(now.getTime() - 24 * 60 * 60 * 1000);
+    
+    let myDayTasks = [];
+    let sourceMapping = {};
+    
+    groups.forEach(group => {
+      if (!group.todo) return;
+      
+      const recentTasks = group.todo.filter(task => {
+        const createdAt = new Date(task.createdAt);
+        return createdAt >= oneDayAgo;
       });
-      return currentTodos;
+      
+      // Track the original group for each task
+      recentTasks.forEach(task => {
+        sourceMapping[task._id] = {
+          groupId: group._id,
+          groupIndex: groups.findIndex(g => g._id === group._id)
+        };
+      });
+      
+      myDayTasks = [...myDayTasks, ...recentTasks];
     });
+    
+    return { tasks: myDayTasks, sourceMapping };
+  };
+  
+  const getImportantTasks = () => {
+    // Get tasks from all groups that are marked as important
+    let importantTasks = [];
+    let sourceMapping = {};
+    
+    groups.forEach(group => {
+      if (!group.todo) return;
+      
+      const importantGroupTasks = group.todo.filter(task => task.important);
+      
+      // Track the original group for each task
+      importantGroupTasks.forEach(task => {
+        sourceMapping[task._id] = {
+          groupId: group._id,
+          groupIndex: groups.findIndex(g => g._id === group._id)
+        };
+      });
+      
+      importantTasks = [...importantTasks, ...importantGroupTasks];
+    });
+    
+    return { tasks: importantTasks, sourceMapping };
+  };
+  
+  const getPlannedTasks = () => {
+    // Get tasks from all groups that have a due date
+    let plannedTasks = [];
+    let sourceMapping = {};
+    
+    groups.forEach(group => {
+      if (!group.todo) return;
+      
+      const plannedGroupTasks = group.todo.filter(task => task.due);
+      
+      // Track the original group for each task
+      plannedGroupTasks.forEach(task => {
+        sourceMapping[task._id] = {
+          groupId: group._id,
+          groupIndex: groups.findIndex(g => g._id === group._id)
+        };
+      });
+      
+      plannedTasks = [...plannedTasks, ...plannedGroupTasks];
+    });
+    
+    return { tasks: plannedTasks, sourceMapping };
+  };
+
+  useEffect(() => {
+    if (groups.length === 0) return;
+    
+    let currentTodos = [];
+    let sourceMapping = {};
+    
+    if (selectedGroup === 0) {
+      // My Day - tasks created in the last 24 hours
+      const myDayResult = getMyDayTasks();
+      currentTodos = myDayResult.tasks;
+      sourceMapping = myDayResult.sourceMapping;
+    } else if (selectedGroup === 1) {
+      // Important - tasks marked as important
+      const importantResult = getImportantTasks();
+      currentTodos = importantResult.tasks;
+      sourceMapping = importantResult.sourceMapping;
+    } else if (selectedGroup === 2) {
+      // Planned - tasks with due dates
+      const plannedResult = getPlannedTasks();
+      currentTodos = plannedResult.tasks;
+      sourceMapping = plannedResult.sourceMapping;
+    } else {
+      // Regular group - use the group's todos
+      currentTodos = groups[selectedGroup]?.todo || [];
+    }
+    
+    // Sort todos: incomplete first, then by creation date (newest first)
+    currentTodos.sort((a, b) => {
+      if(a.completed && !b.completed) return 1;
+      if(!a.completed && b.completed) return -1;
+      return (new Date(b.createdAt)).getTime() - (new Date(a.createdAt)).getTime();
+    });
+    
+    setTodo(currentTodos);
+    setTaskSourceGroups(sourceMapping);
   }, [groups, selectedGroup]);
 
   useEffect(() => {
@@ -246,23 +352,65 @@ export function DashBoard() {
   const handleToggleTask = async (taskId, index) => {
     try {
       const completedStatus = !todo[index].completed;
-      setGroups(prevGroups => {
-        let updatedGroups = [...prevGroups];
-        let updatedTodo = [...updatedGroups[selectedGroup].todo]; 
-        updatedTodo[index] = {
-          ...updatedTodo[index],
-          completed: completedStatus
-        };
-        updatedGroups[selectedGroup] = {
-          ...updatedGroups[selectedGroup],
-          todo: updatedTodo
-        };
-        return updatedGroups;
-      });
+      
+      // For special groups (index <= 2), update the task in its original group
+      if (selectedGroup <= 2) {
+        const sourceInfo = taskSourceGroups[taskId];
+        if (sourceInfo) {
+          setGroups(prevGroups => {
+            let updatedGroups = [...prevGroups];
+            const sourceGroup = updatedGroups[sourceInfo.groupIndex];
+            
+            if (sourceGroup && sourceGroup.todo) {
+              const taskIndex = sourceGroup.todo.findIndex(t => t._id === taskId);
+              
+              if (taskIndex !== -1) {
+                const updatedTodos = [...sourceGroup.todo];
+                updatedTodos[taskIndex] = {
+                  ...updatedTodos[taskIndex],
+                  completed: completedStatus
+                };
+                
+                updatedGroups[sourceInfo.groupIndex] = {
+                  ...sourceGroup,
+                  todo: updatedTodos
+                };
+              }
+            }
+            
+            return updatedGroups;
+          });
+        }
+        
+        // Also update the local state for the current view
+        setTodo(prevTodos => {
+          const updatedTodos = [...prevTodos];
+          updatedTodos[index] = {
+            ...updatedTodos[index],
+            completed: completedStatus
+          };
+          return updatedTodos;
+        });
+      } else {
+        // For regular groups, use the existing logic
+        setGroups(prevGroups => {
+          let updatedGroups = [...prevGroups];
+          let updatedTodo = [...updatedGroups[selectedGroup].todo]; 
+          updatedTodo[index] = {
+            ...updatedTodo[index],
+            completed: completedStatus
+          };
+          updatedGroups[selectedGroup] = {
+            ...updatedGroups[selectedGroup],
+            todo: updatedTodo
+          };
+          return updatedGroups;
+        });
+      }
+      
       await updateTodo(taskId, { completed: completedStatus });
     } catch (error) {
       console.error(error);
-      
     }
   }
 
@@ -289,20 +437,60 @@ export function DashBoard() {
       const taskIndex = todo.findIndex(task => task._id === editingTaskId);
       if (taskIndex === -1) return;
 
-      // Update local state
-      setGroups(prevGroups => {
-        let updatedGroups = [...prevGroups];
-        let updatedTodo = [...updatedGroups[selectedGroup].todo];
-        updatedTodo[taskIndex] = {
-          ...updatedTodo[taskIndex],
-          description: editValue
-        };
-        updatedGroups[selectedGroup] = {
-          ...updatedGroups[selectedGroup],
-          todo: updatedTodo
-        };
-        return updatedGroups;
-      });
+      // For special groups (index <= 2), update the task in its original group
+      if (selectedGroup <= 2) {
+        const sourceInfo = taskSourceGroups[editingTaskId];
+        if (sourceInfo) {
+          setGroups(prevGroups => {
+            let updatedGroups = [...prevGroups];
+            const sourceGroup = updatedGroups[sourceInfo.groupIndex];
+            
+            if (sourceGroup && sourceGroup.todo) {
+              const taskIndex = sourceGroup.todo.findIndex(t => t._id === editingTaskId);
+              
+              if (taskIndex !== -1) {
+                const updatedTodos = [...sourceGroup.todo];
+                updatedTodos[taskIndex] = {
+                  ...updatedTodos[taskIndex],
+                  description: editValue
+                };
+                
+                updatedGroups[sourceInfo.groupIndex] = {
+                  ...sourceGroup,
+                  todo: updatedTodos
+                };
+              }
+            }
+            
+            return updatedGroups;
+          });
+        }
+        
+        // Also update the local state for the current view
+        setTodo(prevTodos => {
+          const updatedTodos = [...prevTodos];
+          updatedTodos[taskIndex] = {
+            ...updatedTodos[taskIndex],
+            description: editValue
+          };
+          return updatedTodos;
+        });
+      } else {
+        // For regular groups, use the existing logic
+        setGroups(prevGroups => {
+          let updatedGroups = [...prevGroups];
+          let updatedTodo = [...updatedGroups[selectedGroup].todo];
+          updatedTodo[taskIndex] = {
+            ...updatedTodo[taskIndex],
+            description: editValue
+          };
+          updatedGroups[selectedGroup] = {
+            ...updatedGroups[selectedGroup],
+            todo: updatedTodo
+          };
+          return updatedGroups;
+        });
+      }
 
       // Update in the database
       await updateTodo(editingTaskId, { description: editValue });
@@ -317,18 +505,42 @@ export function DashBoard() {
 
   const handleDeleteTask = async (taskId) => {
     try {
-      setGroups(prevGroups => {
-        let updatedGroups = [...prevGroups];
-        updatedGroups[selectedGroup] = {
-          ...updatedGroups[selectedGroup],
-          todo: updatedGroups[selectedGroup].todo.filter(todo => todo._id !== taskId)
-        };
-        return updatedGroups;
-      });
+      // For special groups (index <= 2), update the task in its original group
+      if (selectedGroup <= 2) {
+        const sourceInfo = taskSourceGroups[taskId];
+        if (sourceInfo) {
+          setGroups(prevGroups => {
+            let updatedGroups = [...prevGroups];
+            const sourceGroup = updatedGroups[sourceInfo.groupIndex];
+            
+            if (sourceGroup && sourceGroup.todo) {
+              updatedGroups[sourceInfo.groupIndex] = {
+                ...sourceGroup,
+                todo: sourceGroup.todo.filter(t => t._id !== taskId)
+              };
+            }
+            
+            return updatedGroups;
+          });
+        }
+        
+        // Also update the local state for the current view
+        setTodo(prevTodos => prevTodos.filter(t => t._id !== taskId));
+      } else {
+        // For regular groups, use the existing logic
+        setGroups(prevGroups => {
+          let updatedGroups = [...prevGroups];
+          updatedGroups[selectedGroup] = {
+            ...updatedGroups[selectedGroup],
+            todo: updatedGroups[selectedGroup].todo.filter(todo => todo._id !== taskId)
+          };
+          return updatedGroups;
+        });
+      }
+      
       await deleteTodo(taskId);
     } catch (error) {
       console.error(error);
-      
     }
   }
 
@@ -369,7 +581,7 @@ export function DashBoard() {
           <div className="flex flex-row flex-1 h-full overflow-hidden">
             {drawerOpen && (
               <div className="flex-shrink-0 flex flex-col h-full overflow-y-auto overflow-x-hidden w-70">
-                <ul className="bg-base-100 w-full h-full shadow-none">
+                <ul className="bg-base-100 w-full flex-1 shadow-none">
                   <div className="h-18 px-8 flex items-center">
                     <FiMenu size={36} />
                     <div 
@@ -474,6 +686,7 @@ export function DashBoard() {
                   <div 
                     className="hover:bg-[#bcbcbc31] relative left-[-38px] w-10 h-10 rounded-[10px] hover:cursor-pointer" 
                     onClick={() => setDrawerOpen(!drawerOpen)}>
+
                   </div>
                 </div>
               )}
@@ -535,15 +748,27 @@ export function DashBoard() {
               <div className="flex-1 flex flex-col relative">
                 <div className="flex-1 flex items-center justify-center">
                   <>
-                    {(todo.length === 0) ? ( // TODO: condition needs to be changed for those selectedGroup <= 3
+                    {(todo.length === 0) ? (
                       <div className="flex flex-col items-center">
                         <h1 className="text-6xl font-bold text-gray-800 select-none">Dashboard</h1>
-                        <p className="mt-4 text-lg text-gray-600 select-none">{selectedGroup == 3 ? "Tasks assigned to you show up here": (selectedGroup === 4 ? "Tasks assigned by you show up here" : "Add tasks to get started")}</p>
+                        <p className="mt-4 text-lg text-gray-600 select-none">
+                          {selectedGroup === 0 
+                            ? "Tasks from today will appear here" 
+                            : selectedGroup === 1 
+                              ? "Important tasks will appear here" 
+                              : selectedGroup === 2 
+                                ? "Tasks with due dates will appear here"
+                                : selectedGroup === 3 
+                                  ? "Tasks assigned to you show up here"
+                                  : selectedGroup === 4 
+                                    ? "Tasks assigned by you show up here" 
+                                    : "Add tasks to get started"}
+                        </p>
                       </div>
                     ) : (
                       <div className="w-full h-full">
                         <ul>
-                          {selectedGroup > 4 && todo.map((task, index) => (
+                          {todo.map((task, index) => (
                             <div key={task._id} className="px-8 h-18">
                               <li className="flex items-center h-14 rounded-2xl shadow-white shadow-sm hover:cursor-pointer hover:bg-[#7f7f7f2b] border-gray-200 py-2 px-4 group"
                                 onClick={() => editingTaskId !== task._id && handleToggleTask(task._id, index)}
@@ -576,6 +801,16 @@ export function DashBoard() {
                                 ) : (
                                   <span className={`flex-1 truncate ${task.completed ? "line-through text-gray-400" : ""}`}>
                                     {task.description}
+                                    {selectedGroup <= 2 && taskSourceGroups[task._id] && (
+                                      <span className="ml-2 text-sm text-gray-500">
+                                        (from {groups[taskSourceGroups[task._id].groupIndex]?.name})
+                                      </span>
+                                    )}
+                                    {task.due && (
+                                      <span className="ml-2 text-sm text-cyan-600">
+                                        Due {formatDate(new Date(task.due))}
+                                      </span>
+                                    )}
                                   </span>
                                 )}
                                 {editingTaskId === task._id ? (

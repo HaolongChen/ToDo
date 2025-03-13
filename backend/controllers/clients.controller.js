@@ -56,6 +56,8 @@ export const sendAssignment = async (req, res) => {
         if(user.team.length === 0) return res.status(400).json({ message: 'User does not have a team' });
         const partners = req.body.partners;
         let flag = true;
+        const userGroup = await Group.findOne({ user: userId, name: 'Assigned by me' });
+        if(!userGroup) return res.status(404).json({ message: 'Group not found' });
         for(let partner of partners) {
             if(!partner) return res.status(400).json({ message: 'Partner ID is required' });
             if(!user.team.includes(partner)) {
@@ -71,9 +73,12 @@ export const sendAssignment = async (req, res) => {
             group.todo.push(todo._id);
             await group.save();
 
+            userGroup.todo.push(todo._id);
+
             const waitlist = new Waitlist({ toUser: partnerUser._id, fromUser: userId, todo: todo._id, isRequest: false, isProcessed: false, isOfficial: false });
             await waitlist.save();
         }
+        await userGroup.save();
         if(!flag) return res.status(400).json({ message: 'Invalid partner ID' });
         res.status(200).json({ message: 'Assignment sent successfully' });
     } catch (error) {

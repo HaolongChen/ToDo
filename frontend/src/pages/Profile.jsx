@@ -11,6 +11,8 @@ export function Profile() {
   const [successMessage, setSuccessMessage] = useState("");
   const [imageFile, setImageFile] = useState(null);
   const [imagePreview, setImagePreview] = useState(null);
+  const [imageError, setImageError] = useState("");
+  const [isUploading, setIsUploading] = useState(false);
   
   useEffect(() => {
     // Get user info if needed
@@ -50,12 +52,22 @@ export function Profile() {
     e.preventDefault();
     if (!imageFile) return;
     
+    setIsUploading(true);
     try {
+      // Extract the base64 data from the imagePreview
       const base64Image = imagePreview.split(',')[1];
+      
+      // Pass just the base64 string, not an object
       await uploadImage(base64Image);
+      
+      // Clear the form after successful upload
       setSuccessMessage("Profile picture updated successfully");
+      setImageFile(null);
+      setImagePreview(null);
+      setIsUploading(false);
     } catch (error) {
-      setPasswordError("Failed to upload image");
+      setImageError(error.response?.data?.message || "Failed to upload image");
+      setIsUploading(false);
     }
   };
 
@@ -82,7 +94,7 @@ export function Profile() {
               </div>
               <div>
                 <h1 className="text-3xl font-bold">{user?.username || "User"}</h1>
-                <p className="text-gray-500">Account created: {user?.createdAt ? new Date(user.createdAt).toLocaleDateString() : "N/A"}</p>
+                <p className="text-gray-500">Account created: {user.createdAt ? new Date(user.createdAt).toLocaleDateString() : "N/A"}</p>
               </div>
             </div>
           </div>
@@ -120,9 +132,9 @@ export function Profile() {
                 <button 
                   type="submit" 
                   className="btn btn-primary mt-4"
-                  disabled={!imageFile}
+                  disabled={!imageFile || isUploading}
                 >
-                  Update Profile Picture
+                  {isUploading ? "Uploading..." : "Update Profile Picture"}
                 </button>
               </form>
             </div>

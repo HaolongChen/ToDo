@@ -15,7 +15,7 @@ export const Avatar = ({size}) => {
                 {user.coverImg ? (
                     <div className="avatar">
                         <div className="ring-primary ring-offset-base-100 rounded-full ring ring-offset-2">
-                            <img src={user.coverImg} alt="User Cover" />
+                            <img src={user.coverImg} alt="User Cover" style={{ width: size, height: size }} />
                         </div>
                     </div>
                 ) : (

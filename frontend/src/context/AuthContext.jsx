@@ -373,6 +373,33 @@ export const AuthProvider = ({ children }) => {
     }
   }
 
+  const uploadImage = async (image) => {
+    try {
+      setLoading(true);
+      setError(null);
+      const response = await axios.post('/api/image/upload', { image });
+    } catch (error) {
+      setError(error.response?.data?.message || "Failed to upload image");
+      throw error;
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  const getImage = async () => {
+    try {
+      setLoading(true);
+      setError(null);
+      const response = await axios.get('/api/image/get');
+      return response.data.image;
+    } catch (error) {
+      setError(error.response?.data?.message || "Failed to get image");
+      throw error;
+    } finally {
+      setLoading(false);
+    }
+  }
+
   return (
     <AuthContext.Provider 
       value={{ 
@@ -409,6 +436,8 @@ export const AuthProvider = ({ children }) => {
         createGroup,
         updateGroup,
         deleteGroup,
+        uploadImage,
+        getImage,
         isAuthenticated: !!user 
       }}
     >

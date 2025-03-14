@@ -32,9 +32,14 @@ export function DashBoard() {
   const [newGroup, setNewGroup] = useState("");
   // Add state to track the source group of a task for special views
   const [taskSourceGroups, setTaskSourceGroups] = useState({});
+  // Add state to track initial loading
+  const [initialLoading, setInitialLoading] = useState(true);
 
   useEffect(() => {
-    getAllGroups();
+    getAllGroups().then(() => {
+      // Set initialLoading to false once groups are loaded
+      setInitialLoading(false);
+    });
   }, []);
 
   // Helper functions for special groups
@@ -573,6 +578,31 @@ export function DashBoard() {
     }
   }
 
+  // Helper function to render sidebar skeletons
+  const renderSidebarSkeletons = () => {
+    return Array(8).fill(0).map((_, index) => (
+      <li key={index} className="select-none list-row h-10 px-4 mx-4 my-2 flex items-center">
+        <div className="flex w-full flex-col">
+          <div className="skeleton h-4 w-full"></div>
+        </div>
+      </li>
+    ));
+  };
+
+  // Helper function to render task skeletons
+  const renderTaskSkeletons = () => {
+    return Array(5).fill(0).map((_, index) => (
+      <div key={index} className="px-8 h-18">
+        <li className="flex items-center h-14 rounded-2xl shadow-white shadow-sm border-gray-200 py-2 px-4">
+          <div className="skeleton h-4 w-4 mr-2 rounded-full"></div>
+          <div className="flex w-full flex-col gap-2">
+            <div className="skeleton h-4 w-full"></div>
+          </div>
+        </li>
+      </div>
+    ));
+  };
+
   return (
     <>
       <div className="flex flex-col h-screen overflow-hidden">
@@ -589,68 +619,73 @@ export function DashBoard() {
                       onClick={() => setDrawerOpen(!drawerOpen)}>
                     </div>
                   </div>
-                  {groups.map((group, index) => (
-                    <div key={group._id}>
-                      <li 
-                        className={`select-none list-row group ${index === selectedGroup ? "hover:bg-[#bcbcbc31]" : "hover:bg-[#7f7f7f2b]"} hover:cursor-pointer rounded-box h-10 px-4 mx-4 my-2 text-[16px] flex items-center justify-between ${index === selectedGroup ? "bg-[#bcbcbc31]" : ""}`}
-                        onClick={() => editingGroupIndex !== index && setSelectedGroup(index)}
-                      >
-                        <div className="flex items-center">{index == 0 && (<span className="text-lg mr-2">☀️</span>)}
-                        {index == 1 && (<span className="text-lg mr-2">⭐</span>)}
-                        {index == 2 && (<span className="text-lg mr-2">📅</span>)}
-                        {index == 3 && (<span className="mr-2"><AssignedToMe size={18} /></span>)}
-                        {index == 4 && (<span className="mr-2"><AssignedByMe size={18} /></span>)}
-                        {index > 4 && (<span className="mr-2"><Task size={18} /></span>)}
-                        {editingGroupIndex === index ? (
-                          <div className="flex-1 editing-group" onClick={(e) => e.stopPropagation()}>
-                            <input
-                              type="text"
-                              value={editGroupValue}
-                              onChange={(e) => setEditGroupValue(e.target.value)}
-                              className="input input-sm w-full focus:outline-none bg-transparent rounded-[12px]"
-                              autoFocus
-                              maxLength={20}
-                              onKeyDown={(e) => {
-                                if (e.key === 'Enter') {
-                                  completeGroupEdit(e, group._id, index);
-                                }
-                              }}
-                            />
-                          </div>
-                        ) : (
-                          <p className="truncate" onDoubleClick={() => handleEditGroupName(index, group.name)}>{group.name}</p>
-                        )}</div>
-                        {index > 4 && <button 
-                          className="btn btn-circle btn-sm bg-transparent border-none hover:bg-gray-200/30 hidden group-hover:flex" 
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            handleDeleteGroup(groups[index]._id);
-                            setSelectedGroup(selectedGroup == index ? selectedGroup - 1 : (selectedGroup > index ? selectedGroup - 1 : selectedGroup));
-                          }}
+                  
+                  {initialLoading ? (
+                    renderSidebarSkeletons()
+                  ) : (
+                    groups.map((group, index) => (
+                      <div key={group._id}>
+                        <li 
+                          className={`select-none list-row group ${index === selectedGroup ? "hover:bg-[#bcbcbc31]" : "hover:bg-[#7f7f7f2b]"} hover:cursor-pointer rounded-box h-10 px-4 mx-4 my-2 text-[16px] flex items-center justify-between ${index === selectedGroup ? "bg-[#bcbcbc31]" : ""}`}
+                          onClick={() => editingGroupIndex !== index && setSelectedGroup(index)}
                         >
-                          <span className="text-lg">❌</span>
-                        </button>}
-                        {editingGroupIndex === index && index > 4 && (
-                          <button 
-                            className="btn btn-circle btn-xs bg-transparent border-none hover:bg-gray-200/30 edit-group-confirm-btn" 
+                          <div className="flex items-center">{index == 0 && (<span className="text-lg mr-2">☀️</span>)}
+                          {index == 1 && (<span className="text-lg mr-2">⭐</span>)}
+                          {index == 2 && (<span className="text-lg mr-2">📅</span>)}
+                          {index == 3 && (<span className="mr-2"><AssignedToMe size={18} /></span>)}
+                          {index == 4 && (<span className="mr-2"><AssignedByMe size={18} /></span>)}
+                          {index > 4 && (<span className="mr-2"><Task size={18} /></span>)}
+                          {editingGroupIndex === index ? (
+                            <div className="flex-1 editing-group" onClick={(e) => e.stopPropagation()}>
+                              <input
+                                type="text"
+                                value={editGroupValue}
+                                onChange={(e) => setEditGroupValue(e.target.value)}
+                                className="input input-sm w-full focus:outline-none bg-transparent rounded-[12px]"
+                                autoFocus
+                                maxLength={20}
+                                onKeyDown={(e) => {
+                                  if (e.key === 'Enter') {
+                                    completeGroupEdit(e, group._id, index);
+                                  }
+                                }}
+                              />
+                            </div>
+                          ) : (
+                            <p className="truncate" onDoubleClick={() => handleEditGroupName(index, group.name)}>{group.name}</p>
+                          )}</div>
+                          {index > 4 && <button 
+                            className="btn btn-circle btn-sm bg-transparent border-none hover:bg-gray-200/30 hidden group-hover:flex" 
                             onClick={(e) => {
                               e.stopPropagation();
-                              completeGroupEdit(e, group._id, index);
+                              handleDeleteGroup(groups[index]._id);
+                              setSelectedGroup(selectedGroup == index ? selectedGroup - 1 : (selectedGroup > index ? selectedGroup - 1 : selectedGroup));
                             }}
                           >
-                            <span className="text-sm">✔️</span>
-                          </button>
+                            <span className="text-lg">❌</span>
+                          </button>}
+                          {editingGroupIndex === index && index > 4 && (
+                            <button 
+                              className="btn btn-circle btn-xs bg-transparent border-none hover:bg-gray-200/30 edit-group-confirm-btn" 
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                completeGroupEdit(e, group._id, index);
+                              }}
+                            >
+                              <span className="text-sm">✔️</span>
+                            </button>
+                          )}
+                        </li>
+                        {index == 4 && (
+                          <>
+                            <div className="h-3.5"></div>
+                            <div className="bg-[#484644] h-[1px] w-[230px] mx-auto"></div>
+                            <div className="h-3.5"></div>
+                          </>
                         )}
-                      </li>
-                      {index == 4 && (
-                        <>
-                          <div className="h-3.5"></div>
-                          <div className="bg-[#484644] h-[1px] w-[230px] mx-auto"></div>
-                          <div className="h-3.5"></div>
-                        </>
-                      )}
-                    </div>
-                  ))}
+                      </div>
+                    ))
+                  )}
                 </ul>
                   <div className="sticky bottom-6 flex justify-center w-full pb-4">
                     <div className="relative flex items-center w-4/5 h-15 rounded-4xl bg-white/5">
@@ -688,171 +723,184 @@ export function DashBoard() {
                 </div>
               )}
 
-              <div className={`h-14 px-8 flex items-center justify-between mt-1.5 mb-3 ${drawerOpen ? "" : "translate-x-[60px]"}`}>
-                <div className="flex items-center">
-                {selectedGroup == 0 && (<span className="text-[36px] mr-2">☀️</span>)}
-                {selectedGroup == 1 && (<span className="text-[36px] mr-2">⭐</span>)}
-                {selectedGroup == 2 && (<span className="text-[36px] mr-2">📅</span>)}
-                {selectedGroup == 3 && (<span className="mr-2"><AssignedToMe size={36} /></span>)}
-                {selectedGroup == 4 && (<span className="mr-2"><AssignedByMe size={36} /></span>)}
-                {selectedGroup > 4 && (<span className="mr-2"><Task size={36} /></span>)}
-                {editingGroupIndex === selectedGroup && selectedGroup > 4 ? (
-                  <div className="editing-group flex items-center">
-                    <input
-                      type="text"
-                      value={editGroupValue}
-                      onChange={(e) => setEditGroupValue(e.target.value)}
-                      className="input input-lg w-full focus:outline-none bg-transparent text-[32px] rounded-2xl"
-                      autoFocus
-                      maxLength={20}
-                      onKeyDown={(e) => {
-                        if (e.key === 'Enter') {
+              {initialLoading ? (
+                <div className={`h-14 px-8 flex items-center mt-1.5 mb-3 ${drawerOpen ? "" : "translate-x-[60px]"}`}>
+                  <div className="skeleton h-8 w-8 mr-3"></div>
+                  <div className="skeleton h-10 w-52"></div>
+                </div>
+              ) : (
+                <div className={`h-14 px-8 flex items-center justify-between mt-1.5 mb-3 ${drawerOpen ? "" : "translate-x-[60px]"}`}>
+                  <div className="flex items-center">
+                  {selectedGroup == 0 && (<span className="text-[36px] mr-2">☀️</span>)}
+                  {selectedGroup == 1 && (<span className="text-[36px] mr-2">⭐</span>)}
+                  {selectedGroup == 2 && (<span className="text-[36px] mr-2">📅</span>)}
+                  {selectedGroup == 3 && (<span className="mr-2"><AssignedToMe size={36} /></span>)}
+                  {selectedGroup == 4 && (<span className="mr-2"><AssignedByMe size={36} /></span>)}
+                  {selectedGroup > 4 && (<span className="mr-2"><Task size={36} /></span>)}
+                  {editingGroupIndex === selectedGroup && selectedGroup > 4 ? (
+                    <div className="editing-group flex items-center">
+                      <input
+                        type="text"
+                        value={editGroupValue}
+                        onChange={(e) => setEditGroupValue(e.target.value)}
+                        className="input input-lg w-full focus:outline-none bg-transparent text-[32px] rounded-2xl"
+                        autoFocus
+                        maxLength={20}
+                        onKeyDown={(e) => {
+                          if (e.key === 'Enter') {
+                            completeGroupEdit(e, groups[selectedGroup]._id, selectedGroup);
+                          }
+                        }}
+                      />
+                      <button 
+                        className="btn btn-circle ml-2 edit-group-confirm-btn"
+                        onClick={(e) => {
+                          e.stopPropagation();
                           completeGroupEdit(e, groups[selectedGroup]._id, selectedGroup);
-                        }
-                      }}
-                    />
-                    <button 
-                      className="btn btn-circle ml-2 edit-group-confirm-btn"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        completeGroupEdit(e, groups[selectedGroup]._id, selectedGroup);
-                      }}
+                        }}
+                      >
+                        <span className="text-lg">✔️</span>
+                      </button>
+                    </div>
+                  ) : (
+                    <span 
+                      className="text-[32px]"
+                      onDoubleClick={() => selectedGroup > 4 && handleEditGroupName(selectedGroup, groups[selectedGroup]?.name)}
                     >
-                      <span className="text-lg">✔️</span>
-                    </button>
-                  </div>
-                ) : (
-                  <span 
-                    className="text-[32px]"
-                    onDoubleClick={() => selectedGroup > 4 && handleEditGroupName(selectedGroup, groups[selectedGroup]?.name)}
+                      {groups[selectedGroup]?.name}
+                    </span>
+                  )}</div>
+                  {selectedGroup > 4 && <button 
+                    className="btn btn-circle btn-sm bg-transparent border-none hover:bg-gray-200/30" 
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      handleDeleteGroup(groups[selectedGroup]._id);
+                      setSelectedGroup(selectedGroup - 1);
+                    }}
                   >
-                    {groups[selectedGroup]?.name}
-                  </span>
-                )}</div>
-                {selectedGroup > 4 && <button 
-                  className="btn btn-circle btn-sm bg-transparent border-none hover:bg-gray-200/30" 
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    handleDeleteGroup(groups[selectedGroup]._id);
-                    setSelectedGroup(selectedGroup - 1);
-                  }}
-                >
-                  <span className="text-lg">❌</span>
-                </button>}
-              </div>
+                    <span className="text-lg">❌</span>
+                  </button>}
+                </div>
+              )}
               
               {/* Main content with consistent positioning */}
               <div className="flex-1 flex flex-col relative">
                 <div className="flex-1 flex items-center justify-center">
-                  <>
-                    {(todo.length === 0) ? (
-                      <div className="flex flex-col items-center">
-                        <h1 className="text-6xl font-bold text-gray-800 select-none">Dashboard</h1>
-                        <p className="mt-4 text-lg text-gray-600 select-none">
-                          {selectedGroup === 0 
-                            ? "Tasks from today will appear here" 
-                            : selectedGroup === 1 
-                              ? "Important tasks will appear here" 
-                              : selectedGroup === 2 
-                                ? "Tasks with due dates will appear here"
-                                : selectedGroup === 3 
-                                  ? "Tasks assigned to you show up here"
-                                  : selectedGroup === 4 
-                                    ? "Tasks assigned by you show up here" 
-                                    : "Add tasks to get started"}
-                        </p>
-                      </div>
-                    ) : (
-                      <div className="w-full h-full">
-                        <ul>
-                          {todo.map((task, index) => (
-                            <div key={task._id} className="px-8 h-18">
-                              <li className="flex items-center h-14 rounded-2xl shadow-white shadow-sm hover:cursor-pointer hover:bg-[#7f7f7f2b] border-gray-200 py-2 px-4 group"
-                                onClick={() => editingTaskId !== task._id && handleToggleTask(task._id, index)}
-                              >
-                                <input
-                                  type="checkbox"
-                                  checked={task.completed}
-                                  onChange={(e) => {
-                                    e.stopPropagation();
-                                    handleToggleTask(task._id, index);
-                                  }}
-                                  className="mr-2"
-                                  onClick={(e) => e.stopPropagation()}
-                                />
-                                {editingTaskId === task._id ? (
-                                  <div className="flex-1 editing-task" onClick={(e) => e.stopPropagation()}>
-                                    <input
-                                      type="text"
-                                      value={editValue}
-                                      onChange={(e) => setEditValue(e.target.value)}
-                                      className="input w-full focus:outline-none bg-transparent"
-                                      autoFocus
-                                      onKeyDown={(e) => {
-                                        if (e.key === 'Enter') {
-                                          completeEdit(e);
-                                        }
-                                      }}
-                                    />
-                                  </div>
-                                ) : (
-                                  <span className={`flex-1 truncate ${task.completed ? "line-through text-gray-400" : ""}`}>
-                                    {task.description}
-                                    {selectedGroup <= 2 && taskSourceGroups[task._id] && (
-                                      <span className="ml-2 text-sm text-gray-500">
-                                        (from {groups[taskSourceGroups[task._id].groupIndex]?.name})
-                                      </span>
-                                    )}
-                                    {task.due && (
-                                      <span className="ml-2 text-sm text-cyan-600">
-                                        Due {formatDate(new Date(task.due))}
-                                      </span>
-                                    )}
-                                  </span>
-                                )}
-                                {editingTaskId === task._id ? (
-                                  <button 
-                                    className="btn btn-circle btn-sm bg-transparent border-none hover:bg-gray-200/30 edit-confirm-btn" 
-                                    onClick={(e) => {
+                  {initialLoading ? (
+                    <div className="w-full">
+                      {renderTaskSkeletons()}
+                    </div>
+                  ) : (
+                    <>
+                      {(todo.length === 0) ? (
+                        <div className="flex flex-col items-center">
+                          <h1 className="text-6xl font-bold text-gray-800 select-none">Dashboard</h1>
+                          <p className="mt-4 text-lg text-gray-600 select-none">
+                            {selectedGroup === 0 
+                              ? "Tasks from today will appear here" 
+                              : selectedGroup === 1 
+                                ? "Important tasks will appear here" 
+                                : selectedGroup === 2 
+                                  ? "Tasks with due dates will appear here"
+                                  : selectedGroup === 3 
+                                    ? "Tasks assigned to you show up here"
+                                    : selectedGroup === 4 
+                                      ? "Tasks assigned by you show up here" 
+                                      : "Add tasks to get started"}
+                          </p>
+                        </div>
+                      ) : (
+                        <div className="w-full h-full">
+                          <ul>
+                            {todo.map((task, index) => (
+                              <div key={task._id} className="px-8 h-18">
+                                <li className="flex items-center h-14 rounded-2xl shadow-white shadow-sm hover:cursor-pointer hover:bg-[#7f7f7f2b] border-gray-200 py-2 px-4 group"
+                                  onClick={() => editingTaskId !== task._id && handleToggleTask(task._id, index)}
+                                >
+                                  <input
+                                    type="checkbox"
+                                    checked={task.completed}
+                                    onChange={(e) => {
                                       e.stopPropagation();
-                                      completeEdit(e);
+                                      handleToggleTask(task._id, index);
                                     }}
-                                  >
-                                    <span className="text-lg">✔️</span>
-                                  </button>
-                                ) : (
-                                  <>
+                                    className="mr-2"
+                                    onClick={(e) => e.stopPropagation()}
+                                  />
+                                  {editingTaskId === task._id ? (
+                                    <div className="flex-1 editing-task" onClick={(e) => e.stopPropagation()}>
+                                      <input
+                                        type="text"
+                                        value={editValue}
+                                        onChange={(e) => setEditValue(e.target.value)}
+                                        className="input w-full focus:outline-none bg-transparent"
+                                        autoFocus
+                                        onKeyDown={(e) => {
+                                          if (e.key === 'Enter') {
+                                            completeEdit(e);
+                                          }
+                                        }}
+                                      />
+                                    </div>
+                                  ) : (
+                                    <span className={`flex-1 truncate ${task.completed ? "line-through text-gray-400" : ""}`}>
+                                      {task.description}
+                                      {selectedGroup <= 2 && taskSourceGroups[task._id] && (
+                                        <span className="ml-2 text-sm text-gray-500">
+                                          (from {groups[taskSourceGroups[task._id].groupIndex]?.name})
+                                        </span>
+                                      )}
+                                      {task.due && (
+                                        <span className="ml-2 text-sm text-cyan-600">
+                                          Due {formatDate(new Date(task.due))}
+                                        </span>
+                                      )}
+                                    </span>
+                                  )}
+                                  {editingTaskId === task._id ? (
                                     <button 
-                                      className="btn btn-circle btn-sm bg-transparent border-none hover:bg-gray-200/30 hidden group-hover:flex" 
+                                      className="btn btn-circle btn-sm bg-transparent border-none hover:bg-gray-200/30 edit-confirm-btn" 
                                       onClick={(e) => {
                                         e.stopPropagation();
-                                        handleEditTask(task._id, task.description);
+                                        completeEdit(e);
                                       }}
                                     >
-                                      <span className="text-lg">✏️</span>
+                                      <span className="text-lg">✔️</span>
                                     </button>
-                                    <button 
-                                      className="btn btn-circle btn-sm bg-transparent border-none hover:bg-gray-200/30 hidden group-hover:flex" 
-                                      onClick={(e) => {
-                                        e.stopPropagation();
-                                        handleDeleteTask(task._id);
-                                      }}
-                                    >
-                                      <span className="text-lg">❌</span>
-                                    </button>
-                                  </>
-                                )}
-                              </li>
-                            </div>
-                          ))}
-                        </ul>
-                      </div>
-                    )}
-                  </>
+                                  ) : (
+                                    <>
+                                      <button 
+                                        className="btn btn-circle btn-sm bg-transparent border-none hover:bg-gray-200/30 hidden group-hover:flex" 
+                                        onClick={(e) => {
+                                          e.stopPropagation();
+                                          handleEditTask(task._id, task.description);
+                                        }}
+                                      >
+                                        <span className="text-lg">✏️</span>
+                                      </button>
+                                      <button 
+                                        className="btn btn-circle btn-sm bg-transparent border-none hover:bg-gray-200/30 hidden group-hover:flex" 
+                                        onClick={(e) => {
+                                          e.stopPropagation();
+                                          handleDeleteTask(task._id);
+                                        }}
+                                      >
+                                        <span className="text-lg">❌</span>
+                                      </button>
+                                    </>
+                                  )}
+                                </li>
+                              </div>
+                            ))}
+                          </ul>
+                        </div>
+                      )}
+                    </>
+                  )}
                 </div>
                 
                 {/* Input box with sticky positioning */}
-                {selectedGroup != 3 && <div className="sticky bottom-6 flex justify-center w-full pb-4">
+                {!initialLoading && selectedGroup != 3 && <div className="sticky bottom-6 flex justify-center w-full pb-4">
                   <div className="relative flex items-center w-3/5">
                     <input 
                       type="text" 

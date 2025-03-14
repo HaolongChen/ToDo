@@ -593,7 +593,7 @@ export function DashBoard() {
   const renderTaskSkeletons = () => {
     return Array(5).fill(0).map((_, index) => (
       <div key={index} className="px-8 h-18">
-        <li className="flex items-center h-14 rounded-2xl shadow-white shadow-sm border-gray-200 py-2 px-4">
+        <li className="flex items-center h-14 rounded-2xl py-2 px-4">
           <div className="skeleton h-4 w-4 mr-2 rounded-full"></div>
           <div className="flex w-full flex-col gap-2">
             <div className="skeleton h-4 w-full"></div>

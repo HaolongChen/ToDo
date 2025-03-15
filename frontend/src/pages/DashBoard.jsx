@@ -36,10 +36,17 @@ export function DashBoard() {
   const [initialLoading, setInitialLoading] = useState(true);
 
   useEffect(() => {
-    getAllGroups().then(() => {
-      // Set initialLoading to false once groups are loaded
+    if(groups.length > 0) {
       setInitialLoading(false);
-    });
+      return;
+    }
+    else{
+      getAllGroups().then(() => {
+        // Set initialLoading to false once groups are loaded
+        setInitialLoading(false);
+      });
+    }
+    
   }, []);
 
   // Helper functions for special groups

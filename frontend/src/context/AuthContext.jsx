@@ -378,6 +378,16 @@ export const AuthProvider = ({ children }) => {
       setLoading(true);
       setError(null);
       const response = await axios.post('/api/image/upload', { image });
+      
+      // Refresh user data to update the avatar
+      try {
+        const userResponse = await axios.get('/api/auth/user');
+        setUser(userResponse.data.user);
+      } catch (refreshError) {
+        console.error('Failed to refresh user data:', refreshError);
+      }
+      
+      return response.data;
     } catch (error) {
       setError(error.response?.data?.message || "Failed to upload image");
       throw error;

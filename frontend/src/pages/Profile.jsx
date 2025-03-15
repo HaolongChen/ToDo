@@ -21,6 +21,8 @@ export function Profile() {
   const imgRef = useRef(null);
   const previewCanvasRef = useRef(null);
   
+  console.log(user);
+
   useEffect(() => {
     // Get user info if needed
     if (user && user._id) {

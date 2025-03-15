@@ -20,7 +20,7 @@ export const signup = async (req, res) => {
         // const status = await cloudinary.uploader.upload(coverImage)
         // coverImage = status.secure_url;
         const hashedPassword = await bcrypt.hash(password, 12);
-        const user = new User({username: username, password: hashedPassword, coverImg: coverImage});
+        const user = new User({username: username, password: hashedPassword, coverImg: coverImage, totalTasks: 0, completedTasks: 0, totalTeams: 0});
         await user.save();
         generateToken(user._id, res);
         const myDay = new Group({name: 'My Day', user: user._id});

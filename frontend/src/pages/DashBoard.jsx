@@ -267,18 +267,6 @@ export function DashBoard() {
     
     setInputValue("");
     
-    // First call createTodo and await the response to get the server-generated _id
-    const createdTodo = await createTodo(todoToCreate);
-    
-    // Then update the local state with the todo that has the _id
-    setGroups(prevGroups => {
-      let updatedGroups = [...prevGroups];
-      updatedGroups[selectedGroup] = {
-        ...updatedGroups[selectedGroup],
-        todo: [...(updatedGroups[selectedGroup].todo || []), createdTodo]
-      };
-      return updatedGroups;
-    });
 
     setNewTodo({
       description: "",
@@ -291,9 +279,21 @@ export function DashBoard() {
 
     setUser(prevUser => ({
       ...prevUser,
-      totalTasks: prevUser.totalTasks + 1
+      totalTasks: (prevUser?.totalTasks || 0) + 1
     }));
 
+    // First call createTodo and await the response to get the server-generated _id
+    const createdTodo = await createTodo(todoToCreate);
+    
+    // Then update the local state with the todo that has the _id
+    setGroups(prevGroups => {
+      let updatedGroups = [...prevGroups];
+      updatedGroups[selectedGroup] = {
+        ...updatedGroups[selectedGroup],
+        todo: [...(updatedGroups[selectedGroup].todo || []), createdTodo]
+      };
+      return updatedGroups;
+    });
   }
 
   // Date picker handlers
@@ -591,9 +591,9 @@ export function DashBoard() {
     const newGroupObj = {
       name: newGroup
     };
+    setNewGroup("");
     const createdGroup = await createGroup(newGroupObj);
     setGroups([...groups, createdGroup]);
-    setNewGroup("");
   }
 
   const handleDeleteGroup = async (groupId) => {
@@ -603,7 +603,7 @@ export function DashBoard() {
       
       if (groupToDelete && groupToDelete.todo && groupToDelete.todo.length > 0) {
         // Delete all todos in the group first
-        const deletePromises = groupToDelete.todo.map(task => deleteTodo(task._id));
+        const deletePromises = groupToDelete.todo.map(task => handleDeleteTask(task._id, task.completed));
         Promise.all(deletePromises);
       }
 

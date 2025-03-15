@@ -1,7 +1,9 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { NavBar } from "../components/NavBar";
 import { useAuth } from "../context/AuthContext";
 import { DefaultAvatar } from "../components/DefaultAvatar";
+import ReactCrop from 'react-image-crop';
+import 'react-image-crop/dist/ReactCrop.css';
 
 export function Profile() {
   const { user, loading, error, changePassword, getUserInfo, uploadImage } = useAuth();
@@ -13,6 +15,11 @@ export function Profile() {
   const [imagePreview, setImagePreview] = useState(null);
   const [imageError, setImageError] = useState("");
   const [isUploading, setIsUploading] = useState(false);
+  const [showCropper, setShowCropper] = useState(false);
+  const [crop, setCrop] = useState({ unit: '%', width: 100, aspect: 1 });
+  const [completedCrop, setCompletedCrop] = useState(null);
+  const imgRef = useRef(null);
+  const previewCanvasRef = useRef(null);
   
   useEffect(() => {
     // Get user info if needed
@@ -20,6 +27,39 @@ export function Profile() {
       getUserInfo(user._id);
     }
   }, [user]);
+
+  useEffect(() => {
+    if (!completedCrop || !previewCanvasRef.current || !imgRef.current) {
+      return;
+    }
+
+    const image = imgRef.current;
+    const canvas = previewCanvasRef.current;
+    const crop = completedCrop;
+
+    const scaleX = image.naturalWidth / image.width;
+    const scaleY = image.naturalHeight / image.height;
+    const ctx = canvas.getContext('2d');
+    const pixelRatio = window.devicePixelRatio;
+
+    canvas.width = crop.width * pixelRatio;
+    canvas.height = crop.height * pixelRatio;
+
+    ctx.setTransform(pixelRatio, 0, 0, pixelRatio, 0, 0);
+    ctx.imageSmoothingQuality = 'high';
+
+    ctx.drawImage(
+      image,
+      crop.x * scaleX,
+      crop.y * scaleY,
+      crop.width * scaleX,
+      crop.height * scaleY,
+      0,
+      0,
+      crop.width,
+      crop.height
+    );
+  }, [completedCrop]);
 
   const handlePasswordChange = async (e) => {
     e.preventDefault();
@@ -43,32 +83,58 @@ export function Profile() {
       const reader = new FileReader();
       reader.onloadend = () => {
         setImagePreview(reader.result);
+        setShowCropper(true);
       };
       reader.readAsDataURL(file);
     }
   };
 
+  const getCroppedImg = () => {
+    if (!previewCanvasRef.current) {
+      return null;
+    }
+    
+    // Return the cropped image as a data URL
+    const croppedImageUrl = previewCanvasRef.current.toDataURL('image/jpeg');
+    return croppedImageUrl;
+  };
+
   const handleImageUpload = async (e) => {
     e.preventDefault();
-    if (!imageFile) return;
+    if (!completedCrop) return;
     
     setIsUploading(true);
     try {
-      // Extract the base64 data from the imagePreview
-      const base64Image = imagePreview.split(',')[1];
+      // Get the cropped image
+      const croppedImageUrl = getCroppedImg();
+      if (!croppedImageUrl) {
+        throw new Error('Could not crop image');
+      }
       
-      // Pass just the base64 string, not an object
+      // Extract the base64 data from the croppedImageUrl
+      const base64Image = croppedImageUrl.split(',')[1];
+      
+      // Pass just the base64 string to the uploadImage function
       await uploadImage(base64Image);
       
       // Clear the form after successful upload
       setSuccessMessage("Profile picture updated successfully");
       setImageFile(null);
       setImagePreview(null);
+      setShowCropper(false);
+      setCompletedCrop(null);
       setIsUploading(false);
     } catch (error) {
       setImageError(error.response?.data?.message || "Failed to upload image");
       setIsUploading(false);
     }
+  };
+
+  const cancelCrop = () => {
+    setImageFile(null);
+    setImagePreview(null);
+    setShowCropper(false);
+    setCompletedCrop(null);
   };
 
   return (
@@ -103,40 +169,84 @@ export function Profile() {
             {/* Profile Picture Update */}
             <div className="bg-base-100 rounded-box p-6 shadow-md">
               <h2 className="text-xl font-semibold mb-4">Update Profile Picture</h2>
-              <form onSubmit={handleImageUpload}>
-                <div className="form-control">
-                  <label className="label">
-                    <span className="label-text">Choose an image</span>
-                  </label>
-                  <input 
-                    type="file" 
-                    accept="image/*"
-                    className="file-input file-input-bordered w-full" 
-                    onChange={handleImageChange}
-                  />
-                </div>
-                
-                {imagePreview && (
-                  <div className="mt-4">
-                    <p className="label-text">Preview:</p>
-                    <div className="mt-2 w-32 h-32 rounded-full overflow-hidden">
-                      <img 
-                        src={imagePreview} 
-                        alt="Preview" 
-                        className="w-full h-full object-cover"
-                      />
+              
+              {!showCropper ? (
+                <form>
+                  <div className="form-control">
+                    <label className="label">
+                      <span className="label-text">Choose an image</span>
+                    </label>
+                    <input 
+                      type="file" 
+                      accept="image/*"
+                      className="file-input file-input-bordered w-full" 
+                      onChange={handleImageChange}
+                    />
+                  </div>
+                </form>
+              ) : (
+                <div>
+                  <div className="mb-4">
+                    <p className="text-sm mb-2">
+                      Select a circular area for your profile picture. Drag the circle to position it correctly over your image.
+                    </p>
+                    <div className="crop-container border rounded-lg p-2 overflow-hidden">
+                      <ReactCrop
+                        crop={crop}
+                        onChange={(c) => setCrop(c)}
+                        onComplete={(c) => setCompletedCrop(c)}
+                        aspect={1}
+                        circularCrop
+                      >
+                        <img
+                          ref={imgRef}
+                          src={imagePreview}
+                          alt="Upload preview"
+                          style={{ maxHeight: '300px' }}
+                        />
+                      </ReactCrop>
                     </div>
                   </div>
-                )}
-                
-                <button 
-                  type="submit" 
-                  className="btn btn-primary mt-4"
-                  disabled={!imageFile || isUploading}
-                >
-                  {isUploading ? "Uploading..." : "Update Profile Picture"}
-                </button>
-              </form>
+                  
+                  <div className="mt-4">
+                    <p className="text-sm mb-2">Preview of your profile picture:</p>
+                    <div className="flex justify-center">
+                      <div className="w-32 h-32 rounded-full overflow-hidden border-2 border-primary">
+                        <canvas
+                          ref={previewCanvasRef}
+                          style={{
+                            width: '100%',
+                            height: '100%',
+                            objectFit: 'cover',
+                            borderRadius: '50%'
+                          }}
+                        />
+                      </div>
+                    </div>
+                  </div>
+                  
+                  <div className="flex gap-2 mt-4">
+                    <button 
+                      className="btn btn-primary flex-1"
+                      onClick={handleImageUpload}
+                      disabled={!completedCrop || isUploading}
+                    >
+                      {isUploading ? "Uploading..." : "Save Profile Picture"}
+                    </button>
+                    <button 
+                      className="btn btn-outline"
+                      onClick={cancelCrop}
+                      disabled={isUploading}
+                    >
+                      Cancel
+                    </button>
+                  </div>
+                </div>
+              )}
+              
+              {imageError && (
+                <div className="text-error mt-2">{imageError}</div>
+              )}
             </div>
 
             {/* Password Change */}

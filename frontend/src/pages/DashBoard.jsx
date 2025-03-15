@@ -244,7 +244,7 @@ export function DashBoard() {
       });
 
       // Update the database
-      await updateGroup(groupId, { name: editGroupValue });
+      updateGroup(groupId, { name: editGroupValue });
 
       // Exit edit mode
       setEditingGroupIndex(null);
@@ -442,7 +442,7 @@ export function DashBoard() {
         });
       }
       
-      await updateTodo(taskId, { completed: completedStatus });
+      updateTodo(taskId, { completed: completedStatus });
     } catch (error) {
       console.error(error);
     }
@@ -527,7 +527,7 @@ export function DashBoard() {
       }
 
       // Update in the database
-      await updateTodo(editingTaskId, { description: editValue });
+      updateTodo(editingTaskId, { description: editValue });
       
       // Exit edit mode
       setEditingTaskId(null);
@@ -572,9 +572,9 @@ export function DashBoard() {
         });
       }
       
-      await deleteTodo(taskId);
+      deleteTodo(taskId);
       if(completed){
-        await axios.post('/api/todo/minus-completed');
+        axios.post('/api/todo/minus-completed');
         setUser(prevUser => ({
           ...prevUser,
           completedTasks: (prevUser.completedTasks || 0) - 1
@@ -604,12 +604,12 @@ export function DashBoard() {
       if (groupToDelete && groupToDelete.todo && groupToDelete.todo.length > 0) {
         // Delete all todos in the group first
         const deletePromises = groupToDelete.todo.map(task => deleteTodo(task._id));
-        await Promise.all(deletePromises);
+        Promise.all(deletePromises);
       }
 
       // Then delete the group itself
       setGroups(prevGroups => prevGroups.filter(group => group._id !== groupId));
-      await deleteGroup(groupId);
+      deleteGroup(groupId);
     } catch (error) {
       console.error(error);
     }

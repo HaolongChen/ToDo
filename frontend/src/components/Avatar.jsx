@@ -1,15 +1,21 @@
 import { useAuth } from "../context/AuthContext";
 import { DefaultAvatar } from "./DefaultAvatar"
 import { useNavigate } from "react-router-dom";
+import { useState, useEffect } from "react";
 
 export const Avatar = ({size}) => {
     const { user, loading, error } = useAuth();
+    const [initialLoading, setInitialLoading] = useState(true);
+
+    useEffect(() => {
+        setInitialLoading(false);
+    }, [loading]);
 
     const navigate = useNavigate();
     
     return (
         <div>
-            {loading ? (
+            {initialLoading ? (
                 <div className="skeleton shrink-0 rounded-full" style={{ width: size, height: size }}></div>
             ) : (<div className="hover:cursor-pointer" onClick={() => navigate('/profile')}>
                 {user.coverImg ? (

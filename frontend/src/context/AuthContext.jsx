@@ -414,6 +414,7 @@ export const AuthProvider = ({ children }) => {
     <AuthContext.Provider 
       value={{ 
         user, 
+        setUser,
         loading, 
         error, 
         teammates, 
@@ -436,10 +437,10 @@ export const AuthProvider = ({ children }) => {
         getAllteammates,
         getWaitlists,
         getUserInfo,
-        createTodo,
+        createTodo, // totalTasks + 1
         getTodos,
         getAllTodos,
-        deleteTodo,
+        deleteTodo, // totalTasks - 1
         updateTodo,
         getAllGroups,
         setGroups,

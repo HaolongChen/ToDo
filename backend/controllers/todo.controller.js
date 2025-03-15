@@ -1,5 +1,6 @@
 import Todo from '../models/todo.model.js';
 import Group from '../models/group.model.js';
+import User from '../models/user.model.js';
 
 export const createTodo = async (req, res) => {
     try {
@@ -10,6 +11,9 @@ export const createTodo = async (req, res) => {
         if(!group) return res.status(404).json({ message: 'Group not found' });
         group.todo.push(todo._id);
         await group.save();
+        const user = await User.findById(req.user._id);
+        user.totalTasks += 1;
+        await user.save();
         res.status(201).json(todo);
     } catch (error) {
         console.log(error);
@@ -46,6 +50,11 @@ export const deleteTodo = async (req, res) => {
         const todoId = req.params.id || req.body.todoId;
         const status = await Todo.findByIdAndDelete(todoId);
         if(!status) return res.status(404).json({ message: 'Todo not found' });
+        
+        const user = await User.findById(req.user._id);
+        user.totalTasks -= 1;
+        await user.save();
+
         res.status(200).json({ message: 'Todo deleted successfully' });
     } catch (error) {
         console.log(error);
@@ -111,6 +120,30 @@ export const deleteGroup = async (req, res) => {
         const status = await Group.findByIdAndDelete(groupId);
         if(!status) return res.status(404).json({ message: 'Group not found' });
         res.status(200).json({ message: 'Group deleted successfully' });
+    } catch (error) {
+        console.log(error);
+    }
+}
+
+export const plusCompletedTasks = async (req, res) => {
+    try {
+        const userId = req.user._id;
+        const user = await User.findById(userId);
+        user.completedTasks += 1;
+        await user.save();
+        res.status(200).json({ message: 'Completed tasks incremented' });
+    } catch (error) {
+        console.log(error);
+    }
+}
+
+export const minusCompletedTasks = async (req, res) => {
+    try {
+        const userId = req.user._id;
+        const user = await User.findById(userId);
+        user.completedTasks -= 1;
+        await user.save();
+        res.status(200).json({ message: 'Completed tasks decremented' });
     } catch (error) {
         console.log(error);
     }

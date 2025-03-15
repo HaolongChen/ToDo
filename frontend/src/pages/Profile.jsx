@@ -304,15 +304,15 @@ export function Profile() {
             <div className="stats shadow w-full">
               <div className="stat">
                 <div className="stat-title">Total Tasks</div>
-                <div className="stat-value">{user?.totalTasks || 0}</div>
+                <div className="stat-value">{user?.totalTasks}</div>
               </div>
               <div className="stat">
                 <div className="stat-title">Completed</div>
-                <div className="stat-value text-success">{user?.completedTasks || 0}</div>
+                <div className="stat-value text-success">{user?.completedTasks}</div>
               </div>
               <div className="stat">
                 <div className="stat-title">Pending</div>
-                <div className="stat-value text-warning">{user?.pendingTasks || 0}</div>
+                <div className="stat-value text-warning">{user?.totalTasks - user?.completedTasks}</div>
               </div>
             </div>
           </div>

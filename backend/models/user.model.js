@@ -25,7 +25,28 @@ const userSchema = new mongoose.Schema({
         type: String,
         required: false,
         default: ''
-    }
+    },
+    bio:{
+        type: String,
+        required: false,
+        default: ''
+    },
+    totalTasks:{
+        type: Number,
+        required: false,
+        default: 0
+    },
+    completedTasks:{
+        type: Number,
+        required: false,
+        default: 0
+    },
+    totalTeams:{
+        type: Number,
+        required: false,
+        default: 0
+    },
+    
 }, {
     timestamps: true
 });

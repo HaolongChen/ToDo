@@ -7,9 +7,10 @@ import { Task } from "../components/Task";
 import { NotImportant } from "../components/NotImportant";
 import { AssignedToMe } from "../components/AssignedToMe";
 import { AssignedByMe } from "../components/AssignedByme";
+import axios from "axios";
 
 export function DashBoard() {
-  const { getAllGroups, groups, createTodo, user, loading, error, teammates, setGroups, deleteTodo, updateTodo, createGroup, updateGroup, deleteGroup } = useAuth(); // Added deleteGroup
+  const { getAllGroups, groups, createTodo, user, setUser, loading, error, teammates, setGroups, deleteTodo, updateTodo, createGroup, updateGroup, deleteGroup } = useAuth(); // Added deleteGroup
   const [drawerOpen, setDrawerOpen] = useState(true);
   const [selectedGroup, setSelectedGroup] = useState(0);
   const [inputValue, setInputValue] = useState("");
@@ -287,7 +288,12 @@ export function DashBoard() {
       user: user._id, // Keep the user ID
       due: undefined,
     });
-    
+
+    setUser(prevUser => ({
+      ...prevUser,
+      totalTasks: prevUser.totalTasks + 1
+    }));
+
   }
 
   // Date picker handlers
@@ -364,7 +370,23 @@ export function DashBoard() {
   const handleToggleTask = async (taskId, index) => {
     try {
       const completedStatus = !todo[index].completed;
-      
+
+      if(completedStatus){
+        axios.post('/api/todo/plus-completed');
+        setUser(prevUser => ({
+          ...prevUser,
+          completedTasks: (prevUser.completedTasks || 0) + 1
+        }))
+      } // completed tasks + 1
+
+      else{
+        axios.post('/api/todo/minus-completed');
+        setUser(prevUser => ({
+          ...prevUser,
+          completedTasks: (prevUser.completedTasks || 0) - 1
+        }))
+      } // completed tasks - 1
+      console.log("passed");
       // For special groups (index <= 2), update the task in its original group
       if (selectedGroup <= 2) {
         const sourceInfo = taskSourceGroups[taskId];
@@ -515,7 +537,7 @@ export function DashBoard() {
     }
   }
 
-  const handleDeleteTask = async (taskId) => {
+  const handleDeleteTask = async (taskId, completed) => {
     try {
       // For special groups (index <= 2), update the task in its original group
       if (selectedGroup <= 2) {
@@ -551,6 +573,14 @@ export function DashBoard() {
       }
       
       await deleteTodo(taskId);
+      if(completed){
+        await axios.post('/api/todo/minus-completed');
+        setUser(prevUser => ({
+          ...prevUser,
+          completedTasks: (prevUser.completedTasks || 0) - 1
+        })) // completed tasks - 1
+      }
+      setUser(prevUser => ({ ...prevUser, totalTasks: prevUser.totalTasks - 1 }));
     } catch (error) {
       console.error(error);
     }
@@ -889,7 +919,7 @@ export function DashBoard() {
                                         className="btn btn-circle btn-sm bg-transparent border-none hover:bg-gray-200/30 hidden group-hover:flex" 
                                         onClick={(e) => {
                                           e.stopPropagation();
-                                          handleDeleteTask(task._id);
+                                          handleDeleteTask(task._id, task.completed);
                                         }}
                                       >
                                         <span className="text-lg">❌</span>

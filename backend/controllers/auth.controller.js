@@ -45,6 +45,8 @@ export const signin = async (req, res) => {
         console.log(req.body);
         const username = req.body.username;
         const password = req.body.password;
+        console.log(username);
+        console.log(password);
         if(!username){
             return res.status(400).json({message: 'Username cannot be empty'});
         }

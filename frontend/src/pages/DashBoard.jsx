@@ -256,6 +256,9 @@ export function DashBoard() {
 
   const handleCreateTodo = async (event) => {
     event.preventDefault();
+
+    if (!newTodo.description.trim()) return;
+
     // Get the current groupId directly instead of using state
     const currentGroupId = groups[selectedGroup]?._id;
     

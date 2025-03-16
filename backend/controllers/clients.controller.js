@@ -224,13 +224,13 @@ export const getRequests = async (req, res) => {
 }
 
 /**
- * @description Get all teamates of a user
+ * @description Get all teammates of a user
  * @param {Object} req - Express request object
  * @param {Object} res - Express response object
- * @returns {Array<User>} - List of teamates
- * @throws {Error} - If there is an error in getting teamates
+ * @returns {Array<User>} - List of teammates
+ * @throws {Error} - If there is an error in getting teammates
  */
-export const getAllTeamates = async (req, res) => {
+export const getAllteammates = async (req, res) => {
     try {
         const userId = req.user._id;
         const team = await User.findById(userId).select('team');
@@ -256,11 +256,11 @@ export const getUserInfo = async (req, res) => {
         const userId = req.params.id;
         const user = await User.findById(userId).select('-password');
         if(!user) return res.status(404).json({ message: 'User not found' });
-        if(myId == userId) return res.status(200).json({ personal: true, teamate: false, user });
-        const isTeamate = await User.findById(myId).select('team');
-        if(!isTeamate) return res.status(200).json({ personal: false, teamate: false, user });
-        if(isTeamate.team.includes(userId)) return res.status(200).json({ personal: false, teamate: true, user });
-        return res.status(200).json({ personal: false, teamate: false, user });
+        if(myId == userId) return res.status(200).json({ personal: true, teammate: false, user });
+        const isteammate = await User.findById(myId).select('team');
+        if(!isteammate) return res.status(200).json({ personal: false, teammate: false, user });
+        if(isteammate.team.includes(userId)) return res.status(200).json({ personal: false, teammate: true, user });
+        return res.status(200).json({ personal: false, teammate: false, user });
     } catch (error) {
         res.status(500).json({ message: error.message });
         

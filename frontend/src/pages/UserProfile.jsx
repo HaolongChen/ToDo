@@ -89,16 +89,14 @@ export function UserProfile() {
             </div>
             
             {/* User Info */}
-            <div className="flex-1">
-              <h1 className="text-3xl font-bold">{user.username}</h1>
-              {user.email && (
-                <p className="text-sm opacity-70 mt-1">{user.email}</p>
-              )}
-              {user.bio && (
-                <p className="mt-4">{user.bio}</p>
-              )}
-            </div>
-          </div>
+            <h1 className="text-3xl font-bold">{user.username}</h1>
+            {user.email && (
+            <p className="text-sm opacity-70 mt-1">{user.email}</p>
+            )}
+            {user.bio && (
+            <p className="mt-4">{user.bio}</p>
+            )}
+        </div>
 
           {/* User Stats */}
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-8">

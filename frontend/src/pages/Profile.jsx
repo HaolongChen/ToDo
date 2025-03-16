@@ -21,8 +21,6 @@ export function Profile() {
   const [completedCrop, setCompletedCrop] = useState(null);
   const imgRef = useRef(null);
   const previewCanvasRef = useRef(null);
-  
-  console.log(user);
 
   useEffect(() => {
     // Get user info if needed

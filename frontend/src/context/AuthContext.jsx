@@ -10,7 +10,7 @@ export const AuthProvider = ({ children }) => {
   const [error, setError] = useState(null);
   const [notifications, setNotifications] = useState([]);
   const [profile, setProfile] = useState(null);
-  const [teammates, setteammates] = useState([]);
+  const [teammates, setTeammates] = useState([]);
   const [todos, setTodos] = useState([]);
   const [allTodos, setAllTodos] = useState([]);
   const [groups, setGroups] = useState([]);

@@ -4,6 +4,7 @@ import { useAuth } from "../context/AuthContext";
 import { DefaultAvatar } from "../components/DefaultAvatar";
 import ReactCrop from 'react-image-crop';
 import 'react-image-crop/dist/ReactCrop.css';
+import toast, { Toaster } from 'react-hot-toast';
 
 export function Profile() {
   const { user, loading, error, changePassword, getUserInfo, uploadImage } = useAuth();
@@ -69,7 +70,15 @@ export function Profile() {
     setSuccessMessage("");
     
     try {
-      await changePassword(oldPassword, newPassword);
+      // await changePassword(oldPassword, newPassword);
+      toast.promise(
+        changePassword(oldPassword, newPassword),
+        {
+          loading: 'Changing your password...',
+          success: 'Password changed successfully!',
+          error: 'Error changing password. Please try again.'
+        }
+      );
       setSuccessMessage("Password changed successfully");
       setOldPassword("");
       setNewPassword("");
@@ -117,7 +126,16 @@ export function Profile() {
       const base64Image = croppedImageUrl.split(',')[1];
       
       // Pass just the base64 string to the uploadImage function
-      await uploadImage(base64Image);
+      // await uploadImage(base64Image);
+
+      toast.promise(
+        uploadImage(base64Image),
+        {
+          loading: 'Uploading your image...',
+          success: 'Image uploaded successfully!',
+          error: 'Error uploading image. Please try again.'
+        }
+      );
       
       // Clear the form after successful upload
       setSuccessMessage("Profile picture updated successfully");
@@ -320,12 +338,13 @@ export function Profile() {
           </div>
           
           {/* Success Message */}
-          {successMessage && (
+          {/* {successMessage && (
             <div className="alert alert-success mt-6">
               <svg xmlns="http://www.w3.org/2000/svg" className="stroke-current shrink-0 h-6 w-6" fill="none" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
               <span>{successMessage}</span>
             </div>
-          )}
+          )} */}
+          <Toaster />
         </div>
       </div>
     </div>

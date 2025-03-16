@@ -7,7 +7,7 @@ import 'react-image-crop/dist/ReactCrop.css';
 import toast, { Toaster } from 'react-hot-toast';
 
 export function Profile() {
-  const { user, loading, error, changePassword, getUserInfo, uploadImage, logout } = useAuth();
+  const { user, loading, error, changePassword, getUserInfo, uploadImage, logout, updateUserProfile } = useAuth();
   const [oldPassword, setOldPassword] = useState("");
   const [newPassword, setNewPassword] = useState("");
   const [passwordError, setPasswordError] = useState("");
@@ -19,13 +19,17 @@ export function Profile() {
   const [showCropper, setShowCropper] = useState(false);
   const [crop, setCrop] = useState({ unit: '%', width: 100, aspect: 1 });
   const [completedCrop, setCompletedCrop] = useState(null);
+  const [email, setEmail] = useState(user?.email || "");
+  const [bio, setBio] = useState(user?.bio || "");
+  const [isEditingProfile, setIsEditingProfile] = useState(false);
   const imgRef = useRef(null);
   const previewCanvasRef = useRef(null);
 
   useEffect(() => {
-    // Get user info if needed
     if (user && user._id) {
       getUserInfo(user._id);
+      setEmail(user.email || "");
+      setBio(user.bio || "");
     }
   }, [user]);
 
@@ -155,6 +159,23 @@ export function Profile() {
     setCompletedCrop(null);
   };
 
+  const handleProfileUpdate = async (e) => {
+    e.preventDefault();
+    try {
+      await toast.promise(
+        updateUserProfile({ email, bio }),
+        {
+          loading: 'Updating profile...',
+          success: 'Profile updated successfully!',
+          error: 'Error updating profile. Please try again.'
+        }
+      );
+      setIsEditingProfile(false);
+    } catch (error) {
+      console.error('Error updating profile:', error);
+    }
+  };
+
   return (
     <div className="flex flex-col min-h-screen">
       <NavBar />
@@ -176,9 +197,67 @@ export function Profile() {
                   </div>
                 )}
               </div>
-              <div>
+              <div className="flex-1">
                 <h1 className="text-3xl font-bold">{user?.username || "User"}</h1>
-                <p className="text-gray-500">Account created: {user.createdAt ? new Date(user.createdAt).toLocaleDateString() : "N/A"}</p>
+                {!isEditingProfile ? (
+                  <>
+                    {user?.email && <p className="text-sm opacity-70 mt-1">{user.email}</p>}
+                    {user?.bio && <p className="mt-4">{user.bio}</p>}
+                    <button 
+                      className="btn btn-primary btn-sm mt-2"
+                      onClick={() => setIsEditingProfile(true)}
+                    >
+                      Edit Profile
+                    </button>
+                  </>
+                ) : (
+                  <form onSubmit={handleProfileUpdate} className="mt-2">
+                    <div className="form-control">
+                      <label className="label">
+                        <span className="label-text">Email</span>
+                      </label>
+                      <input 
+                        type="email" 
+                        className="input input-bordered"
+                        value={email}
+                        onChange={(e) => setEmail(e.target.value)}
+                        placeholder="Enter your email"
+                      />
+                    </div>
+                    <div className="form-control mt-2">
+                      <label className="label">
+                        <span className="label-text">Bio</span>
+                      </label>
+                      <textarea 
+                        className="textarea textarea-bordered"
+                        value={bio}
+                        onChange={(e) => setBio(e.target.value)}
+                        placeholder="Tell us about yourself"
+                        rows={3}
+                      />
+                    </div>
+                    <div className="flex gap-2 mt-4">
+                      <button 
+                        type="submit" 
+                        className="btn btn-primary btn-sm"
+                      >
+                        Save Changes
+                      </button>
+                      <button 
+                        type="button" 
+                        className="btn btn-ghost btn-sm"
+                        onClick={() => {
+                          setIsEditingProfile(false);
+                          setEmail(user?.email || "");
+                          setBio(user?.bio || "");
+                        }}
+                      >
+                        Cancel
+                      </button>
+                    </div>
+                  </form>
+                )}
+                <p className="text-gray-500 text-sm mt-2">Account created: {user?.createdAt ? new Date(user.createdAt).toLocaleDateString() : "N/A"}</p>
               </div>
             </div>
           </div>

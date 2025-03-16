@@ -410,6 +410,21 @@ export const AuthProvider = ({ children }) => {
     }
   }
 
+  const updateUserProfile = async (profileData) => {
+    try {
+      setLoading(true);
+      setError(null);
+      const response = await axios.post('/api/auth/update-profile', profileData);
+      setUser(response.data);
+      return response.data;
+    } catch (error) {
+      setError(error.response?.data?.message || "Failed to update profile");
+      throw error;
+    } finally {
+      setLoading(false);
+    }
+  };
+
   return (
     <AuthContext.Provider 
       value={{ 
@@ -449,6 +464,7 @@ export const AuthProvider = ({ children }) => {
         deleteGroup,
         uploadImage,
         getImage,
+        updateUserProfile,
         isAuthenticated: !!user 
       }}
     >

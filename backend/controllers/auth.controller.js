@@ -113,3 +113,25 @@ export const changePassword = async (req, res) => {
         console.log(error);
     }
 }
+
+export const updateProfile = async (req, res) => {
+    try {
+        const { email, bio } = req.body;
+        const userId = req.user._id;
+        
+        const user = await User.findByIdAndUpdate(
+            userId,
+            { email, bio },
+            { new: true }
+        ).select('-password');
+
+        if (!user) {
+            return res.status(404).json({ message: 'User not found' });
+        }
+
+        res.status(200).json(user);
+    } catch (error) {
+        console.log(error);
+        res.status(500).json({ message: 'Server error updating profile' });
+    }
+}

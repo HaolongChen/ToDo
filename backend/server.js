@@ -7,6 +7,7 @@ import authRoutes from './routes/auth.route.js';
 import cookieParser from 'cookie-parser';
 import clientsRoutes from './routes/clients.route.js';
 import imageRoutes from './routes/image.route.js';
+import searchRoutes from './routes/search.route.js';
 import { v2 as cloudinary } from 'cloudinary';
 
 dotenv.config();
@@ -36,6 +37,7 @@ app.use('/api/todo', todoRoutes);
 app.use('/api/auth', authRoutes);
 app.use('/api/notification', clientsRoutes);
 app.use('/api/image', imageRoutes);
+app.use('/api/search', searchRoutes);
 
 app.listen(port, () => {
     console.log(`Server running on port ${port}`);

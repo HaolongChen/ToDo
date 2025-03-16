@@ -1,4 +1,4 @@
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
 import { NavBar } from "../components/NavBar";
 import { useAuth } from "../context/AuthContext";
 import { FiMenu } from "react-icons/fi";
@@ -7,9 +7,11 @@ import { Task } from "../components/Task";
 import { NotImportant } from "../components/NotImportant";
 import { AssignedToMe } from "../components/AssignedToMe";
 import { AssignedByMe } from "../components/AssignedByme";
+import { useLocation } from "react-router-dom";
 import axios from "axios";
 
 export function DashBoard() {
+  const location = useLocation();
   const { getAllGroups, groups, createTodo, user, setUser, loading, error, teammates, setGroups, deleteTodo, updateTodo, createGroup, updateGroup, deleteGroup } = useAuth(); // Added deleteGroup
   const [drawerOpen, setDrawerOpen] = useState(true);
   const [selectedGroup, setSelectedGroup] = useState(0);
@@ -35,6 +37,86 @@ export function DashBoard() {
   const [taskSourceGroups, setTaskSourceGroups] = useState({});
   // Add state to track initial loading
   const [initialLoading, setInitialLoading] = useState(true);
+  // Add state for highlighted item and refs for scrolling
+  const [highlightedItem, setHighlightedItem] = useState(null);
+  const highlightedRef = useRef(null);
+  const groupRefs = useRef({});
+  const todoRefs = useRef({});
+
+  // Handle URL query parameters for highlighting groups or todos
+  useEffect(() => {
+    const queryParams = new URLSearchParams(location.search);
+    const highlight = queryParams.get('highlight');
+    
+    if (!highlight || groups.length === 0 || initialLoading) return;
+
+    // Format: highlight=group-{groupId} or highlight=todo-{todoId}
+    const [type, id] = highlight.split('-');
+    
+    if (type === 'group') {
+      // Find the group index
+      const groupIndex = groups.findIndex(group => group._id === id);
+      if (groupIndex !== -1) {
+        setSelectedGroup(groupIndex);
+        setHighlightedItem({ type: 'group', id });
+      }
+    } else if (type === 'todo') {
+      // Find which group contains this todo
+      let foundGroupIndex = -1;
+      let todoInfo = null;
+      
+      // Search in all groups
+      for (let i = 0; i < groups.length; i++) {
+        if (!groups[i].todo) continue;
+        
+        const todoIndex = groups[i].todo.findIndex(t => t._id === id);
+        if (todoIndex !== -1) {
+          foundGroupIndex = i;
+          todoInfo = { groupIndex: i, todoIndex };
+          break;
+        }
+      }
+      
+      if (foundGroupIndex !== -1) {
+        setSelectedGroup(foundGroupIndex);
+        setHighlightedItem({ type: 'todo', id, groupIndex: todoInfo.groupIndex });
+      }
+    }
+  }, [groups, location.search, initialLoading]);
+
+  // Scroll to highlighted item once it's rendered
+  useEffect(() => {
+    if (!highlightedItem) return;
+    
+    // Allow time for the DOM to update after changing selectedGroup
+    const timer = setTimeout(() => {
+      if (highlightedItem.type === 'group' && groupRefs.current[highlightedItem.id]) {
+        const groupElement = groupRefs.current[highlightedItem.id];
+        groupElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        
+        // Add highlight animation
+        groupElement.classList.add('highlight-animation');
+        setTimeout(() => {
+          groupElement.classList.remove('highlight-animation');
+          // Clear the highlighted item after animation
+          setHighlightedItem(null);
+        }, 2000);
+      } else if (highlightedItem.type === 'todo' && todoRefs.current[highlightedItem.id]) {
+        const todoElement = todoRefs.current[highlightedItem.id];
+        todoElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        
+        // Add highlight animation
+        todoElement.classList.add('highlight-animation');
+        setTimeout(() => {
+          todoElement.classList.remove('highlight-animation');
+          // Clear the highlighted item after animation
+          setHighlightedItem(null);
+        }, 2000);
+      }
+    }, 300);
+    
+    return () => clearTimeout(timer);
+  }, [highlightedItem, todo]);
 
   useEffect(() => {
     if(groups.length > 0) {
@@ -646,6 +728,17 @@ export function DashBoard() {
   return (
     <>
       <div className="flex flex-col h-screen overflow-hidden">
+        <style jsx>{`
+          .highlight-animation {
+            animation: highlight-pulse 2s ease-in-out;
+          }
+          
+          @keyframes highlight-pulse {
+            0% { background-color: rgba(59, 130, 246, 0.2); }
+            50% { background-color: rgba(59, 130, 246, 0.4); }
+            100% { background-color: transparent; }
+          }
+        `}</style>
         <NavBar />
         <div className="flex flex-col flex-1 overflow-hidden">
           <div className="flex flex-row flex-1 h-full overflow-hidden">
@@ -666,6 +759,7 @@ export function DashBoard() {
                     groups.map((group, index) => (
                       <div key={group._id}>
                         <li 
+                          ref={el => groupRefs.current[group._id] = el}
                           className={`select-none list-row group ${index === selectedGroup ? "hover:bg-[#bcbcbc31]" : "hover:bg-[#7f7f7f2b]"} hover:cursor-pointer rounded-box h-10 px-4 mx-4 my-2 text-[16px] flex items-center justify-between ${index === selectedGroup ? "bg-[#bcbcbc31]" : ""}`}
                           onClick={() => editingGroupIndex !== index && setSelectedGroup(index)}
                         >
@@ -854,7 +948,9 @@ export function DashBoard() {
                           <ul>
                             {todo.map((task, index) => (
                               <div key={task._id} className="px-8 h-18">
-                                <li className="flex items-center h-14 rounded-2xl shadow-white shadow-sm hover:cursor-pointer hover:bg-[#7f7f7f2b] border-gray-200 py-2 px-4 group"
+                                <li 
+                                  ref={el => todoRefs.current[task._id] = el}
+                                  className="flex items-center h-14 rounded-2xl shadow-white shadow-sm hover:cursor-pointer hover:bg-[#7f7f7f2b] border-gray-200 py-2 px-4 group"
                                   onClick={() => editingTaskId !== task._id && handleToggleTask(task._id, index)}
                                 >
                                   <input

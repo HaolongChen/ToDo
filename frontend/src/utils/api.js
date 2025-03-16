@@ -22,4 +22,26 @@ api.interceptors.response.use(
   }
 );
 
+// Search for users, todos, and groups
+export const searchItems = async (query) => {
+  try {
+    const response = await api.get(`/api/search?query=${encodeURIComponent(query)}`);
+    return response.data;
+  } catch (error) {
+    console.error('Search error:', error);
+    throw error;
+  }
+};
+
+// Get another user's profile
+export const getUserProfile = async (userId) => {
+  try {
+    const response = await api.get(`/api/search/user/${userId}`);
+    return response.data;
+  } catch (error) {
+    console.error('User profile fetch error:', error);
+    throw error;
+  }
+};
+
 export default api;

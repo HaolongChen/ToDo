@@ -7,7 +7,7 @@ import 'react-image-crop/dist/ReactCrop.css';
 import toast, { Toaster } from 'react-hot-toast';
 
 export function Profile() {
-  const { user, loading, error, changePassword, getUserInfo, uploadImage } = useAuth();
+  const { user, loading, error, changePassword, getUserInfo, uploadImage, logout } = useAuth();
   const [oldPassword, setOldPassword] = useState("");
   const [newPassword, setNewPassword] = useState("");
   const [passwordError, setPasswordError] = useState("");
@@ -345,6 +345,9 @@ export function Profile() {
             </div>
           )} */}
           <Toaster />
+          <div className="mt-6 flex items-center justify-center">
+            <button className="btn btn-outline btn-error w-full rounded-2xl" onClick={() => {logout()}}>Sign out</button>
+          </div>
         </div>
       </div>
     </div>

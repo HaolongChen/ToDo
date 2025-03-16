@@ -79,7 +79,7 @@ export function UserProfile() {
           <div className="flex flex-col md:flex-row items-center gap-6">
             {/* User Avatar */}
             <div className="avatar">
-              <div className="w-32 h-32 rounded-full">
+              <div className="w-32 h-32 rounded-full ring ring-primary ring-offset-2">
                 {user.coverImg ? (
                   <img src={user.coverImg} alt={user.username} />
                 ) : (
@@ -89,14 +89,14 @@ export function UserProfile() {
             </div>
             
             {/* User Info */}
-            <h1 className="text-3xl font-bold">{user.username}</h1>
-            {user.email && (
-            <p className="text-sm opacity-70 mt-1">{user.email}</p>
-            )}
-            {user.bio && (
-            <p className="mt-4">{user.bio}</p>
-            )}
-        </div>
+            <div className="flex-1">
+              <h1 className="text-3xl font-bold mb-2">{user.username}</h1>
+              <div className="space-y-2">
+                <p className="text-sm opacity-70">{user.email || "No email added"}</p>
+                <p className="text-base">{user.bio || "No bio added"}</p>
+              </div>
+            </div>
+          </div>
 
           {/* User Stats */}
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-8">
@@ -127,7 +127,7 @@ export function UserProfile() {
             </div>
             <div className="w-full bg-base-200 rounded-full h-2.5">
               <div 
-                className="bg-primary h-2.5 rounded-full" 
+                className="bg-primary h-2.5 rounded-full transition-all duration-300" 
                 style={{ width: `${taskPercentage}%` }}
               ></div>
             </div>
@@ -136,7 +136,7 @@ export function UserProfile() {
           {/* Team Members */}
           {user.team && user.team.length > 0 && (
             <div className="mt-8">
-              <h2 className="text-xl font-bold mb-4">Team Members</h2>
+              <h2 className="text-xl font-semibold mb-4">Team Members</h2>
               <div className="flex flex-wrap gap-3">
                 {user.team.map(member => (
                   <div 
@@ -171,6 +171,7 @@ export function UserProfile() {
           </div>
         </div>
       </div>
-    </div></>
+    </div>
+    </>
   );
 }

@@ -9,6 +9,7 @@ import { AssignedToMe } from "../components/AssignedToMe";
 import { AssignedByMe } from "../components/AssignedByme";
 import { useLocation } from "react-router-dom";
 import axios from "axios";
+import toast, { Toaster } from "react-hot-toast";
 
 export function DashBoard() {
   const location = useLocation();
@@ -326,7 +327,15 @@ export function DashBoard() {
       });
 
       // Update the database
-      updateGroup(groupId, { name: editGroupValue });
+      // updateGroup(groupId, { name: editGroupValue });
+      toast.promise(
+        updateGroup(groupId, { name: editGroupValue }),
+        {
+          loading: 'Updating group...',
+          success: 'Group updated successfully',
+          error: 'Failed to update group'
+        }
+      );
 
       // Exit edit mode
       setEditingGroupIndex(null);
@@ -368,7 +377,16 @@ export function DashBoard() {
     }));
 
     // First call createTodo and await the response to get the server-generated _id
-    const createdTodo = await createTodo(todoToCreate);
+    // const createdTodo = await createTodo(todoToCreate);
+
+    const createdTodo = await toast.promise(
+      createTodo(todoToCreate),
+      {
+        loading: 'Creating task...',
+        success: 'Task created successfully',
+        error: 'Failed to create task'
+      }
+    )
     
     // Then update the local state with the todo that has the _id
     setGroups(prevGroups => {
@@ -612,8 +630,18 @@ export function DashBoard() {
       }
 
       // Update in the database
-      updateTodo(editingTaskId, { description: editValue });
+      // updateTodo(editingTaskId, { description: editValue });
+
+      toast.promise(
+        updateTodo(editingTaskId, { description: editValue }),
+        {
+          loading: 'Updating task...',
+          success: 'Task updated successfully',
+          error: 'Failed to update task'
+        }
       
+      );
+
       // Exit edit mode
       setEditingTaskId(null);
       setEditValue("");
@@ -677,7 +705,15 @@ export function DashBoard() {
       name: newGroup
     };
     setNewGroup("");
-    const createdGroup = await createGroup(newGroupObj);
+    // const createdGroup = await createGroup(newGroupObj);
+    const createdGroup = await toast.promise(
+      createGroup(newGroupObj),
+      {
+        loading: 'Creating group...',
+        success: 'Group created successfully',
+        error: 'Failed to create group'
+      }
+    );
     setGroups([...groups, createdGroup]);
   }
 
@@ -727,6 +763,7 @@ export function DashBoard() {
 
   return (
     <>
+      <Toaster />
       <div className="flex flex-col h-screen overflow-hidden">
         <style jsx>{`
           .highlight-animation {

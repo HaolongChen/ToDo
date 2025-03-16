@@ -545,7 +545,26 @@ export function DashBoard() {
         });
       }
       
-      updateTodo(taskId, { completed: completedStatus });
+      // updateTodo(taskId, { completed: completedStatus });
+      if(completedStatus){
+        toast.promise(
+          updateTodo(taskId, { completed: completedStatus }),
+          {
+            loading: 'Updating task...',
+            success: 'Task marked as completed',
+            error: 'Failed to update task'
+          }
+        );
+      } else {
+        toast.promise(
+          updateTodo(taskId, { completed: completedStatus }),
+          {
+            loading: 'Updating task...',
+            success: 'Task marked as not completed',
+            error: 'Failed to update task'
+          }
+        );
+      }
     } catch (error) {
       console.error(error);
     }

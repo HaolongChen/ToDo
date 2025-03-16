@@ -3,6 +3,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { getUserProfile } from '../utils/api';
 import { LoadingIcon } from '../components/LoadingIcon';
 import { DefaultAvatar } from '../components/DefaultAvatar';
+import { NavBar } from '../components/NavBar';
 
 export function UserProfile() {
   const { userId } = useParams();
@@ -70,6 +71,8 @@ export function UserProfile() {
   }
 
   return (
+    <>
+    <NavBar />
     <div className="container mx-auto px-4 py-8 max-w-4xl">
       <div className="card bg-base-100 shadow-xl">
         <div className="card-body">
@@ -170,6 +173,6 @@ export function UserProfile() {
           </div>
         </div>
       </div>
-    </div>
+    </div></>
   );
 }

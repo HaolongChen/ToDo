@@ -254,7 +254,10 @@ export const getUserInfo = async (req, res) => {
     try {
         const myId = req.user._id;
         const userId = req.params.id;
-        const user = await User.findById(userId).select('-password');
+        const user = await User.findById(userId)
+            .select('-password')
+            .populate('team', 'username _id coverImg'); // Populate team with necessary fields
+            
         if(!user) return res.status(404).json({ message: 'User not found' });
         if(myId == userId) return res.status(200).json({ personal: true, teammate: false, user });
         const isteammate = await User.findById(myId).select('team');
@@ -263,6 +266,5 @@ export const getUserInfo = async (req, res) => {
         return res.status(200).json({ personal: false, teammate: false, user });
     } catch (error) {
         res.status(500).json({ message: error.message });
-        
     }
 }

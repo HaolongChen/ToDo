@@ -6,6 +6,7 @@ import ReactCrop from 'react-image-crop';
 import 'react-image-crop/dist/ReactCrop.css';
 import toast, { Toaster } from 'react-hot-toast';
 import { useNavigate } from "react-router-dom";
+import axios from "axios";
 
 export function Profile() {
   const navigate = useNavigate();
@@ -24,6 +25,7 @@ export function Profile() {
   const [email, setEmail] = useState(user?.email || "");
   const [bio, setBio] = useState(user?.bio || "");
   const [isEditingProfile, setIsEditingProfile] = useState(false);
+  const [teammates, setTeammates] = useState([]);
   const imgRef = useRef(null);
   const previewCanvasRef = useRef(null);
 
@@ -32,8 +34,25 @@ export function Profile() {
       getUserInfo(user._id);
       setEmail(user.email || "");
       setBio(user.bio || "");
+      // Fetch teammate details when user data is available
+      if (user.team && user.team.length > 0) {
+        fetchTeammateDetails();
+      }
     }
   }, [user]);
+
+  const fetchTeammateDetails = async () => {
+    try {
+      const teammatePromises = user.team.map(teammateId => 
+        axios.get(`/api/search/user/${teammateId}`)
+      );
+      const responses = await Promise.all(teammatePromises);
+      const teammateData = responses.map(response => response.data);
+      setTeammates(teammateData);
+    } catch (error) {
+      console.error('Error fetching teammate details:', error);
+    }
+  };
 
   useEffect(() => {
     if (!completedCrop || !previewCanvasRef.current || !imgRef.current) {
@@ -296,9 +315,9 @@ export function Profile() {
             {/* Team Members */}
             <div className="bg-base-100 rounded-box p-6 shadow-md">
               <h2 className="text-xl font-semibold mb-4">Team Members</h2>
-              {user?.team && user.team.length > 0 ? (
+              {teammates.length > 0 ? (
                 <div className="flex flex-wrap gap-3">
-                  {user.team.map(member => (
+                  {teammates.map(member => (
                     <div 
                       key={member._id} 
                       className="flex items-center gap-2 bg-base-200 p-2 rounded-lg cursor-pointer hover:bg-base-300 transition-colors"

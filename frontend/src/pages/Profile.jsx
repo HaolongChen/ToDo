@@ -5,8 +5,10 @@ import { DefaultAvatar } from "../components/DefaultAvatar";
 import ReactCrop from 'react-image-crop';
 import 'react-image-crop/dist/ReactCrop.css';
 import toast, { Toaster } from 'react-hot-toast';
+import { useNavigate } from "react-router-dom";
 
 export function Profile() {
+  const navigate = useNavigate();
   const { user, loading, error, changePassword, getUserInfo, uploadImage, logout, updateUserProfile } = useAuth();
   const [oldPassword, setOldPassword] = useState("");
   const [newPassword, setNewPassword] = useState("");
@@ -176,6 +178,11 @@ export function Profile() {
     }
   };
 
+  // Calculate task completion percentage
+  const taskPercentage = user && user.totalTasks > 0
+    ? Math.round((user.completedTasks / user.totalTasks) * 100)
+    : 0;
+
   return (
     <div className="flex flex-col min-h-screen">
       <NavBar />
@@ -183,60 +190,50 @@ export function Profile() {
         <div className="max-w-4xl mx-auto">
           {/* Profile Header */}
           <div className="bg-base-100 rounded-box p-6 shadow-md mb-6">
-            <div className="flex flex-col md:flex-row items-center">
-              <div className="mb-4 md:mb-0 md:mr-6">
-                {user?.coverImg ? (
-                  <img 
-                    src={user.coverImg} 
-                    alt="Profile" 
-                    className="w-32 h-32 rounded-full ring ring-primary ring-offset-2"
-                  />
-                ) : (
-                  <div className="w-32 h-32 rounded-full ring ring-primary ring-offset-2 flex items-center justify-center overflow-hidden">
+            <div className="flex flex-col md:flex-row items-center gap-6">
+              <div className="avatar">
+                <div className="w-32 h-32 rounded-full ring ring-primary ring-offset-2">
+                  {user?.coverImg ? (
+                    <img src={user.coverImg} alt="Profile" />
+                  ) : (
                     <DefaultAvatar size={128} />
-                  </div>
-                )}
+                  )}
+                </div>
               </div>
               <div className="flex-1">
-                <h1 className="text-3xl font-bold">{user?.username || "User"}</h1>
+                <h1 className="text-3xl font-bold mb-2">{user?.username || "User"}</h1>
                 {!isEditingProfile ? (
-                  <>
-                    {user?.email && <p className="text-sm opacity-70 mt-1">{user.email}</p>}
-                    {user?.bio && <p className="mt-4">{user.bio}</p>}
+                  <div className="space-y-2">
+                    <p className="text-sm opacity-70">{user?.email || "No email added"}</p>
+                    <p className="text-base">{user?.bio || "No bio added"}</p>
                     <button 
                       className="btn btn-primary btn-sm mt-2"
                       onClick={() => setIsEditingProfile(true)}
                     >
-                      Edit Profile
+                      Edit Profile Info
                     </button>
-                  </>
+                  </div>
                 ) : (
-                  <form onSubmit={handleProfileUpdate} className="mt-2">
+                  <form onSubmit={handleProfileUpdate} className="space-y-4">
                     <div className="form-control">
-                      <label className="label">
-                        <span className="label-text">Email</span>
-                      </label>
                       <input 
                         type="email" 
-                        className="input input-bordered"
+                        className="input input-bordered w-full"
                         value={email}
                         onChange={(e) => setEmail(e.target.value)}
                         placeholder="Enter your email"
                       />
                     </div>
-                    <div className="form-control mt-2">
-                      <label className="label">
-                        <span className="label-text">Bio</span>
-                      </label>
+                    <div className="form-control">
                       <textarea 
-                        className="textarea textarea-bordered"
+                        className="textarea textarea-bordered w-full"
                         value={bio}
                         onChange={(e) => setBio(e.target.value)}
                         placeholder="Tell us about yourself"
                         rows={3}
                       />
                     </div>
-                    <div className="flex gap-2 mt-4">
+                    <div className="flex gap-2">
                       <button 
                         type="submit" 
                         className="btn btn-primary btn-sm"
@@ -257,13 +254,77 @@ export function Profile() {
                     </div>
                   </form>
                 )}
-                <p className="text-gray-500 text-sm mt-2">Account created: {user?.createdAt ? new Date(user.createdAt).toLocaleDateString() : "N/A"}</p>
+                <p className="text-gray-500 text-sm mt-4">Account created: {user?.createdAt ? new Date(user.createdAt).toLocaleDateString() : "N/A"}</p>
               </div>
             </div>
           </div>
 
+          {/* User Stats and Progress */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+            <div className="bg-base-100 rounded-box p-6 shadow-md">
+              <h2 className="text-xl font-semibold mb-4">Task Statistics</h2>
+              <div className="stats shadow w-full">
+                <div className="stat">
+                  <div className="stat-title">Total Tasks</div>
+                  <div className="stat-value">{user?.totalTasks}</div>
+                </div>
+                <div className="stat">
+                  <div className="stat-title">Completed</div>
+                  <div className="stat-value text-success">{user?.completedTasks}</div>
+                </div>
+                <div className="stat">
+                  <div className="stat-title">Pending</div>
+                  <div className="stat-value text-warning">{user?.totalTasks - user?.completedTasks}</div>
+                </div>
+              </div>
+
+              {/* Progress Bar */}
+              <div className="mt-6">
+                <div className="flex justify-between items-center mb-2">
+                  <span className="text-sm font-medium">Task Completion</span>
+                  <span className="text-sm font-medium">{taskPercentage}%</span>
+                </div>
+                <div className="w-full bg-base-200 rounded-full h-2.5">
+                  <div 
+                    className="bg-primary h-2.5 rounded-full transition-all duration-300" 
+                    style={{ width: `${taskPercentage}%` }}
+                  ></div>
+                </div>
+              </div>
+            </div>
+
+            {/* Team Members */}
+            <div className="bg-base-100 rounded-box p-6 shadow-md">
+              <h2 className="text-xl font-semibold mb-4">Team Members</h2>
+              {user?.team && user.team.length > 0 ? (
+                <div className="flex flex-wrap gap-3">
+                  {user.team.map(member => (
+                    <div 
+                      key={member._id} 
+                      className="flex items-center gap-2 bg-base-200 p-2 rounded-lg cursor-pointer hover:bg-base-300 transition-colors"
+                      onClick={() => navigate(`/user/${member._id}`)}
+                    >
+                      <div className="avatar">
+                        <div className="w-8 h-8 rounded-full">
+                          {member.coverImg ? (
+                            <img src={member.coverImg} alt={member.username} />
+                          ) : (
+                            <DefaultAvatar username={member.username} size={32} />
+                          )}
+                        </div>
+                      </div>
+                      <span>{member.username}</span>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <p className="text-gray-500">No team members yet</p>
+              )}
+            </div>
+          </div>
+
+          {/* Profile Picture Update */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            {/* Profile Picture Update */}
             <div className="bg-base-100 rounded-box p-6 shadow-md">
               <h2 className="text-xl font-semibold mb-4">Update Profile Picture</h2>
               
@@ -395,32 +456,6 @@ export function Profile() {
             </div>
           </div>
 
-          {/* Task Statistics */}
-          <div className="bg-base-100 rounded-box p-6 shadow-md mt-6">
-            <h2 className="text-xl font-semibold mb-4">Your Activity</h2>
-            <div className="stats shadow w-full">
-              <div className="stat">
-                <div className="stat-title">Total Tasks</div>
-                <div className="stat-value">{user?.totalTasks}</div>
-              </div>
-              <div className="stat">
-                <div className="stat-title">Completed</div>
-                <div className="stat-value text-success">{user?.completedTasks}</div>
-              </div>
-              <div className="stat">
-                <div className="stat-title">Pending</div>
-                <div className="stat-value text-warning">{user?.totalTasks - user?.completedTasks}</div>
-              </div>
-            </div>
-          </div>
-          
-          {/* Success Message */}
-          {/* {successMessage && (
-            <div className="alert alert-success mt-6">
-              <svg xmlns="http://www.w3.org/2000/svg" className="stroke-current shrink-0 h-6 w-6" fill="none" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
-              <span>{successMessage}</span>
-            </div>
-          )} */}
           <Toaster />
           <div className="mt-6 flex items-center justify-center">
             <button className="btn btn-outline btn-error w-full rounded-2xl" onClick={() => {logout()}}>Sign out</button>

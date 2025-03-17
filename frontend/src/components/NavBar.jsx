@@ -3,6 +3,7 @@ import { useState, useEffect, useRef } from 'react';
 import { Avatar } from './Avatar';
 import { searchItems } from '../utils/api';
 import debounce from 'lodash.debounce';
+import { DefaultAvatar } from './DefaultAvatar';
 
 export function NavBar() {
   const navigate = useNavigate();
@@ -149,7 +150,12 @@ export function NavBar() {
                     >
                       <div className="avatar mr-2">
                         <div className="w-8 rounded-full">
-                          <img src={user.coverImg || '/default-avatar.png'} alt={user.username} />
+                          {/* <img src={user.coverImg || '/default-avatar.png'} alt={user.username} /> */}
+                          {user.coverImg ? (
+                            <img src={user.coverImg} alt={user.username} />
+                          ) : (
+                            <DefaultAvatar username={user.username} size={32} />
+                          )}
                         </div>
                       </div>
                       <span>{user.username}</span>

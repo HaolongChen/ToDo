@@ -31,7 +31,15 @@ const waitlistSchema = new mongoose.Schema({
         required: true,
         default: false
     }
-})
+}, {
+    timestamps: true
+});
+
+
+waitlistSchema.methods.processRequest = function() {
+    this.isProcessed = true;
+    return this.save();
+};
 
 const Waitlist = mongoose.model('Waitlist', waitlistSchema); 
 export default Waitlist

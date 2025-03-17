@@ -116,7 +116,35 @@ export const sendRequest = async (req, res) => {
         if(isExist2) return res.status(400).json({ message: 'Request already sent' });
         const waitlist = new Waitlist({ toUser: toUserId, fromUser: userId, isRequest: true, isProcessed: false });
         await waitlist.save();
+        user.pendingTeam.push(toUserId);
+        await user.save();
         res.status(200).json({ message: 'Request sent successfully' });
+    } catch (error) {
+        res.status(500).json({ message: error.message });
+        
+    }
+}
+
+export const removeFromTeam = async (req, res) => {
+    try {
+        const userId = req.user._id;
+        const toUserId = req.body.toUser;
+        if(!userId) return res.status(400).json({ message: 'User ID is required' });
+        const user = await User.findById(userId).select('-password');
+        if(!user) return res.status(404).json({ message: 'User not found' });
+        if(!user.team.includes(toUserId)) return res.status(400).json({ message: 'User is not in the team' });
+        
+
+        user.team = user.team.filter(member => member != toUserId);
+        await user.save();
+        console.log({ user: user._id, toUser: toUserId });
+
+        const toUser = await User.findById(toUserId).select('-password');
+        if (!toUser) return res.status(404).json({ message: 'User not found' });
+        toUser.team = toUser.team.filter(member => member != userId);
+        await toUser.save();
+
+        res.status(200).json({ message: 'User removed from team successfully' });
     } catch (error) {
         res.status(500).json({ message: error.message });
         
@@ -149,6 +177,8 @@ export const acceptRequest = async (req, res) => {
         await waitlist.save();
         const newWaitlist = new Waitlist({ toUser: fromUser._id, fromUser: userId, isRequest: false, isProcessed: false, isOfficial: true, message: "I have accepted your request" });
         await newWaitlist.save();
+        fromUser.pendingTeam = fromUser.pendingTeam.filter((id) => id != userId);
+        await fromUser.save();
         res.status(200).json({ message: 'Request accepted successfully' });
     } catch (error) {
         res.status(500).json({ message: error.message });
@@ -166,8 +196,12 @@ export const acceptRequest = async (req, res) => {
 export const deleteWaitlist = async (req, res) => {
     try {
         const id = req.params.id;
-        const waitlist = await Waitlist.findByIdAndDelete(id);
+        const waitlist = await Waitlist.findById(id);
         if(!waitlist) return res.status(404).json({ message: 'Request not found' });
+        if(waitlist.isRequest){
+            await rejectRequest(req, res);
+        }
+        await waitlist.delete();
         res.status(200).json({ message: 'Request deleted successfully' });
     } catch (error) {
         res.status(500).json({ message: error.message });
@@ -194,6 +228,10 @@ export const rejectRequest = async (req, res) => {
         await waitlist.save();
         const newWaitlist = new Waitlist({ toUser: waitlist.fromUser, fromUser: userId, isRequest: false, isProcessed: false, isOfficial: true, message: "I have rejected your request" });
         await newWaitlist.save();
+        const fromUser = await User.findById(waitlist.fromUser).select('-password');
+        if(!fromUser) return res.status(404).json({ message: 'User not found' });
+        fromUser.pendingTeam = fromUser.pendingTeam.filter((id) => id != userId);
+        await fromUser.save();
         res.status(200).json({ message: 'Request rejected successfully' });
     } catch (error) {
         res.status(500).json({ message: error.message });

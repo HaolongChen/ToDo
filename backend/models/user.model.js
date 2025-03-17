@@ -16,6 +16,10 @@ const userSchema = new mongoose.Schema({
         type: mongoose.Schema.Types.ObjectId,
         ref: 'User'
     }],
+    pendingTeam:[{
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'User'
+    }],
     coverImg:{
         type: String,
         required: false,

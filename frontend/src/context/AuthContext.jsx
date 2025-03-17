@@ -121,9 +121,31 @@ export const AuthProvider = ({ children }) => {
     try {
       setLoading(true);
       setError(null);
-      const response = await axios.post('/api/notification/send-request', request);
+      const response = await axios.post('/api/notification/send-request', {toUser: request});
+      setUser(prevUser => ({
+        ...prevUser,
+        pendingTeam: [...prevUser.pendingTeam, request]
+      }));
     } catch (error) {
       setError(error.response?.data?.message || "Failed to send request");
+      throw error;
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  const removeFromTeam = async (userId) => {
+    try {
+      setLoading(true);
+      setError(null);
+      const response = await axios.post('/api/notification/remove-from-team', { toUser: userId });
+      setUser(prevUser => ({
+        ...prevUser,
+        team: prevUser.team.filter(id => id !== userId)
+      }));
+      console.log(response);
+    } catch (error) {
+      setError(error.response?.data?.message || "Failed to remove from team");
       throw error;
     } finally {
       setLoading(false);
@@ -134,7 +156,7 @@ export const AuthProvider = ({ children }) => {
     try {
       setLoading(true);
       setError(null);
-      const response = await axios.post('/api/notification/accept-request', { requestId });
+      const response = await axios.post(`/api/notification/accept-request/${requestId}`);
     } catch (error) {
       setError(error.response?.data?.message || "Failed to accept request");
       throw error;
@@ -147,7 +169,7 @@ export const AuthProvider = ({ children }) => {
     try {
       setLoading(true);
       setError(null);
-      const response = await axios.post('/api/notification/delete-waitlist', { waitlistId });
+      const response = await axios.post(`/api/notification/delete-waitlist/${waitlistId}`);
     } catch (error) {
       setError(error.response?.data?.message || "Failed to delete waitlist");
       throw error;
@@ -160,7 +182,7 @@ export const AuthProvider = ({ children }) => {
     try {
       setLoading(true);
       setError(null);
-      const response = await axios.post('/api/notification/reject-request', { requestId });
+      const response = await axios.post(`/api/notification/reject-request/${requestId}`);
     } catch (error) {
       setError(error.response?.data?.message || "Failed to reject request");
       throw error;
@@ -445,6 +467,7 @@ export const AuthProvider = ({ children }) => {
         getNotifications,
         sendAssignment,
         sendRequest,
+        removeFromTeam,
         acceptRequest,
         deleteWaitlist,
         rejectRequest,

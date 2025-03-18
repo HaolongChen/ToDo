@@ -6,7 +6,7 @@ const router = express.Router();
 
 router.get('/get-notifications', authMiddleware, getNotifications);
 router.post('/send-assignment', authMiddleware, sendAssignment);
-router.post('/send-request', authMiddleware, sendRequest);
+router.post('/send-requests', authMiddleware, sendRequest);
 router.post('/accept/:id', authMiddleware, acceptRequest);
 router.post('/delete/:id', authMiddleware, deleteWaitlist);
 router.post('/reject/:id', authMiddleware, rejectRequest);

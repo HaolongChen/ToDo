@@ -250,10 +250,8 @@ export const getRequests = async (req, res) => {
     try {
         const userId = req.user._id;
         let waitlist = await Waitlist.find({ toUser: userId, isRequest: true, isProcessed: false }).sort({ createdAt: -1 });
-        for (let list of waitlist) {
-            list.isProcessed = true;
-            await list.save();
-        }
+        
+        console.log(waitlist);
         res.status(200).json(waitlist);
     } catch (error) {
         res.status(500).json({ message: error.message });

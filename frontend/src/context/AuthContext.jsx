@@ -123,7 +123,10 @@ export const AuthProvider = ({ children }) => {
       setLoading(true);
       setError(null);
       const response = await axios.post('/api/notification/send-request', {toUser: request});
-      
+      setUser(prevUser => ({
+        ...prevUser,
+        pendingTeammates: [...prevUser.pendingTeammates, request]
+      }));
     } catch (error) {
       setError(error.response?.data?.message || "Failed to send request");
       throw error;
@@ -137,6 +140,11 @@ export const AuthProvider = ({ children }) => {
       setLoading(true);
       setError(null);
       const response = await axios.post('/api/notification/remove-from-team', { toUser: userId });
+      setUser(prevUser => ({
+        ...prevUser,
+        teammates: prevUser.teammates.filter(teammate => teammate._id !== userId),
+        pendingTeammates: prevUser.pendingTeammates.filter(teammate => teammate._id !== userId)
+      }));
       console.log(response);
     } catch (error) {
       setError(error.response?.data?.message || "Failed to remove from team");
@@ -452,6 +460,7 @@ export const AuthProvider = ({ children }) => {
         loading, 
         error, 
         teammates, 
+        requests,
         notifications, 
         profile, 
         todos, 

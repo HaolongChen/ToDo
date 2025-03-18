@@ -6,6 +6,7 @@ import { Profile } from "./pages/Profile";
 import { UserProfile } from "./pages/UserProfile";
 import { NotFound } from "./pages/NotFound";
 import { AuthProvider } from "./context/AuthContext";
+import { Notifications } from "./pages/Notifications";
 import { ProtectedRoute, AuthRedirect } from "./components/ProtectedRoute";
 
 function App() {
@@ -40,6 +41,11 @@ function App() {
         <Route path="/user/:userId" element={
           <ProtectedRoute>
             <UserProfile />
+          </ProtectedRoute>
+        } />
+        <Route path="/notification" element={
+          <ProtectedRoute>
+            <Notifications />
           </ProtectedRoute>
         } />
         <Route path="*" element={<NotFound />} />

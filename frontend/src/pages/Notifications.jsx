@@ -2,6 +2,7 @@ import { useAuth } from "../context/AuthContext"
 import { useEffect } from "react";
 import { LoadingIcon } from "../components/LoadingIcon";
 import toast, { Toaster } from "react-hot-toast";
+import { NavBar } from "../components/NavBar";
 
 export const Notifications = () => {
     const { user, notifications, acceptRequest, rejectRequest, deleteWaitlist, loading, error, getNotifications, getRequests } = useAuth();
@@ -15,6 +16,8 @@ export const Notifications = () => {
 
     return (
         <div>
+            <Toaster />
+            <NavBar />
             {loading ? <LoadingIcon /> : notifications.map(notification => (
                 <div key={notification.id}>
                     notification: {notification.message}

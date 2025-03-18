@@ -201,7 +201,7 @@ export const deleteWaitlist = async (req, res) => {
         if(waitlist.isRequest){
             await rejectRequest(req, res);
         }
-        await waitlist.delete();
+        await waitlist.remove();
         res.status(200).json({ message: 'Request deleted successfully' });
     } catch (error) {
         res.status(500).json({ message: error.message });

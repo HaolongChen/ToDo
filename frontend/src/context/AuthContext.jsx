@@ -122,10 +122,10 @@ export const AuthProvider = ({ children }) => {
     try {
       setLoading(true);
       setError(null);
-      const response = await axios.post('/api/notification/send-request', {toUser: request});
+      const response = await axios.post('/api/notification/send-requests', {toUser: request});
       setUser(prevUser => ({
         ...prevUser,
-        pendingTeammates: [...prevUser.pendingTeammates, request]
+        pendingTeammates: [...(prevUser?.pendingTeammates || []), request]
       }));
     } catch (error) {
       setError(error.response?.data?.message || "Failed to send request");
@@ -143,7 +143,6 @@ export const AuthProvider = ({ children }) => {
       setUser(prevUser => ({
         ...prevUser,
         teammates: prevUser.teammates.filter(teammate => teammate._id !== userId),
-        pendingTeammates: prevUser.pendingTeammates.filter(teammate => teammate._id !== userId)
       }));
       console.log(response);
     } catch (error) {
@@ -158,8 +157,13 @@ export const AuthProvider = ({ children }) => {
     try {
       setLoading(true);
       setError(null);
-      const response = await axios.post(`/api/notification/accept-request/${requestId}`);
+      const response = await axios.post(`/api/notification/accept/${requestId}`);
       setRequests(prevRequests => prevRequests.filter(request => request._id !== requestId));
+      setUser(prevUser => ({
+        ...prevUser,
+        pendingTeammates: prevUser.pendingTeammates.filter(teammate => teammate._id !== requestId),
+        teammates: [...prevUser.teammates, response.data.user]
+      }));
     } catch (error) {
       setError(error.response?.data?.message || "Failed to accept request");
       throw error;
@@ -172,8 +176,9 @@ export const AuthProvider = ({ children }) => {
     try {
       setLoading(true);
       setError(null);
-      const response = await axios.post(`/api/notification/delete-waitlist/${waitlistId}`);
+      const response = await axios.post(`/api/notification/delete/${waitlistId}`);
       setRequests(prevRequests => prevRequests.filter(request => request._id !== waitlistId));
+      setNotifications(prevNotifications => prevNotifications.filter(notification => notification._id !== waitlistId));
     } catch (error) {
       setError(error.response?.data?.message || "Failed to delete waitlist");
       throw error;
@@ -186,8 +191,12 @@ export const AuthProvider = ({ children }) => {
     try {
       setLoading(true);
       setError(null);
-      const response = await axios.post(`/api/notification/reject-request/${requestId}`);
+      const response = await axios.post(`/api/notification/reject/${requestId}`);
       setRequests(prevRequests => prevRequests.filter(request => request._id !== requestId));
+      setUser(prevUser => ({
+        ...prevUser,
+        pendingTeammates: prevUser.pendingTeammates.filter(teammate => teammate._id !== requestId)
+      }));
     } catch (error) {
       setError(error.response?.data?.message || "Failed to reject request");
       throw error;

@@ -9,6 +9,7 @@ export const AuthProvider = ({ children }) => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [notifications, setNotifications] = useState([]);
+  const [requests, setRequests] = useState([]);
   const [profile, setProfile] = useState(null);
   const [teammates, setTeammates] = useState([]);
   const [todos, setTodos] = useState([]);
@@ -122,10 +123,7 @@ export const AuthProvider = ({ children }) => {
       setLoading(true);
       setError(null);
       const response = await axios.post('/api/notification/send-request', {toUser: request});
-      setUser(prevUser => ({
-        ...prevUser,
-        pendingTeam: [...prevUser.pendingTeam, request]
-      }));
+      
     } catch (error) {
       setError(error.response?.data?.message || "Failed to send request");
       throw error;
@@ -139,10 +137,6 @@ export const AuthProvider = ({ children }) => {
       setLoading(true);
       setError(null);
       const response = await axios.post('/api/notification/remove-from-team', { toUser: userId });
-      setUser(prevUser => ({
-        ...prevUser,
-        team: prevUser.team.filter(id => id !== userId)
-      }));
       console.log(response);
     } catch (error) {
       setError(error.response?.data?.message || "Failed to remove from team");
@@ -157,6 +151,7 @@ export const AuthProvider = ({ children }) => {
       setLoading(true);
       setError(null);
       const response = await axios.post(`/api/notification/accept-request/${requestId}`);
+      setRequests(prevRequests => prevRequests.filter(request => request._id !== requestId));
     } catch (error) {
       setError(error.response?.data?.message || "Failed to accept request");
       throw error;
@@ -170,6 +165,7 @@ export const AuthProvider = ({ children }) => {
       setLoading(true);
       setError(null);
       const response = await axios.post(`/api/notification/delete-waitlist/${waitlistId}`);
+      setRequests(prevRequests => prevRequests.filter(request => request._id !== waitlistId));
     } catch (error) {
       setError(error.response?.data?.message || "Failed to delete waitlist");
       throw error;
@@ -183,6 +179,7 @@ export const AuthProvider = ({ children }) => {
       setLoading(true);
       setError(null);
       const response = await axios.post(`/api/notification/reject-request/${requestId}`);
+      setRequests(prevRequests => prevRequests.filter(request => request._id !== requestId));
     } catch (error) {
       setError(error.response?.data?.message || "Failed to reject request");
       throw error;
@@ -196,7 +193,7 @@ export const AuthProvider = ({ children }) => {
       setLoading(true);
       setError(null);
       const response = await axios.get('/api/notification/get-requests');
-      setNotifications(response.data);
+      setRequests(response.data);
     } catch (error) {
       setError(error.response?.data?.message || "Failed to get requests");
       throw error;
@@ -219,19 +216,19 @@ export const AuthProvider = ({ children }) => {
     }
   }
 
-  const getWaitlists = async () => {
-    try {
-      setLoading(true);
-      setError(null);
-      const response = await axios.get('/api/notification/get-waitlists');
-      setNotifications(response.data);
-    } catch (error) {
-      setError(error.response?.data?.message || "Failed to get waitlists");
-      throw error;
-    } finally {
-      setLoading(false);
-    }
-  }
+  // const getWaitlists = async () => {
+  //   try {
+  //     setLoading(true);
+  //     setError(null);
+  //     const response = await axios.get('/api/notification/get-waitlists');
+  //     setNotifications(response.data);
+  //   } catch (error) {
+  //     setError(error.response?.data?.message || "Failed to get waitlists");
+  //     throw error;
+  //   } finally {
+  //     setLoading(false);
+  //   }
+  // }
 
   const getUserInfo = async (userId) => {
     try {
@@ -473,7 +470,7 @@ export const AuthProvider = ({ children }) => {
         rejectRequest,
         getRequests,
         getAllteammates,
-        getWaitlists,
+        // getWaitlists,
         getUserInfo,
         createTodo, // totalTasks + 1
         getTodos,

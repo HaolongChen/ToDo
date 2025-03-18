@@ -249,7 +249,7 @@ export const rejectRequest = async (req, res) => {
 export const getRequests = async (req, res) => {
     try {
         const userId = req.user._id;
-        let waitlist = await Waitlist.find({ toUser: userId, isRequest: true }).sort({ createdAt: -1 });
+        let waitlist = await Waitlist.find({ toUser: userId, isRequest: true, isProcessed: false }).sort({ createdAt: -1 });
         for (let list of waitlist) {
             list.isProcessed = true;
             await list.save();

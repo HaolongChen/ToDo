@@ -1,5 +1,5 @@
 import { useAuth } from "../context/AuthContext"
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { LoadingIcon } from "../components/LoadingIcon";
 import toast, { Toaster } from "react-hot-toast";
 import { NavBar } from "../components/NavBar";
@@ -9,6 +9,7 @@ import { useNavigate } from "react-router-dom";
 export const Notifications = () => {
     const { user, notifications, requests, acceptRequest, rejectRequest, deleteWaitlist, loading, error, getNotifications, getRequests } = useAuth();
     const navigate = useNavigate();
+    const [initLoading, setInitLoading] = useState(true);
 
     useEffect(() => {
         async function loadNotifications() {
@@ -17,6 +18,16 @@ export const Notifications = () => {
         }
         loadNotifications();
     }, []);
+
+    useEffect(() => {
+
+        if(initLoading && (loading || error)) {
+            setInitLoading(false);
+        }
+        if (error) {
+            toast.error("An error occurred while loading notifications.");
+        }
+    }, [loading, error]);
 
     // Handle accepting a request
     const handleAcceptRequest = async (requestId) => {
@@ -80,7 +91,7 @@ export const Notifications = () => {
                 <div className="max-w-4xl mx-auto">
                     <h1 className="text-3xl font-bold mb-6">Notifications</h1>
                     
-                    {loading ? (
+                    {initLoading ? (
                         <div className="flex justify-center items-center py-12">
                             <LoadingIcon />
                         </div>

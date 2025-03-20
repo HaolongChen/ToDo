@@ -195,7 +195,7 @@ export const AuthProvider = ({ children }) => {
       setRequests(prevRequests => prevRequests.filter(request => request._id !== requestId));
       setUser(prevUser => ({
         ...prevUser,
-        pendingTeammates: prevUser.pendingTeammates.filter(teammate => teammate._id !== requestId)
+        pendingTeammates: prevUser?.pendingTeammates.filter(teammate => teammate._id !== requestId)
       }));
     } catch (error) {
       setError(error.response?.data?.message || "Failed to reject request");

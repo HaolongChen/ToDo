@@ -137,13 +137,13 @@ export const Notifications = () => {
                                                     <div className="flex gap-2">
                                                         <button 
                                                             className="btn btn-sm btn-success"
-                                                            onClick={() => handleAcceptRequest(request)}
+                                                            onClick={() => handleAcceptRequest(request._id)}
                                                         >
                                                             <span className="mr-1">✓</span> Accept
                                                         </button>
                                                         <button 
                                                             className="btn btn-sm btn-error"
-                                                            onClick={() => handleRejectRequest(request)}
+                                                            onClick={() => handleRejectRequest(request._id)}
                                                         >
                                                             <span className="mr-1">✗</span> Reject
                                                         </button>

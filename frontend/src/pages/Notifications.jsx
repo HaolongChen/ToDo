@@ -7,10 +7,10 @@ import { DefaultAvatar } from "../components/DefaultAvatar";
 import { useNavigate } from "react-router-dom";
 
 export const Notifications = () => {
-    const { user, notifications, requests, acceptRequest, rejectRequest, deleteWaitlist, loading, error, getNotifications, getRequests } = useAuth();
+    const { user, notifications, requests, acceptRequest, rejectRequest, deleteWaitlist, loading, error, getNotifications, getRequests, getUserInfo } = useAuth();
     const navigate = useNavigate();
     const [initLoading, setInitLoading] = useState(true);
-    
+
     // useEffect(() => {
     //     async function loadNotifications() {
     //         await getNotifications();
@@ -104,15 +104,16 @@ export const Notifications = () => {
                                 <div className="bg-base-100 rounded-box p-6 shadow-md mb-6">
                                     <h2 className="text-xl font-semibold mb-4">Team Requests</h2>
                                     <div className="space-y-4">
-                                        {requests.map((request) => (
-                                            <div key={request._id} className="flex items-center justify-between bg-base-200 p-4 rounded-lg">
+                                        {requests.map(async (request) => {
+                                            const fromUser = await getUserInfo(request.fromUser, false);
+                                            return <><div key={request._id} className="flex items-center justify-between bg-base-200 p-4 rounded-lg">
                                                 <div className="flex items-center gap-3">
                                                     <div className="avatar">
                                                         <div className="w-12 h-12 rounded-full hover:cursor-pointer" onClick={() => navigate(`/user/${request.fromUser}`)}>
-                                                            {request.fromUser.coverImg ? (
-                                                                <img src={request.fromUser.coverImg} alt={request.fromUser.username} />
+                                                            {fromUser.coverImg ? (
+                                                                <img src={fromUser.coverImg} alt={fromUser.username} />
                                                             ) : (
-                                                                <DefaultAvatar username={request.fromUser.username} size={48} />
+                                                                <DefaultAvatar username={fromUser.username} size={48} />
                                                             )}
                                                         </div>
                                                     </div>
@@ -120,9 +121,9 @@ export const Notifications = () => {
                                                         <div className="flex items-center gap-2">
                                                             <span 
                                                                 className="font-medium cursor-pointer hover:underline"
-                                                                onClick={() => navigate(`/user/${request.fromUser}`)}
+                                                                onClick={() => navigate(`/user/${fromUser}`)}
                                                             >
-                                                                {request.fromUser.username}
+                                                                {fromUser.username}
                                                             </span>
                                                             {/*  TODO: fromUser username is incorrectly displayed */}
                                                             <span className="text-sm opacity-70">wants to add you to their team</span>
@@ -153,8 +154,8 @@ export const Notifications = () => {
                                                 {request.isProcessed && (
                                                     <div className="badge badge-secondary">Processed</div>
                                                 )}
-                                            </div>
-                                        ))}
+                                            </div></>
+                                        })}
                                     </div>
                                 </div>
                             ) : null}
@@ -164,15 +165,17 @@ export const Notifications = () => {
                                 <div className="bg-base-100 rounded-box p-6 shadow-md">
                                     <h2 className="text-xl font-semibold mb-4">Your Notifications</h2>
                                     <div className="space-y-4">
-                                        {notifications.map((notification) => (
+                                        {notifications.map(async (notification) => {
+                                            const fromUser = await getUserInfo(notification.fromUser, false);
+                                            return (
                                             <div key={notification._id} className="flex items-center justify-between bg-base-200 p-4 rounded-lg">
                                                 <div className="flex items-center gap-3">
                                                     <div className="avatar">
                                                         <div className="w-12 h-12 rounded-full">
-                                                            {notification.fromUser?.coverImg ? (
-                                                                <img src={notification.fromUser.coverImg} alt={notification.fromUser.username} />
+                                                            {fromUser?.coverImg ? (
+                                                                <img src={fromUser.coverImg} alt={fromUser.username} />
                                                             ) : (
-                                                                <DefaultAvatar username={notification.fromUser?.username || "User"} size={48} />
+                                                                <DefaultAvatar username={fromUser?.username || "User"} size={48} />
                                                             )}
                                                         </div>
                                                     </div>
@@ -180,9 +183,9 @@ export const Notifications = () => {
                                                         <div className="flex items-center gap-2">
                                                             <span 
                                                                 className="font-medium cursor-pointer hover:underline"
-                                                                onClick={() => navigate(`/user/${notification.fromUser?._id}`)}
+                                                                onClick={() => navigate(`/user/${fromUser?._id}`)}
                                                             >
-                                                                {notification.fromUser?.username || "User"}
+                                                                {fromUser?.username || "User"}
                                                             </span>
                                                             <span className="text-sm opacity-70">
                                                                 {notification.message || "sent you a notification"}
@@ -202,7 +205,7 @@ export const Notifications = () => {
                                                     <span className="text-lg">×</span>
                                                 </button>
                                             </div>
-                                        ))}
+                                        )})}
                                     </div>
                                 </div>
                             ) : null}

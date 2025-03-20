@@ -250,12 +250,13 @@ export const AuthProvider = ({ children }) => {
   //   }
   // }
 
-  const getUserInfo = async (userId) => {
+  const getUserInfo = async (userId, single) => {
     try {
       setLoading(true);
       setError(null);
       const response = await axios.get(`/api/notification/get-user-info/${userId}`);
-      setProfile(response.data);
+      if(single) setProfile(response.data);
+      else return response.data;
     } catch (error) {
       setError(error.response?.data?.message || "Failed to get user info");
       throw error;

@@ -31,7 +31,7 @@ export function Profile() {
 
   useEffect(() => {
     if (user && user._id) {
-      getUserInfo(user._id);
+      getUserInfo(user._id, true);
       setEmail(user.email || "");
       setBio(user.bio || "");
       // Fetch teammate details when user data is available

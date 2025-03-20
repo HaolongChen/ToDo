@@ -101,7 +101,7 @@ export function UserProfile() {
               </div>
                {/* TODO: replace request sent with accept and reject buttons in some className
                TODO: user.pendingTeam and user.team should be updated in real-time */}
-              {user.pendingTeam.includes(otherUser._id) ? (
+              {user.pendingTeam.some(request => request.userId === otherUser._id) ? (
                 <div className="mt-4">
                   <button 
                     className="btn btn-secondary" 

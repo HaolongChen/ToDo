@@ -10,18 +10,18 @@ export const Notifications = () => {
     const { user, notifications, requests, acceptRequest, rejectRequest, deleteWaitlist, loading, error, getNotifications, getRequests } = useAuth();
     const navigate = useNavigate();
     const [initLoading, setInitLoading] = useState(true);
+    
+    // useEffect(() => {
+    //     async function loadNotifications() {
+    //         await getNotifications();
+    //         await getRequests();
+    //     }
+    //     loadNotifications();
+    // }, []);
 
     useEffect(() => {
-        async function loadNotifications() {
-            await getNotifications();
-            await getRequests();
-        }
-        loadNotifications();
-    }, []);
 
-    useEffect(() => {
-
-        if(initLoading && (loading || error)) {
+        if(initLoading && !loading) {
             setInitLoading(false);
         }
         if (error) {

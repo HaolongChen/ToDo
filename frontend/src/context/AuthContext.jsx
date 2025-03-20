@@ -22,6 +22,9 @@ export const AuthProvider = ({ children }) => {
       try {
         const response = await axios.get('/api/auth/user');
         setUser(response.data.user);
+        await getAllGroups();
+        await getNotifications();
+        await getRequests();
       } catch (error) {
         console.log('Not authenticated');
         setUser(null);

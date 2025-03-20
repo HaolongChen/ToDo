@@ -119,19 +119,25 @@ export function DashBoard() {
     return () => clearTimeout(timer);
   }, [highlightedItem, todo]);
 
-  useEffect(() => {
-    if(groups.length > 0) {
-      setInitialLoading(false);
-      return;
-    }
-    else{
-      getAllGroups().then(() => {
-        // Set initialLoading to false once groups are loaded
-        setInitialLoading(false);
-      });
-    }
+  // useEffect(() => {
+  //   if(groups.length > 0) {
+  //     setInitialLoading(false);
+  //     return;
+  //   }
+  //   else{
+  //     getAllGroups().then(() => {
+  //       // Set initialLoading to false once groups are loaded
+  //       setInitialLoading(false);
+  //     });
+  //   }
     
-  }, []);
+  // }, []);
+
+  useEffect(() => {
+    if(!loading && initialLoading) {
+      setInitialLoading(false);
+    }
+  }, [loading]);
 
   // Helper functions for special groups
   const getMyDayTasks = () => {

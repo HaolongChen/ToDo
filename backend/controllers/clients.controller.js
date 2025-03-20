@@ -116,8 +116,8 @@ export const sendRequest = async (req, res) => {
         if(isExist2) return res.status(400).json({ message: 'Request already sent' });
         const waitlist = new Waitlist({ toUser: toUserId, fromUser: userId, isRequest: true, isProcessed: false });
         await waitlist.save();
-        user.pendingTeam.push(toUserId);
-        toUser.pendingTeam.push(userId);
+        user.pendingTeam.push({userId: toUserId, from: true});
+        toUser.pendingTeam.push({userId: userId, from: false});
         await toUser.save();
         await user.save();
         res.status(200).json({ message: 'Request sent successfully' });
@@ -179,8 +179,8 @@ export const acceptRequest = async (req, res) => {
         await waitlist.save();
         const newWaitlist = new Waitlist({ toUser: fromUser._id, fromUser: userId, isRequest: false, isProcessed: false, isOfficial: true, message: "I have accepted your request" });
         await newWaitlist.save();
-        fromUser.pendingTeam = fromUser.pendingTeam.filter((id) => id != userId);
-        user.pendingTeam = user.pendingTeam.filter((id) => id != fromUser._id);
+        fromUser.pendingTeam = fromUser.pendingTeam.filter((item) => item.userId != userId);
+        user.pendingTeam = user.pendingTeam.filter((item) => item.userId != fromUser._id);
         await user.save();
         await fromUser.save();
         res.status(200).json({ message: 'Request accepted successfully' });
@@ -234,10 +234,10 @@ export const rejectRequest = async (req, res) => {
         await newWaitlist.save();
         const fromUser = await User.findById(waitlist.fromUser).select('-password');
         if(!fromUser) return res.status(404).json({ message: 'User not found' });
-        fromUser.pendingTeam = fromUser.pendingTeam.filter((id) => id != userId);
+        fromUser.pendingTeam = fromUser.pendingTeam.filter((item) => item.userId != userId);
         const user = await User.findById(userId).select('-password');
         if(!user) return res.status(404).json({ message: 'User not found' });
-        user.pendingTeam = user.pendingTeam.filter((id) => id != fromUser._id);
+        user.pendingTeam = user.pendingTeam.filter((item) => item.userId != fromUser._id);
         await user.save();
         await fromUser.save();
         res.status(200).json({ message: 'Request rejected successfully' });

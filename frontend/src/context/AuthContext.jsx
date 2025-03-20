@@ -164,7 +164,7 @@ export const AuthProvider = ({ children }) => {
       setRequests(prevRequests => prevRequests.filter(request => request._id !== requestId));
       setUser(prevUser => ({
         ...prevUser,
-        pendingTeammates: prevUser.pendingTeammates.filter(teammate => teammate._id !== requestId),
+        pendingTeammates: prevUser.pendingTeammates.filter(teammate => teammate.userId !== requestId),
         teammates: [...prevUser.teammates, response.data.user]
       }));
     } catch (error) {
@@ -198,7 +198,7 @@ export const AuthProvider = ({ children }) => {
       setRequests(prevRequests => prevRequests.filter(request => request._id !== requestId));
       setUser(prevUser => ({
         ...prevUser,
-        pendingTeammates: prevUser?.pendingTeammates.filter(teammate => teammate._id !== requestId)
+        pendingTeammates: prevUser?.pendingTeammates.filter(teammate => teammate.userId !== requestId)
       }));
     } catch (error) {
       setError(error.response?.data?.message || "Failed to reject request");

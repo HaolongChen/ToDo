@@ -77,6 +77,8 @@ export const Notifications = () => {
         }
     };
 
+    console.log(requests[0]);
+
     // Format date for display
     const formatDate = (dateString) => {
         const date = new Date(dateString);
@@ -106,7 +108,7 @@ export const Notifications = () => {
                                             <div key={request._id} className="flex items-center justify-between bg-base-200 p-4 rounded-lg">
                                                 <div className="flex items-center gap-3">
                                                     <div className="avatar">
-                                                        <div className="w-12 h-12 rounded-full">
+                                                        <div className="w-12 h-12 rounded-full hover:cursor-pointer" onClick={() => navigate(`/user/${request.fromUser}`)}>
                                                             {request.fromUser.coverImg ? (
                                                                 <img src={request.fromUser.coverImg} alt={request.fromUser.username} />
                                                             ) : (
@@ -118,10 +120,11 @@ export const Notifications = () => {
                                                         <div className="flex items-center gap-2">
                                                             <span 
                                                                 className="font-medium cursor-pointer hover:underline"
-                                                                onClick={() => navigate(`/user/${request.fromUser._id}`)}
+                                                                onClick={() => navigate(`/user/${request.fromUser}`)}
                                                             >
                                                                 {request.fromUser.username}
                                                             </span>
+                                                            {/*  TODO: fromUser username is incorrectly displayed */}
                                                             <span className="text-sm opacity-70">wants to add you to their team</span>
                                                         </div>
                                                         <div className="text-xs opacity-60 mt-1">
@@ -134,13 +137,13 @@ export const Notifications = () => {
                                                     <div className="flex gap-2">
                                                         <button 
                                                             className="btn btn-sm btn-success"
-                                                            onClick={() => handleAcceptRequest(request._id)}
+                                                            onClick={() => handleAcceptRequest(request)}
                                                         >
                                                             <span className="mr-1">✓</span> Accept
                                                         </button>
                                                         <button 
                                                             className="btn btn-sm btn-error"
-                                                            onClick={() => handleRejectRequest(request._id)}
+                                                            onClick={() => handleRejectRequest(request)}
                                                         >
                                                             <span className="mr-1">✗</span> Reject
                                                         </button>

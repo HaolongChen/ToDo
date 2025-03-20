@@ -99,6 +99,8 @@ export function UserProfile() {
                 <p className="text-sm opacity-70">{otherUser.email || "No email added"}</p>
                 <p className="text-base">{otherUser.bio || "No bio added"}</p>
               </div>
+               {/* TODO: replace request sent with accept and reject buttons in some className
+               TODO: user.pendingTeam and user.team should be updated in real-time */}
               {user.pendingTeam.includes(otherUser._id) ? (
                 <div className="mt-4">
                   <button 

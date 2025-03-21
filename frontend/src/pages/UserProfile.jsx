@@ -15,8 +15,7 @@ export function UserProfile() {
   const [error, setError] = useState('');
   const { user, sendAssignment, sendRequest, removeFromTeam } = useAuth();
 
-  console.log(user.pendingTeam);
-
+  // Load other user's profile data
   useEffect(() => {
     async function loadUserProfile() {
       try {
@@ -34,10 +33,62 @@ export function UserProfile() {
     loadUserProfile();
   }, [userId]);
 
+  // Reload profile when actions are taken
+  const handleSendRequest = async () => {
+    try {
+      await toast.promise(
+        sendRequest(otherUser._id), 
+        {
+          loading: 'Sending request...',
+          success: 'Request sent',
+          error: 'Failed to send request'
+        }
+      );
+      
+      // Force re-load of other user profile to get updated relationship status
+      const userData = await getUserProfile(userId);
+      setOtherUser(userData);
+    } catch (error) {
+      console.error('Error sending request:', error);
+    }
+  };
+
+  // Handle removing from team
+  const handleRemoveFromTeam = async () => {
+    try {
+      await toast.promise(
+        removeFromTeam(otherUser._id),
+        {
+          loading: 'Removing from team...',
+          success: 'User removed from team',
+          error: 'Failed to remove user from team'
+        }
+      );
+      
+      // Force re-load of other user profile to get updated relationship status
+      const userData = await getUserProfile(userId);
+      setOtherUser(userData);
+    } catch (error) {
+      console.error('Error removing from team:', error);
+    }
+  };
+
   // Calculate task completion percentage
   const taskPercentage = otherUser && otherUser.totalTasks > 0
     ? Math.round((otherUser.completedTasks / otherUser.totalTasks) * 100)
     : 0;
+
+  // Helper function to check if a request is pending
+  const hasPendingRequest = () => {
+    if (!user || !user.pendingTeam || !otherUser) return false;
+    return user.pendingTeam.some(request => request.userId === otherUser._id);
+  };
+
+  // Helper function to check if users are teammates
+  const isTeammate = () => {
+    if (!user || !user.team || !otherUser) return false;
+    return user.team.includes(otherUser._id);
+  };
 
   if (initLoading) {
     return (
@@ -102,9 +153,9 @@ export function UserProfile() {
                 <p className="text-sm opacity-70">{otherUser.email || "No email added"}</p>
                 <p className="text-base">{otherUser.bio || "No bio added"}</p>
               </div>
-               {/* TODO: replace request sent with accept and reject buttons in some className
-               TODO: user.pendingTeam and user.team should be updated in real-time */}
-              {user.pendingTeam.some(request => request.userId === otherUser._id) ? (
+              
+              {/* Team relationship actions */}
+              {hasPendingRequest() ? (
                 <div className="mt-4">
                   <button 
                     className="btn btn-secondary" 
@@ -113,15 +164,11 @@ export function UserProfile() {
                     Request Sent
                   </button>
                 </div>
-              ) : user.team.includes(otherUser._id) ? (
+              ) : isTeammate() ? (
                 <div className="mt-4">
                   <button 
-                    className="btn btn-secondary" 
-                    onClick={() => toast.promise(removeFromTeam(otherUser._id), {
-                      loading: 'Removing from team...',
-                      success: 'User removed from team',
-                      error: 'Failed to remove user from team'
-                    })}
+                    className="btn btn-error" 
+                    onClick={handleRemoveFromTeam}
                   >
                     Remove from Team
                   </button>
@@ -130,11 +177,7 @@ export function UserProfile() {
                 <div className="mt-4">
                   <button 
                     className="btn btn-primary" 
-                    onClick={() => toast.promise(sendRequest(otherUser._id), {
-                      loading: 'Sending request...',
-                      success: 'Request sent',
-                      error: 'Failed to send request'
-                    })}
+                    onClick={handleSendRequest}
                   >
                     Add to Team
                   </button>

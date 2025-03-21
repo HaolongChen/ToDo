@@ -139,16 +139,27 @@ export const AuthProvider = ({ children }) => {
       setLoading(true);
       setError(null);
       const response = await axios.post('/api/notification/send-requests', {toUser: request});
+      
+      // Update with correct pendingTeam property instead of pendingTeammates
       setUser(prevUser => {
         if (!prevUser) return prevUser;
         
+        // Add to pendingTeam with the correct structure matching backend
         return {
           ...prevUser,
-          pendingTeammates: Array.isArray(prevUser.pendingTeammates) 
-            ? [...prevUser.pendingTeammates, request]
-            : [request]
+          pendingTeam: Array.isArray(prevUser.pendingTeam) 
+            ? [...prevUser.pendingTeam, {userId: request, from: true}]
+            : [{userId: request, from: true}]
         };
       });
+      
+      // Refresh user data after sending request
+      try {
+        const userResponse = await axios.get('/api/auth/user');
+        setUser(userResponse.data.user);
+      } catch (refreshError) {
+        console.error('Failed to refresh user data:', refreshError);
+      }
     } catch (error) {
       setError(error.response?.data?.message || "Failed to send request");
       throw error;
@@ -164,17 +175,27 @@ export const AuthProvider = ({ children }) => {
       setLoading(true);
       setError(null);
       const response = await axios.post('/api/notification/remove-from-team', { toUser: userId });
+      
+      // Update user state to remove teammate from team array
       setUser(prevUser => {
         if (!prevUser) return prevUser;
         
         return {
           ...prevUser,
-          teammates: Array.isArray(prevUser.teammates)
-            ? prevUser.teammates.filter(teammate => teammate._id !== userId)
+          team: Array.isArray(prevUser.team)
+            ? prevUser.team.filter(teammateId => teammateId !== userId)
             : []
         };
       });
-      console.log(response);
+      
+      // Refresh user data to ensure team members are up to date
+      try {
+        const userResponse = await axios.get('/api/auth/user');
+        setUser(userResponse.data.user);
+      } catch (refreshError) {
+        console.error('Failed to refresh user data:', refreshError);
+      }
+      
     } catch (error) {
       setError(error.response?.data?.message || "Failed to remove from team");
       throw error;

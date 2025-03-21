@@ -171,22 +171,45 @@ export const acceptRequest = async (req, res) => {
         if(!user) return res.status(404).json({ message: 'User not found' });
         const fromUser = await User.findById(waitlist.fromUser).select('-password');
         if(!fromUser) return res.status(404).json({ message: 'User not found' });
+        
+        // Add each other to teams
         user.team.push(fromUser._id);
         await user.save();
         fromUser.team.push(user._id);
         await fromUser.save();
+        
+        // Mark waitlist as processed
         waitlist.isProcessed = true;
         await waitlist.save();
-        const newWaitlist = new Waitlist({ toUser: fromUser._id, fromUser: userId, isRequest: false, isProcessed: false, isOfficial: true, message: "I have accepted your request" });
+        
+        // Create notification for the other user
+        const newWaitlist = new Waitlist({ 
+            toUser: fromUser._id, 
+            fromUser: userId, 
+            isRequest: false, 
+            isProcessed: false, 
+            isOfficial: true, 
+            message: "I have accepted your request" 
+        });
         await newWaitlist.save();
-        fromUser.pendingTeam = fromUser.pendingTeam.filter((item) => item.userId != userId);
-        user.pendingTeam = user.pendingTeam.filter((item) => item.userId != fromUser._id);
+        
+        // Remove from pendingTeam using proper string comparison of ObjectIds
+        fromUser.pendingTeam = fromUser.pendingTeam.filter(item => item.userId.toString() !== userId.toString());
+        user.pendingTeam = user.pendingTeam.filter(item => item.userId.toString() !== fromUser._id.toString());
+        
         await user.save();
         await fromUser.save();
-        res.status(200).json({ message: 'Request accepted successfully' });
-    } catch (error) {
-        res.status(500).json({ message: error.message });
         
+        res.status(200).json({ 
+            message: 'Request accepted successfully',
+            user: {
+                _id: fromUser._id,
+                username: fromUser.username
+            }
+        });
+    } catch (error) {
+        console.error("Error in acceptRequest:", error);
+        res.status(500).json({ message: error.message });
     }
 }
 
@@ -228,22 +251,40 @@ export const rejectRequest = async (req, res) => {
         const id = req.params.id;
         const waitlist = await Waitlist.findById(id);
         if(!waitlist) return res.status(404).json({ message: 'Request not found' });
+        
+        // Mark waitlist as processed
         waitlist.isProcessed = true;
         await waitlist.save();
-        const newWaitlist = new Waitlist({ toUser: waitlist.fromUser, fromUser: userId, isRequest: false, isProcessed: false, isOfficial: true, message: "I have rejected your request" });
+        
+        // Create notification for the other user
+        const newWaitlist = new Waitlist({ 
+            toUser: waitlist.fromUser, 
+            fromUser: userId, 
+            isRequest: false, 
+            isProcessed: false, 
+            isOfficial: true, 
+            message: "I have rejected your request" 
+        });
         await newWaitlist.save();
+        
+        // Get both users
         const fromUser = await User.findById(waitlist.fromUser).select('-password');
         if(!fromUser) return res.status(404).json({ message: 'User not found' });
-        fromUser.pendingTeam = fromUser.pendingTeam.filter((item) => item.userId != userId);
         const user = await User.findById(userId).select('-password');
         if(!user) return res.status(404).json({ message: 'User not found' });
-        user.pendingTeam = user.pendingTeam.filter((item) => item.userId != fromUser._id);
+        
+        // Remove from pendingTeam using proper string comparison of ObjectIds
+        fromUser.pendingTeam = fromUser.pendingTeam.filter(item => item.userId.toString() !== userId.toString());
+        user.pendingTeam = user.pendingTeam.filter(item => item.userId.toString() !== fromUser._id.toString());
+        
+        // Save changes to both users
         await user.save();
         await fromUser.save();
+        
         res.status(200).json({ message: 'Request rejected successfully' });
     } catch (error) {
+        console.error("Error in rejectRequest:", error);
         res.status(500).json({ message: error.message });
-        
     }
 }
 

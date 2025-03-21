@@ -139,10 +139,16 @@ export const AuthProvider = ({ children }) => {
       setLoading(true);
       setError(null);
       const response = await axios.post('/api/notification/send-requests', {toUser: request});
-      setUser(prevUser => ({
-        ...prevUser,
-        pendingTeammates: [...(prevUser?.pendingTeammates || []), request]
-      }));
+      setUser(prevUser => {
+        if (!prevUser) return prevUser;
+        
+        return {
+          ...prevUser,
+          pendingTeammates: Array.isArray(prevUser.pendingTeammates) 
+            ? [...prevUser.pendingTeammates, request]
+            : [request]
+        };
+      });
     } catch (error) {
       setError(error.response?.data?.message || "Failed to send request");
       throw error;
@@ -158,10 +164,16 @@ export const AuthProvider = ({ children }) => {
       setLoading(true);
       setError(null);
       const response = await axios.post('/api/notification/remove-from-team', { toUser: userId });
-      setUser(prevUser => ({
-        ...prevUser,
-        teammates: prevUser.teammates.filter(teammate => teammate._id !== userId),
-      }));
+      setUser(prevUser => {
+        if (!prevUser) return prevUser;
+        
+        return {
+          ...prevUser,
+          teammates: Array.isArray(prevUser.teammates)
+            ? prevUser.teammates.filter(teammate => teammate._id !== userId)
+            : []
+        };
+      });
       console.log(response);
     } catch (error) {
       setError(error.response?.data?.message || "Failed to remove from team");
@@ -177,13 +189,40 @@ export const AuthProvider = ({ children }) => {
       console.log("loading accept request")
       setLoading(true);
       setError(null);
+      
+      // Get the request data before updating it
+      const requestToAccept = requests.find(req => req._id === requestId);
+      const fromUserId = requestToAccept?.fromUser?._id || requestToAccept?.fromUser;
+      
+      // Call the API to accept the request
       const response = await axios.post(`/api/notification/accept/${requestId}`);
+      
+      // Update the UI state
       setRequests(prevRequests => prevRequests.filter(request => request._id !== requestId));
-      setUser(prevUser => ({
-        ...prevUser,
-        pendingTeammates: prevUser.pendingTeammates.filter(teammate => teammate.userId !== requestId),
-        teammates: [...prevUser.teammates, response.data.user]
-      }));
+      
+      // Update user state with proper pendingTeam handling 
+      setUser(prevUser => {
+        if (!prevUser) return prevUser;
+        
+        return {
+          ...prevUser,
+          pendingTeam: Array.isArray(prevUser.pendingTeam) 
+            ? prevUser.pendingTeam.filter(item => item.userId !== fromUserId)
+            : [],
+          team: Array.isArray(prevUser.team)
+            ? [...prevUser.team, fromUserId]
+            : [fromUserId]
+        };
+      });
+      
+      // Refresh user data to ensure team members are up to date
+      try {
+        const userResponse = await axios.get('/api/auth/user');
+        setUser(userResponse.data.user);
+      } catch (refreshError) {
+        console.error('Failed to refresh user data:', refreshError);
+      }
+      
     } catch (error) {
       setError(error.response?.data?.message || "Failed to accept request");
       throw error;
@@ -199,8 +238,12 @@ export const AuthProvider = ({ children }) => {
       setError(null);
       console.log("loading delete waitlist")
       const response = await axios.post(`/api/notification/delete/${waitlistId}`);
-      setRequests(prevRequests => prevRequests.filter(request => request._id !== waitlistId));
-      setNotifications(prevNotifications => prevNotifications.filter(notification => notification._id !== waitlistId));
+      setRequests(prevRequests => Array.isArray(prevRequests) 
+        ? prevRequests.filter(request => request._id !== waitlistId)
+        : []);
+      setNotifications(prevNotifications => Array.isArray(prevNotifications) 
+        ? prevNotifications.filter(notification => notification._id !== waitlistId)
+        : []);
     } catch (error) {
       setError(error.response?.data?.message || "Failed to delete waitlist");
       throw error;
@@ -210,17 +253,39 @@ export const AuthProvider = ({ children }) => {
     }
   }
 
+  // Fix the rejectRequest function to handle undefined pendingTeammates
   const rejectRequest = async (requestId) => {
     try {
       console.log("loading reject request")
       setLoading(true);
       setError(null);
+      
+      // Get the request data before updating it
+      const requestToReject = requests.find(req => req._id === requestId);
+      const fromUserId = requestToReject?.fromUser?._id || requestToReject?.fromUser;
+      
       const response = await axios.post(`/api/notification/reject/${requestId}`);
       setRequests(prevRequests => prevRequests.filter(request => request._id !== requestId));
-      setUser(prevUser => ({
-        ...prevUser,
-        pendingTeammates: prevUser?.pendingTeammates.filter(teammate => teammate.userId !== requestId)
-      }));
+      
+      // Update user state with proper pendingTeam handling
+      setUser(prevUser => {
+        if (!prevUser) return prevUser;
+        
+        return {
+          ...prevUser,
+          pendingTeam: Array.isArray(prevUser.pendingTeam) 
+            ? prevUser.pendingTeam.filter(item => item.userId !== fromUserId)
+            : []
+        };
+      });
+      
+      // Refresh user data to ensure team members are up to date
+      try {
+        const userResponse = await axios.get('/api/auth/user');
+        setUser(userResponse.data.user);
+      } catch (refreshError) {
+        console.error('Failed to refresh user data:', refreshError);
+      }
     } catch (error) {
       setError(error.response?.data?.message || "Failed to reject request");
       throw error;

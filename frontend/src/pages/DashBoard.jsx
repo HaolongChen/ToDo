@@ -7,13 +7,14 @@ import { Task } from "../components/Task";
 import { NotImportant } from "../components/NotImportant";
 import { AssignedToMe } from "../components/AssignedToMe";
 import { AssignedByMe } from "../components/AssignedByme";
-import { useLocation } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import axios from "axios";
 import toast, { Toaster } from "react-hot-toast";
 
 export function DashBoard() {
   const location = useLocation();
-  const { getAllGroups, groups, createTodo, user, setUser, loading, error, teammates, setGroups, deleteTodo, updateTodo, createGroup, updateGroup, deleteGroup } = useAuth(); // Added deleteGroup
+  const navigate = useNavigate();
+  const { getAllGroups, groups, createTodo, user, setUser, loading, error, teammates, setGroups, deleteTodo, updateTodo, createGroup, updateGroup, deleteGroup, getNotifications, getRequests } = useAuth(); // Added deleteGroup
   const [drawerOpen, setDrawerOpen] = useState(true);
   const [selectedGroup, setSelectedGroup] = useState(0);
   const [inputValue, setInputValue] = useState("");
@@ -760,6 +761,44 @@ export function DashBoard() {
       console.error(error);
     }
   }
+
+  // Function to pre-fetch notifications data before navigating to notifications page
+  const navigateToNotifications = async () => {
+    try {
+      // Show loading toast
+      toast.loading("Loading notifications...");
+      
+      // Pre-fetch notification data
+      await getNotifications();
+      await getRequests();
+      
+      // Dismiss loading toast and navigate
+      toast.dismiss();
+      navigate('/notifications');
+    } catch (error) {
+      console.error("Error pre-fetching notifications:", error);
+      toast.error("Failed to load notifications");
+      // Navigate anyway, the Notifications component will retry loading
+      navigate('/notifications');
+    }
+  };
+
+  // Add this function to the NavBar component or pass it as a prop
+  useEffect(() => {
+    // Find the NavBar component and add the handler for notifications
+    const notificationsButton = document.querySelector('.notification-button');
+    if (notificationsButton) {
+      // Remove any existing listener to prevent duplicates
+      const newButton = notificationsButton.cloneNode(true);
+      notificationsButton.parentNode.replaceChild(newButton, notificationsButton);
+      
+      // Add the new click handler
+      newButton.addEventListener('click', (e) => {
+        e.preventDefault();
+        navigateToNotifications();
+      });
+    }
+  }, []);
 
   // Helper function to render sidebar skeletons
   const renderSidebarSkeletons = () => {

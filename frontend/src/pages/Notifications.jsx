@@ -11,13 +11,18 @@ export const Notifications = () => {
     const navigate = useNavigate();
     const [initLoading, setInitLoading] = useState(true);
 
-    // useEffect(() => {
-    //     async function loadNotifications() {
-    //         await getNotifications();
-    //         await getRequests();
-    //     }
-    //     loadNotifications();
-    // }, []);
+    useEffect(() => {
+        async function loadNotifications() {
+            try {
+                await getNotifications();
+                await getRequests();
+            } catch (error) {
+                console.error("Error loading notifications:", error);
+                toast.error("Failed to load notifications");
+            }
+        }
+        loadNotifications();
+    }, []);
 
     useEffect(() => {
         if(initLoading && !loading) {

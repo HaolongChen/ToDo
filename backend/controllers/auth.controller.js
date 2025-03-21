@@ -15,7 +15,7 @@ export const signup = async (req, res) => {
             return res.status(400).json({message: 'Password must be at least 6 characters long'});
         }
         const hashedPassword = await bcrypt.hash(password, 12);
-        const user = new User({username: username, password: hashedPassword, coverImg: coverImage, totalTasks: 0, completedTasks: 0, totalTeams: 0});
+        const user = new User({username: username, password: hashedPassword, coverImg: coverImage, totalTasks: 0, completedTasks: 0, totalTeams: 0, pendingTeam: []});
         await user.save();
         generateToken(user._id, res);
         const myDay = new Group({name: 'My Day', user: user._id});

@@ -15,6 +15,8 @@ export function UserProfile() {
   const [error, setError] = useState('');
   const { user, sendAssignment, sendRequest, removeFromTeam } = useAuth();
 
+  console.log(user.pendingTeam);
+
   useEffect(() => {
     async function loadUserProfile() {
       try {
@@ -58,6 +60,7 @@ export function UserProfile() {
       </div>
     );
   }
+  
 
   if (!otherUser) {
     return (

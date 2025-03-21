@@ -20,7 +20,6 @@ export const Notifications = () => {
     // }, []);
 
     useEffect(() => {
-
         if(initLoading && !loading) {
             setInitLoading(false);
         }
@@ -77,8 +76,6 @@ export const Notifications = () => {
         }
     };
 
-    console.log(requests[0]);
-
     // Format date for display
     const formatDate = (dateString) => {
         const date = new Date(dateString);
@@ -104,16 +101,15 @@ export const Notifications = () => {
                                 <div className="bg-base-100 rounded-box p-6 shadow-md mb-6">
                                     <h2 className="text-xl font-semibold mb-4">Team Requests</h2>
                                     <div className="space-y-4">
-                                        {requests.map(async (request) => {
-                                            const fromUser = await getUserInfo(request.fromUser, false);
-                                            return <><div key={request._id} className="flex items-center justify-between bg-base-200 p-4 rounded-lg">
+                                        {requests.map((request) => (
+                                            <div key={request._id} className="flex items-center justify-between bg-base-200 p-4 rounded-lg">
                                                 <div className="flex items-center gap-3">
                                                     <div className="avatar">
-                                                        <div className="w-12 h-12 rounded-full hover:cursor-pointer" onClick={() => navigate(`/user/${request.fromUser}`)}>
-                                                            {fromUser.coverImg ? (
-                                                                <img src={fromUser.coverImg} alt={fromUser.username} />
+                                                        <div className="w-12 h-12 rounded-full hover:cursor-pointer" onClick={() => navigate(`/user/${request.fromUser?._id || request.fromUser}`)}>
+                                                            {request.fromUser?.coverImg ? (
+                                                                <img src={request.fromUser.coverImg} alt={request.fromUser.username} />
                                                             ) : (
-                                                                <DefaultAvatar username={fromUser.username} size={48} />
+                                                                <DefaultAvatar username={request.fromUser?.username || "User"} size={48} />
                                                             )}
                                                         </div>
                                                     </div>
@@ -121,11 +117,10 @@ export const Notifications = () => {
                                                         <div className="flex items-center gap-2">
                                                             <span 
                                                                 className="font-medium cursor-pointer hover:underline"
-                                                                onClick={() => navigate(`/user/${fromUser}`)}
+                                                                onClick={() => navigate(`/user/${request.fromUser?._id || request.fromUser}`)}
                                                             >
-                                                                {fromUser.username}
+                                                                {request.fromUser?.username || "User"}
                                                             </span>
-                                                            {/*  TODO: fromUser username is incorrectly displayed */}
                                                             <span className="text-sm opacity-70">wants to add you to their team</span>
                                                         </div>
                                                         <div className="text-xs opacity-60 mt-1">
@@ -154,8 +149,8 @@ export const Notifications = () => {
                                                 {request.isProcessed && (
                                                     <div className="badge badge-secondary">Processed</div>
                                                 )}
-                                            </div></>
-                                        })}
+                                            </div>
+                                        ))}
                                     </div>
                                 </div>
                             ) : null}
@@ -165,17 +160,15 @@ export const Notifications = () => {
                                 <div className="bg-base-100 rounded-box p-6 shadow-md">
                                     <h2 className="text-xl font-semibold mb-4">Your Notifications</h2>
                                     <div className="space-y-4">
-                                        {notifications.map(async (notification) => {
-                                            const fromUser = await getUserInfo(notification.fromUser, false);
-                                            return (
+                                        {notifications.map((notification) => (
                                             <div key={notification._id} className="flex items-center justify-between bg-base-200 p-4 rounded-lg">
                                                 <div className="flex items-center gap-3">
                                                     <div className="avatar">
                                                         <div className="w-12 h-12 rounded-full">
-                                                            {fromUser?.coverImg ? (
-                                                                <img src={fromUser.coverImg} alt={fromUser.username} />
+                                                            {notification.fromUser?.coverImg ? (
+                                                                <img src={notification.fromUser.coverImg} alt={notification.fromUser.username} />
                                                             ) : (
-                                                                <DefaultAvatar username={fromUser?.username || "User"} size={48} />
+                                                                <DefaultAvatar username={notification.fromUser?.username || "User"} size={48} />
                                                             )}
                                                         </div>
                                                     </div>
@@ -183,9 +176,9 @@ export const Notifications = () => {
                                                         <div className="flex items-center gap-2">
                                                             <span 
                                                                 className="font-medium cursor-pointer hover:underline"
-                                                                onClick={() => navigate(`/user/${fromUser?._id}`)}
+                                                                onClick={() => navigate(`/user/${notification.fromUser?._id}`)}
                                                             >
-                                                                {fromUser?.username || "User"}
+                                                                {notification.fromUser?.username || "User"}
                                                             </span>
                                                             <span className="text-sm opacity-70">
                                                                 {notification.message || "sent you a notification"}
@@ -205,7 +198,7 @@ export const Notifications = () => {
                                                     <span className="text-lg">×</span>
                                                 </button>
                                             </div>
-                                        )})}
+                                        ))}
                                     </div>
                                 </div>
                             ) : null}

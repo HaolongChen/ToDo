@@ -81,6 +81,8 @@ export const Notifications = () => {
         }
     };
 
+    console.log(notifications)
+
     // Format date for display
     const formatDate = (dateString) => {
         const date = new Date(dateString);
@@ -110,11 +112,11 @@ export const Notifications = () => {
                                             <div key={request._id} className="flex items-center justify-between bg-base-200 p-4 rounded-lg">
                                                 <div className="flex items-center gap-3">
                                                     <div className="avatar">
-                                                        <div className="w-12 h-12 rounded-full hover:cursor-pointer" onClick={() => navigate(`/user/${request.fromUser?._id || request.fromUser}`)}>
-                                                            {request.fromUser?.coverImg ? (
-                                                                <img src={request.fromUser.coverImg} alt={request.fromUser.username} />
+                                                        <div className="w-12 h-12 rounded-full hover:cursor-pointer" onClick={() => navigate(`/user/${request.fromUser.user._id || request.fromUser}`)}>
+                                                            {request.fromUser.user.coverImg ? (
+                                                                <img src={request.fromUser.user.coverImg} alt={request.fromUser.user.username} />
                                                             ) : (
-                                                                <DefaultAvatar username={request.fromUser?.username || "User"} size={48} />
+                                                                <DefaultAvatar username={request.fromUser.user.username || "User"} size={48} />
                                                             )}
                                                         </div>
                                                     </div>
@@ -122,9 +124,9 @@ export const Notifications = () => {
                                                         <div className="flex items-center gap-2">
                                                             <span 
                                                                 className="font-medium cursor-pointer hover:underline"
-                                                                onClick={() => navigate(`/user/${request.fromUser?._id || request.fromUser}`)}
+                                                                onClick={() => navigate(`/user/${request.fromUser.user._id || request.fromUser}`)}
                                                             >
-                                                                {request.fromUser?.username || "User"}
+                                                                {request.fromUser.user.user.username || "User"}
                                                             </span>
                                                             <span className="text-sm opacity-70">wants to add you to their team</span>
                                                         </div>
@@ -170,10 +172,10 @@ export const Notifications = () => {
                                                 <div className="flex items-center gap-3">
                                                     <div className="avatar">
                                                         <div className="w-12 h-12 rounded-full">
-                                                            {notification.fromUser?.coverImg ? (
-                                                                <img src={notification.fromUser.coverImg} alt={notification.fromUser.username} />
+                                                            {notification.fromUser.user.coverImg ? (
+                                                                <img src={notification.fromUser.user.coverImg} alt={notification.fromUser.user.username} />
                                                             ) : (
-                                                                <DefaultAvatar username={notification.fromUser?.username || "User"} size={48} />
+                                                                <DefaultAvatar username={notification.fromUser.user.username || "User"} size={48} />
                                                             )}
                                                         </div>
                                                     </div>
@@ -181,9 +183,9 @@ export const Notifications = () => {
                                                         <div className="flex items-center gap-2">
                                                             <span 
                                                                 className="font-medium cursor-pointer hover:underline"
-                                                                onClick={() => navigate(`/user/${notification.fromUser?._id}`)}
+                                                                onClick={() => navigate(`/user/${notification.fromUser.user._id}`)}
                                                             >
-                                                                {notification.fromUser?.username || "User"}
+                                                                {notification.fromUser.user.username || "User"}
                                                             </span>
                                                             <span className="text-sm opacity-70">
                                                                 {notification.message || "sent you a notification"}

@@ -146,6 +146,9 @@ export const removeFromTeam = async (req, res) => {
         toUser.team = toUser.team.filter(member => member.toString() !== userId.toString());
         await toUser.save();
 
+        const waitlist = new Waitlist({ toUser: toUserId, fromUser: userId, isRequest: false, isProcessed: false, isOfficial: true, message: "I have removed you from my team" });
+        await waitlist.save();
+
         res.status(200).json({ message: 'User removed from team successfully' });
     } catch (error) {
         res.status(500).json({ message: error.message });

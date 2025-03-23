@@ -41,6 +41,8 @@ export function Profile() {
     }
   }, [user]);
 
+  // console.log("User data:", user);
+
   const fetchTeammateDetails = async () => {
     try {
       const teammatePromises = user.team.map(teammateId => 

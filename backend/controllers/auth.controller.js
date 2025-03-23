@@ -62,11 +62,7 @@ export const signin = async (req, res) => {
             return res.status(400).json({message: 'Username or password is incorrect'});
         }
         generateToken(user._id, res);
-        res.status(200).json({
-            username: user.username,
-            teams: user.team,
-            coverImage: user.coverImg
-        });
+        res.status(200).json(user);
     } catch (error) {
         console.log(error);
         
@@ -87,7 +83,8 @@ export const logout = (req, res) => {
 export const getUser = async (req, res) => {
     try {
         const user = await User.findById(req.user._id).select('-password');
-        res.status(200).json({user});
+        console.log(user);
+        res.status(200).json(user);
     } catch (error) {
         console.log(error);
         

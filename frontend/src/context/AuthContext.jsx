@@ -21,7 +21,8 @@ export const AuthProvider = ({ children }) => {
       try {
         setLoading(true);
         const response = await axios.get('/api/auth/user');
-        setUser(response.data.user);
+        console.log(response.data);
+        setUser(response.data);
         await getAllGroups();
         await getNotifications();
         await getRequests();
@@ -36,7 +37,7 @@ export const AuthProvider = ({ children }) => {
     };
 
     checkAuthStatus();
-  }, []);
+  }, [user?._id]);
 
   // Login function
   const login = async (username, password) => {

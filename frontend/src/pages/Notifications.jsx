@@ -7,22 +7,22 @@ import { DefaultAvatar } from "../components/DefaultAvatar";
 import { useNavigate } from "react-router-dom";
 
 export const Notifications = () => {
-    const { user, notifications, requests, acceptRequest, rejectRequest, deleteWaitlist, loading, error, getNotifications, getRequests, getUserInfo } = useAuth();
+    const { user, notifications, requests, acceptRequest, rejectRequest, deleteWaitlist, loading, error } = useAuth();
     const navigate = useNavigate();
     const [initLoading, setInitLoading] = useState(true);
 
-    useEffect(() => {
-        async function loadNotifications() {
-            try {
-                await getNotifications();
-                await getRequests();
-            } catch (error) {
-                console.error("Error loading notifications:", error);
-                toast.error("Failed to load notifications");
-            }
-        }
-        loadNotifications();
-    }, []);
+    // useEffect(() => {
+    //     async function loadNotifications() {
+    //         try {
+    //             await getNotifications();
+    //             await getRequests();
+    //         } catch (error) {
+    //             console.error("Error loading notifications:", error);
+    //             toast.error("Failed to load notifications");
+    //         }
+    //     }
+    //     loadNotifications();
+    // }, []);
 
     useEffect(() => {
         if(initLoading && !loading) {
@@ -32,6 +32,8 @@ export const Notifications = () => {
             toast.error("An error occurred while loading notifications.");
         }
     }, [loading, error]);
+
+    // console.log(notifications, requests);
 
     // Handle accepting a request
     const handleAcceptRequest = async (requestId) => {
@@ -81,8 +83,6 @@ export const Notifications = () => {
         }
     };
 
-    console.log(notifications)
-
     // Format date for display
     const formatDate = (dateString) => {
         const date = new Date(dateString);
@@ -112,11 +112,11 @@ export const Notifications = () => {
                                             <div key={request._id} className="flex items-center justify-between bg-base-200 p-4 rounded-lg">
                                                 <div className="flex items-center gap-3">
                                                     <div className="avatar">
-                                                        <div className="w-12 h-12 rounded-full hover:cursor-pointer" onClick={() => navigate(`/user/${request.fromUser.user._id || request.fromUser}`)}>
-                                                            {request.fromUser.user.coverImg ? (
+                                                        <div className="w-12 h-12 rounded-full hover:cursor-pointer" onClick={() => navigate(`/user/${request.fromUser?.user?._id || (typeof request.fromUser === 'string' ? request.fromUser : '')}`)}> 
+                                                            {request.fromUser?.user?.coverImg ? (
                                                                 <img src={request.fromUser.user.coverImg} alt={request.fromUser.user.username} />
                                                             ) : (
-                                                                <DefaultAvatar username={request.fromUser.user.username || "User"} size={48} />
+                                                                <DefaultAvatar username={request.fromUser?.user?.username || "User"} size={48} />
                                                             )}
                                                         </div>
                                                     </div>
@@ -124,9 +124,9 @@ export const Notifications = () => {
                                                         <div className="flex items-center gap-2">
                                                             <span 
                                                                 className="font-medium cursor-pointer hover:underline"
-                                                                onClick={() => navigate(`/user/${request.fromUser.user._id || request.fromUser}`)}
+                                                                onClick={() => navigate(`/user/${request.fromUser?.user?._id || (typeof request.fromUser === 'string' ? request.fromUser : '')}`)}
                                                             >
-                                                                {request.fromUser.user.user.username || "User"}
+                                                                {request.fromUser?.user?.username || "Unknown User"}
                                                             </span>
                                                             <span className="text-sm opacity-70">wants to add you to their team</span>
                                                         </div>
@@ -171,11 +171,11 @@ export const Notifications = () => {
                                             <div key={notification._id} className="flex items-center justify-between bg-base-200 p-4 rounded-lg">
                                                 <div className="flex items-center gap-3">
                                                     <div className="avatar">
-                                                        <div className="w-12 h-12 rounded-full">
-                                                            {notification.fromUser.user.coverImg ? (
+                                                        <div className="w-12 h-12 rounded-full hover:cursor-pointer" onClick={() => navigate(`/user/${notification.fromUser?.user?._id || (typeof notification.fromUser === 'string' ? notification.fromUser : '')}`)}>
+                                                            {notification.fromUser?.user?.coverImg ? (
                                                                 <img src={notification.fromUser.user.coverImg} alt={notification.fromUser.user.username} />
                                                             ) : (
-                                                                <DefaultAvatar username={notification.fromUser.user.username || "User"} size={48} />
+                                                                <DefaultAvatar username={notification.fromUser?.user?.username || "User"} size={48} />
                                                             )}
                                                         </div>
                                                     </div>
@@ -183,9 +183,9 @@ export const Notifications = () => {
                                                         <div className="flex items-center gap-2">
                                                             <span 
                                                                 className="font-medium cursor-pointer hover:underline"
-                                                                onClick={() => navigate(`/user/${notification.fromUser.user._id}`)}
+                                                                onClick={() => navigate(`/user/${notification.fromUser?.user?._id || (typeof notification.fromUser === 'string' ? notification.fromUser : '')}`)}
                                                             >
-                                                                {notification.fromUser.user.username || "User"}
+                                                                {notification.fromUser?.user?.username || "Unknown User"}
                                                             </span>
                                                             <span className="text-sm opacity-70">
                                                                 {notification.message || "sent you a notification"}

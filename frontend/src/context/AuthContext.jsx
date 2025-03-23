@@ -19,15 +19,18 @@ export const AuthProvider = ({ children }) => {
   useEffect(() => {
     const checkAuthStatus = async () => {
       try {
+        setLoading(true);
         const response = await axios.get('/api/auth/user');
         setUser(response.data.user);
         await getAllGroups();
         await getNotifications();
         await getRequests();
+        // console.log(notifications);
       } catch (error) {
         console.log('Not authenticated');
         setUser(null);
       } finally {
+        setLoading(false);
         setLoading(false);
       }
     };
@@ -105,15 +108,50 @@ export const AuthProvider = ({ children }) => {
   const getNotifications = async () => {
     try {
       console.log("loading get notifications")
-      setLoading(true);
+      // setLoading(true);
       setError(null);
       const response = await axios.get('/api/notification/get-notifications');
-      setNotifications(response.data);
+
+      const initialNotifications = response.data || [];
+
+      if (initialNotifications.length > 0) {
+        // First set the notifications with IDs to avoid flickering UI
+        setNotifications(initialNotifications);
+
+        // Then fetch and process user information
+        const processedNotifications = await Promise.all(
+          initialNotifications.map(async (notification) => {
+            try {
+              // Make a copy of the notification to avoid mutating the original
+              const notificationCopy = { ...notification };
+
+              // Only fetch user info if fromUser/toUser are strings (IDs)
+              if (typeof notificationCopy.fromUser === 'string') {
+                const fromUserInfo = await getUserInfo(notificationCopy.fromUser, false);
+                notificationCopy.fromUser = fromUserInfo || { username: 'Unknown User' };
+              }
+
+              if (typeof notificationCopy.toUser === 'string') {
+                const toUserInfo = await getUserInfo(notificationCopy.toUser, false);
+                notificationCopy.toUser = toUserInfo || { username: 'Unknown User' };
+              }
+              return notificationCopy;
+            } catch (error) {
+              console.error("Error fetching user info for notification:", error);
+              return notification; // Return original notification if fetching user info fails
+            }
+          })
+        );
+        setNotifications(processedNotifications);
+      } else {
+        setNotifications([]);
+      }
+      // console.log(initialNotifications)
     } catch (error) {
       setError(error.response?.data?.message || "Failed to get notifications");
       throw error;
     } finally {
-      setLoading(false);
+      // setLoading(false);
       console.log("loading get notifications false")
     }
   }
@@ -319,7 +357,7 @@ export const AuthProvider = ({ children }) => {
   const getRequests = async () => {
     try {
       // console.log("loading get requests")
-      setLoading(true);
+      // setLoading(true);
       setError(null);
       
       // Fetch requests
@@ -327,6 +365,8 @@ export const AuthProvider = ({ children }) => {
       
       // Store the initial requests
       const initialRequests = response.data || [];
+
+      // console.log("initialRequests", initialRequests)
       
       // Process requests with user info using Promise.all to properly handle async operations
       if (initialRequests.length > 0) {
@@ -369,7 +409,7 @@ export const AuthProvider = ({ children }) => {
       setError(error.response?.data?.message || "Failed to get requests");
       throw error;
     } finally {
-      setLoading(false);
+      // setLoading(false);
     }
   }
 
@@ -502,7 +542,7 @@ export const AuthProvider = ({ children }) => {
   const getAllGroups = async () => {
     try {
       console.log("loading get all groups")
-      setLoading(true);
+      // setLoading(true);
       setError(null);
       
       // First, get all groups
@@ -536,7 +576,7 @@ export const AuthProvider = ({ children }) => {
       setError(error.response?.data?.message || "Failed to get groups");
       throw error;
     } finally {
-      setLoading(false);
+      // setLoading(false);
       console.log("loading get all groups false")
     }
   }

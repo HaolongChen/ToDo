@@ -62,7 +62,8 @@ export const signin = async (req, res) => {
             return res.status(400).json({message: 'Username or password is incorrect'});
         }
         generateToken(user._id, res);
-        res.status(200).json(user);
+        const { password: ignored, ...userData } = user.toObject(); // Remove password from user object
+        res.status(200).json(userData);
     } catch (error) {
         console.log(error);
         

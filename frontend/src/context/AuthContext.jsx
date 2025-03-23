@@ -16,6 +16,7 @@ export const AuthProvider = ({ children }) => {
   const [allTodos, setAllTodos] = useState([]);
   const [groups, setGroups] = useState([]);
   const [initialProcess, setInitialProcess] = useState(true);
+  const [infoExists, setInfoExists] = useState(false);
 
   // Check if user is logged in on component mount
   useEffect(() => {
@@ -24,8 +25,10 @@ export const AuthProvider = ({ children }) => {
         if(!initialProcess) return;
         setLoading(true);
         const response = await axios.get('/api/auth/user');
-        setInitialProcess(false);
-        setUser(response.data);
+        if(response.status === 200) {
+          setInitialProcess(false);
+          setUser(response.data);
+        }
       } catch (error) {
         console.log(error);
         setUser(null);
@@ -34,23 +37,31 @@ export const AuthProvider = ({ children }) => {
       }
     };
 
+    checkAuthStatus();
+  }, [initialProcess]); // Only depend on initialProcess, not user
+
+  // Separate useEffect for fetching additional info after authentication
+  useEffect(() => {
     const getInfo = async () => {
-      try {
-        setLoading(true);
-        await getAllGroups();
-        await getNotifications();
-        await getRequests();
-      } catch (error) {
-        console.error('Error fetching initial data:', error);
-      } finally {
-        setLoading(false);
+      // Only fetch info if user exists, info doesn't exist yet, and initialProcess is complete
+      if (user && !infoExists && !initialProcess) {
+        try {
+          console.log("loading get info");
+          setLoading(true);
+          await getAllGroups();
+          await getNotifications();
+          await getRequests();
+          setInfoExists(true);
+        } catch (error) {
+          console.error('Error fetching initial data:', error);
+        } finally {
+          setLoading(false);
+        }
       }
     };
 
-    checkAuthStatus();
-
     getInfo();
-  }, [user]);
+  }, [user, infoExists, initialProcess]); // Dependencies that determine when to fetch info
 
   // Login function
   const login = async (username, password) => {
@@ -60,6 +71,7 @@ export const AuthProvider = ({ children }) => {
       setError(null);
       const response = await axios.post('/api/auth/signin', { username, password });
       setUser(response.data);
+      setInitialProcess(false);
       return response.data;
     } catch (error) {
       setError(error.response?.data?.message || "Failed to sign in");
@@ -79,6 +91,8 @@ export const AuthProvider = ({ children }) => {
       const response = await axios.post('/api/auth/signup', { username, password });
       setUser(response.data);
       getAllGroups();
+      setInitialProcess(false);
+      setInfoExists(true);
       return response.data;
     } catch (error) {
       setError(error.response?.data?.message || "Failed to sign up");
@@ -101,6 +115,7 @@ export const AuthProvider = ({ children }) => {
       setTeammates([]);
       setTodos([]);
       setInitialProcess(true);
+      setInfoExists(false);
       setProfile(null);
       setAllTodos([]);
       setGroups([]);

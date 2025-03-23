@@ -28,10 +28,14 @@ export function Profile() {
   const [teammates, setTeammates] = useState([]);
   const imgRef = useRef(null);
   const previewCanvasRef = useRef(null);
+  const [initialProcess, setInitialProcess] = useState(true);
 
   useEffect(() => {
     if (user && user._id) {
-      getUserInfo(user._id, true);
+      if(initialProcess) {
+        getUserInfo(user._id, true);
+        setInitialProcess(false);
+      }
       setEmail(user.email || "");
       setBio(user.bio || "");
       // Fetch teammate details when user data is available
@@ -39,7 +43,7 @@ export function Profile() {
         fetchTeammateDetails();
       }
     }
-  }, [user]);
+  }, [user.email, user.bio, user.team]);
 
   // console.log("User data:", user);
 

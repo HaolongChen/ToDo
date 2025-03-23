@@ -134,16 +134,16 @@ export const removeFromTeam = async (req, res) => {
         if(!userId) return res.status(400).json({ message: 'User ID is required' });
         const user = await User.findById(userId).select('-password');
         if(!user) return res.status(404).json({ message: 'User not found' });
-        if(!user.team.includes(toUserId)) return res.status(400).json({ message: 'User is not in the team' });
+        // if(!user.team.includes(toUserId)) return res.status(400).json({ message: 'User is not in the team' });
         
-
-        user.team = user.team.filter(member => member != toUserId);
+        // Convert IDs to strings for proper comparison
+        user.team = user.team.filter(member => member.toString() !== toUserId.toString());
         await user.save();
-        console.log({ user: user._id, toUser: toUserId });
+        console.log({ user: userId, toUser: toUserId });
 
         const toUser = await User.findById(toUserId).select('-password');
         if (!toUser) return res.status(404).json({ message: 'User not found' });
-        toUser.team = toUser.team.filter(member => member != userId);
+        toUser.team = toUser.team.filter(member => member.toString() !== userId.toString());
         await toUser.save();
 
         res.status(200).json({ message: 'User removed from team successfully' });

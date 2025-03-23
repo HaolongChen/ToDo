@@ -1,5 +1,6 @@
 import { createContext, useState, useEffect, useContext } from 'react';
 import axios from 'axios';
+import { set } from 'mongoose';
 
 const AuthContext = createContext();
 
@@ -14,30 +15,42 @@ export const AuthProvider = ({ children }) => {
   const [todos, setTodos] = useState([]);
   const [allTodos, setAllTodos] = useState([]);
   const [groups, setGroups] = useState([]);
+  const [initialProcess, setInitialProcess] = useState(true);
 
   // Check if user is logged in on component mount
   useEffect(() => {
     const checkAuthStatus = async () => {
       try {
+        if(!initialProcess) return;
         setLoading(true);
         const response = await axios.get('/api/auth/user');
-        console.log(response.data);
+        setInitialProcess(false);
         setUser(response.data);
-        await getAllGroups();
-        await getNotifications();
-        await getRequests();
-        // console.log(notifications);
       } catch (error) {
-        console.log('Not authenticated');
+        console.log(error);
         setUser(null);
       } finally {
         setLoading(false);
+      }
+    };
+
+    const getInfo = async () => {
+      try {
+        setLoading(true);
+        await getAllGroups();
+        await getNotifications();
+        await getRequests();
+      } catch (error) {
+        console.error('Error fetching initial data:', error);
+      } finally {
         setLoading(false);
       }
     };
 
     checkAuthStatus();
-  }, [user?._id]);
+
+    getInfo();
+  }, [user]);
 
   // Login function
   const login = async (username, password) => {
@@ -83,6 +96,14 @@ export const AuthProvider = ({ children }) => {
       setLoading(true);
       await axios.post('/api/auth/logout');
       setUser(null);
+      setNotifications([]);
+      setRequests([]);
+      setTeammates([]);
+      setTodos([]);
+      setInitialProcess(true);
+      setProfile(null);
+      setAllTodos([]);
+      setGroups([]);
     } catch (error) {
       console.error('Logout failed:', error);
     } finally {
@@ -195,7 +216,7 @@ export const AuthProvider = ({ children }) => {
       // Refresh user data after sending request
       try {
         const userResponse = await axios.get('/api/auth/user');
-        setUser(userResponse.data.user);
+        setUser(userResponse.data); // Fixed: use consistent data structure
       } catch (refreshError) {
         console.error('Failed to refresh user data:', refreshError);
       }
@@ -230,7 +251,7 @@ export const AuthProvider = ({ children }) => {
       // Refresh user data to ensure team members are up to date
       try {
         const userResponse = await axios.get('/api/auth/user');
-        setUser(userResponse.data.user);
+        setUser(userResponse.data); // Fixed: use consistent data structure
       } catch (refreshError) {
         console.error('Failed to refresh user data:', refreshError);
       }
@@ -278,7 +299,7 @@ export const AuthProvider = ({ children }) => {
       // Refresh user data to ensure team members are up to date
       try {
         const userResponse = await axios.get('/api/auth/user');
-        setUser(userResponse.data.user);
+        setUser(userResponse.data); // Fixed: use consistent data structure
       } catch (refreshError) {
         console.error('Failed to refresh user data:', refreshError);
       }
@@ -297,7 +318,11 @@ export const AuthProvider = ({ children }) => {
       setLoading(true);
       setError(null);
       console.log("loading delete waitlist")
-      const response = await axios.post(`/api/notification/delete/${waitlistId}`);
+      
+      // Make the API call first
+      await axios.post(`/api/notification/delete/${waitlistId}`);
+      
+      // Only update UI state after successful API call
       setRequests(prevRequests => Array.isArray(prevRequests) 
         ? prevRequests.filter(request => request._id !== waitlistId)
         : []);
@@ -342,7 +367,7 @@ export const AuthProvider = ({ children }) => {
       // Refresh user data to ensure team members are up to date
       try {
         const userResponse = await axios.get('/api/auth/user');
-        setUser(userResponse.data.user);
+        setUser(userResponse.data); // Fixed: use consistent data structure
       } catch (refreshError) {
         console.error('Failed to refresh user data:', refreshError);
       }
@@ -637,7 +662,7 @@ export const AuthProvider = ({ children }) => {
       // Refresh user data to update the avatar
       try {
         const userResponse = await axios.get('/api/auth/user');
-        setUser(userResponse.data.user);
+        setUser(userResponse.data); // Fixed: use consistent data structure
       } catch (refreshError) {
         console.error('Failed to refresh user data:', refreshError);
       }

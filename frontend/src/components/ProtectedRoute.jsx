@@ -8,7 +8,7 @@ export function ProtectedRoute({ children }) {
   const [initialLoading, setInitialLoading] = useState(true);
 
   useEffect(() => {
-    if (!loading) {
+    if (!loading && initialLoading) {
       setInitialLoading(false);
     }
   }, [loading]);

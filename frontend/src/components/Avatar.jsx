@@ -8,7 +8,7 @@ export const Avatar = ({size}) => {
     const [initialLoading, setInitialLoading] = useState(true);
 
     useEffect(() => {
-        setInitialLoading(false);
+        if(initialLoading) setInitialLoading(false);
     }, [loading]);
 
     const navigate = useNavigate();

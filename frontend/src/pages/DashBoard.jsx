@@ -763,42 +763,42 @@ export function DashBoard() {
   }
 
   // Function to pre-fetch notifications data before navigating to notifications page
-  const navigateToNotifications = async () => {
-    try {
-      // Show loading toast
-      toast.loading("Loading notifications...");
+  // const navigateToNotifications = async () => {
+  //   try {
+  //     // Show loading toast
+  //     toast.loading("Loading notifications...");
       
-      // Pre-fetch notification data
-      await getNotifications();
-      await getRequests();
+  //     // Pre-fetch notification data
+  //     await getNotifications();
+  //     await getRequests();
       
-      // Dismiss loading toast and navigate
-      toast.dismiss();
-      navigate('/notifications');
-    } catch (error) {
-      console.error("Error pre-fetching notifications:", error);
-      toast.error("Failed to load notifications");
-      // Navigate anyway, the Notifications component will retry loading
-      navigate('/notifications');
-    }
-  };
+  //     // Dismiss loading toast and navigate
+  //     toast.dismiss();
+  //     navigate('/notifications');
+  //   } catch (error) {
+  //     console.error("Error pre-fetching notifications:", error);
+  //     toast.error("Failed to load notifications");
+  //     // Navigate anyway, the Notifications component will retry loading
+  //     navigate('/notifications');
+  //   }
+  // };
 
   // Add this function to the NavBar component or pass it as a prop
-  useEffect(() => {
-    // Find the NavBar component and add the handler for notifications
-    const notificationsButton = document.querySelector('.notification-button');
-    if (notificationsButton) {
-      // Remove any existing listener to prevent duplicates
-      const newButton = notificationsButton.cloneNode(true);
-      notificationsButton.parentNode.replaceChild(newButton, notificationsButton);
+  // useEffect(() => {
+  //   // Find the NavBar component and add the handler for notifications
+  //   const notificationsButton = document.querySelector('.notification-button');
+  //   if (notificationsButton) {
+  //     // Remove any existing listener to prevent duplicates
+  //     const newButton = notificationsButton.cloneNode(true);
+  //     notificationsButton.parentNode.replaceChild(newButton, notificationsButton);
       
-      // Add the new click handler
-      newButton.addEventListener('click', (e) => {
-        e.preventDefault();
-        navigateToNotifications();
-      });
-    }
-  }, []);
+  //     // Add the new click handler
+  //     newButton.addEventListener('click', (e) => {
+  //       e.preventDefault();
+  //       navigateToNotifications();
+  //     });
+  //   }
+  // }, []);
 
   // Helper function to render sidebar skeletons
   const renderSidebarSkeletons = () => {
@@ -829,7 +829,7 @@ export function DashBoard() {
     <>
       <Toaster />
       <div className="flex flex-col h-screen overflow-hidden">
-        <style jsx>{`
+        <style>{`
           .highlight-animation {
             animation: highlight-pulse 2s ease-in-out;
           }

@@ -1196,13 +1196,32 @@ export function DashBoard() {
                               /> */}
                               <ul className="flex flex-col gap-2">
                                 {allTeammates.map((teammate, index) => (
-                                  <li key={teammate._id} className="flex items-center justify-between gap-2">
+                                  <li key={teammate._id} 
+                                    className="flex items-center justify-between gap-2 select-none hover:bg-[#7f7f7f2b] hover:cursor-pointer rounded-2xl"
+                                    onClick={() => {
+                                      if(teammatesToSend.includes(teammate._id)){
+                                        setTeammatesToSend(teammates.filter((id) => id !== teammate._id));
+                                      }
+                                      else{
+                                        setTeammatesToSend([...teammates, teammate._id]);
+                                      }
+                                    }}
+                                  >
                                     <div className="flex gap-2">
                                       <input 
                                         type="checkbox"
                                         value={teammate._id}
-                                        // onChange={handleTeammatesChange}
                                         className="checkbox checkbox-primary"
+                                        onChange={(e) => {
+                                          e.stopPropagation();
+                                          if(teammatesToSend.includes(teammate._id)){
+                                            setTeammatesToSend(teammatesToSend.filter((id) => id !== teammate._id));
+                                          }
+                                          else{
+                                            setTeammatesToSend([...teammatesToSend, teammate._id]);
+                                          }
+                                        }}
+                                        checked={teammatesToSend.includes(teammate._id)}
                                       />
                                       <span>{teammate.username}</span></div>
                                       <div>{teammate.coverImg ? (

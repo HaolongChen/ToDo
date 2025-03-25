@@ -45,7 +45,25 @@ export function DashBoard() {
   const highlightedRef = useRef(null);
   const groupRefs = useRef({});
   const todoRefs = useRef({});
+  const [teammatesToSend, setTeammatesToSend] = useState([]);
+  const [teammatesPickerOpen, setTeammatesPickerOpen] = useState(false);
+  const [allTeammates, setAllTeammates] = useState([]);
+  
+  useEffect(() => {
+    if (!user) return;
+    
+    const fetchTeammateDetails = async () => {
+      let teammateDetails = [];
+      user.team.forEach(async teammateId => {
+        const response = await axios.get(`/api/search/user/${teammateId}`);
+        teammateDetails.push(response.data);
+      });
+      setAllTeammates(teammateDetails);
+    };
 
+    fetchTeammateDetails();
+  }, [user.team])
+  console.log(allTeammates);
   // Handle URL query parameters for highlighting groups or todos
   useEffect(() => {
     const queryParams = new URLSearchParams(location.search);
@@ -811,7 +829,7 @@ export function DashBoard() {
       </li>
     ));
   };
-  console.log(todo);
+  
   // Helper function to render task skeletons
   const renderTaskSkeletons = () => {
     return Array(5).fill(0).map((_, index) => (
@@ -825,6 +843,11 @@ export function DashBoard() {
       </div>
     ));
   };
+
+  const toggleTeammatesPicker = () => {
+    setTeammatesPickerOpen(!teammatesPickerOpen);
+    console.log(teammatesPickerOpen);
+  }
 
   return (
     <>
@@ -1062,7 +1085,7 @@ export function DashBoard() {
                                       e.stopPropagation();
                                       handleToggleTask(task._id, index);
                                     }}
-                                    className="mr-2"
+                                    className="mr-2 checkbox checkbox-primary"
                                     onClick={(e) => e.stopPropagation()}
                                   />
                                   {editingTaskId === task._id ? (
@@ -1154,10 +1177,52 @@ export function DashBoard() {
 
                       {selectedGroup === 4 && (
                         <button className="btn btn-circle btn-sm bg-transparent border-none hover:bg-gray-200/30"
-                          onClick={(event) => {handleSendAssignments(event)}}
+                          onClick={() => {setTeammatesPickerOpen(!teammatesPickerOpen)}}
                         >
                           <Teammates size={18} />
                         </button>
+                      )}
+
+                      {selectedGroup === 4 && teammatesPickerOpen && (
+                        <div className="absolute bottom-10 right-32 z-50 date-picker-container">
+                          <div className="bg-base-100 border border-base-300 shadow-lg rounded-box p-2">
+                            <div className="p-2">
+                              {/* <input 
+                                type="checkbox"
+                                // onChange={handleTeammatesChange}
+                                // onClick={(e) => e.stopPropagation()}
+                                className="checkbox checkbox-primary"
+                              /> */}
+                              <ul className="flex flex-col gap-2">
+                                {allTeammates.map((teammate, index) => (
+                                  <li key={teammate._id} className="flex items-center gap-2">
+                                    <input 
+                                      type="checkbox"
+                                      value={teammate._id}
+                                      // onChange={handleTeammatesChange}
+                                      className="checkbox checkbox-primary"
+                                    />
+                                    <span>{teammate.username}</span>
+                                  </li>
+                                ))}
+                              </ul>
+                              <div className="flex justify-between mt-2">
+                                <button 
+                                  className="btn btn-sm btn-ghost"
+                                  onClick={() => setTeammatesPickerOpen(false)}
+                                >
+                                  Cancel
+                                </button>
+                                <button 
+                                  className="btn btn-sm btn-primary"
+                                  // onClick={handleTeammatesSelect}
+                                >
+                                  Apply
+                                </button>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
                       )}
 
                       <div className="relative calendar-button">

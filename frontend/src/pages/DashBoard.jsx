@@ -47,6 +47,7 @@ export function DashBoard() {
   const groupRefs = useRef({});
   const todoRefs = useRef({});
   const [teammatesToSend, setTeammatesToSend] = useState([]);
+  const [checkedTeammates, setCheckedTeammates] = useState([]);
   const [teammatesPickerOpen, setTeammatesPickerOpen] = useState(false);
   const [allTeammates, setAllTeammates] = useState([]);
   
@@ -376,6 +377,10 @@ export function DashBoard() {
     event.preventDefault();
 
     if (!newTodo.description.trim()) return;
+
+    if(selectedGroup === 4){
+      // TODO: implement assigning tasks to teammates
+    }
 
     // Get the current groupId directly instead of using state
     const currentGroupId = groups[selectedGroup]?._id;
@@ -1247,6 +1252,10 @@ export function DashBoard() {
                                 <button 
                                   className="btn btn-sm btn-primary"
                                   // onClick={handleTeammatesSelect}
+                                  onClick={() => {
+                                    setCheckedTeammates(teammatesToSend);
+                                    setTeammatesPickerOpen(false);
+                                  }}
                                 >
                                   Apply
                                 </button>

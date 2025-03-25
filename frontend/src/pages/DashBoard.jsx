@@ -8,6 +8,7 @@ import { NotImportant } from "../components/NotImportant";
 import { AssignedToMe } from "../components/AssignedToMe";
 import { AssignedByMe } from "../components/AssignedByme";
 import { useLocation, useNavigate } from "react-router-dom";
+import { Teammates } from "../components/Teammates";
 import axios from "axios";
 import toast, { Toaster } from "react-hot-toast";
 
@@ -149,9 +150,9 @@ export function DashBoard() {
     let myDayTasks = [];
     let sourceMapping = {};
     
-    groups.forEach(group => {
+    groups.forEach((group, index) => {
       if (!group.todo) return;
-      
+      if(index === 4) return;
       const recentTasks = group.todo.filter(task => {
         const createdAt = new Date(task.createdAt);
         return createdAt >= oneDayAgo;
@@ -176,9 +177,9 @@ export function DashBoard() {
     let importantTasks = [];
     let sourceMapping = {};
     
-    groups.forEach(group => {
+    groups.forEach((group, index) => {
       if (!group.todo) return;
-      
+      if(index === 4) return;
       const importantGroupTasks = group.todo.filter(task => task.important);
       
       // Track the original group for each task
@@ -200,9 +201,9 @@ export function DashBoard() {
     let plannedTasks = [];
     let sourceMapping = {};
     
-    groups.forEach(group => {
+    groups.forEach((group, index) => {
       if (!group.todo) return;
-      
+      if(index === 4) return;
       const plannedGroupTasks = group.todo.filter(task => task.due);
       
       // Track the original group for each task
@@ -810,7 +811,7 @@ export function DashBoard() {
       </li>
     ));
   };
-
+  console.log(todo);
   // Helper function to render task skeletons
   const renderTaskSkeletons = () => {
     return Array(5).fill(0).map((_, index) => (
@@ -1150,6 +1151,15 @@ export function DashBoard() {
                     />
                     <div className="absolute right-3 flex space-x-2">
                       {/* Date picker button and implementation */}
+
+                      {selectedGroup === 4 && (
+                        <button className="btn btn-circle btn-sm bg-transparent border-none hover:bg-gray-200/30"
+                          onClick={(event) => {handleSendAssignments(event)}}
+                        >
+                          <Teammates size={18} />
+                        </button>
+                      )}
+
                       <div className="relative calendar-button">
                         {!newTodo.due ? (
                           <button 

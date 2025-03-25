@@ -11,6 +11,7 @@ import { useLocation, useNavigate } from "react-router-dom";
 import { Teammates } from "../components/Teammates";
 import axios from "axios";
 import toast, { Toaster } from "react-hot-toast";
+import { DefaultAvatar } from "../components/DefaultAvatar";
 
 export function DashBoard() {
   const location = useLocation();
@@ -1195,14 +1196,25 @@ export function DashBoard() {
                               /> */}
                               <ul className="flex flex-col gap-2">
                                 {allTeammates.map((teammate, index) => (
-                                  <li key={teammate._id} className="flex items-center gap-2">
-                                    <input 
-                                      type="checkbox"
-                                      value={teammate._id}
-                                      // onChange={handleTeammatesChange}
-                                      className="checkbox checkbox-primary"
-                                    />
-                                    <span>{teammate.username}</span>
+                                  <li key={teammate._id} className="flex items-center justify-between gap-2">
+                                    <div className="flex gap-2">
+                                      <input 
+                                        type="checkbox"
+                                        value={teammate._id}
+                                        // onChange={handleTeammatesChange}
+                                        className="checkbox checkbox-primary"
+                                      />
+                                      <span>{teammate.username}</span></div>
+                                      <div>{teammate.coverImg ? (
+                                        <img
+                                          src={teammate.coverImg}
+                                          alt="teammate profile picture"
+                                          className="w-6 h-6 rounded-full"
+                                        />
+                                      ) : (
+                                        <DefaultAvatar size={24} />
+                                      )}
+                                    </div>
                                   </li>
                                 ))}
                               </ul>

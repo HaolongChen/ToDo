@@ -48,6 +48,7 @@ export const getNotifications = async (req, res) => {
 export const sendAssignment = async (req, res) => {
     try {
         // TODO: send emails to the users
+        console.log(req.body);
         const userId = req.user._id;
         const { description, completed, assigned, important, due, message } = req.body;
         if(!userId) return res.status(400).json({ message: 'User ID is required' });

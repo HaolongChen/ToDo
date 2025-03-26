@@ -458,6 +458,14 @@ export function DashBoard() {
     )
     
     // Then update the local state with the todo that has the _id
+    setGroups(prevGroups => {
+      let updatedGroups = [...prevGroups];
+      updatedGroups[selectedGroup] = {
+        ...updatedGroups[selectedGroup],
+        todo: [...(updatedGroups[selectedGroup].todo || []), createdTodo]
+      };
+      return updatedGroups;
+    });
   }
 
   // Date picker handlers

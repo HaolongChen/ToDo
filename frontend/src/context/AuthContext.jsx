@@ -199,8 +199,10 @@ export const AuthProvider = ({ children }) => {
       setLoading(true);
       setError(null);
       const response = await axios.post('/api/notification/send-assignment', assignment);
+      console.log(response.data);
     } catch (error) {
       setError(error.response?.data?.message || "Failed to send assignment");
+      console.log(error);
       throw error;
     } finally {
       setLoading(false);

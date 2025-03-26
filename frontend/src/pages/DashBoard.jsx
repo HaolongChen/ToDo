@@ -16,7 +16,7 @@ import { DefaultAvatar } from "../components/DefaultAvatar";
 export function DashBoard() {
   const location = useLocation();
   const navigate = useNavigate();
-  const { getAllGroups, groups, createTodo, user, setUser, loading, error, teammates, setGroups, deleteTodo, updateTodo, createGroup, updateGroup, deleteGroup, getNotifications, getRequests } = useAuth(); // Added deleteGroup
+  const { getAllGroups, groups, createTodo, user, setUser, loading, error, teammates, setGroups, deleteTodo, updateTodo, createGroup, updateGroup, deleteGroup, getNotifications, getRequests, sendAssignment } = useAuth(); // Added deleteGroup
   const [drawerOpen, setDrawerOpen] = useState(true);
   const [selectedGroup, setSelectedGroup] = useState(0);
   const [inputValue, setInputValue] = useState("");
@@ -380,6 +380,41 @@ export function DashBoard() {
 
     if(selectedGroup === 4){
       // TODO: implement assigning tasks to teammates
+      setInputValue("");
+      const todoToCreate = {
+        ...newTodo,
+        partners: teammatesToSend,
+      };
+      setNewTodo({
+        description: "",
+        completed: false,
+        assigned: false,
+        important: false,
+        user: user._id, // Keep the user ID
+        due: undefined,
+      });
+
+      setTeammatesToSend([]);
+      setCheckedTeammates([]);
+      
+      const createdTodo = await toast.promise(
+        sendAssignment(todoToCreate),
+        {
+          loading: 'Creating task...',
+          success: 'Task created successfully',
+          error: 'Failed to create task'
+        }
+      )
+
+      setGroups(prevGroups => {
+        let updatedGroups = [...prevGroups];
+        updatedGroups[selectedGroup] = {
+          ...updatedGroups[selectedGroup],
+          todo: [...(updatedGroups[selectedGroup].todo || []), createdTodo]
+        };
+        return updatedGroups;
+      });
+      return;
     }
 
     // Get the current groupId directly instead of using state
@@ -408,6 +443,8 @@ export function DashBoard() {
       totalTasks: (prevUser?.totalTasks || 0) + 1
     }));
 
+    setDateInput("");
+
     // First call createTodo and await the response to get the server-generated _id
     // const createdTodo = await createTodo(todoToCreate);
 
@@ -421,14 +458,6 @@ export function DashBoard() {
     )
     
     // Then update the local state with the todo that has the _id
-    setGroups(prevGroups => {
-      let updatedGroups = [...prevGroups];
-      updatedGroups[selectedGroup] = {
-        ...updatedGroups[selectedGroup],
-        todo: [...(updatedGroups[selectedGroup].todo || []), createdTodo]
-      };
-      return updatedGroups;
-    });
   }
 
   // Date picker handlers

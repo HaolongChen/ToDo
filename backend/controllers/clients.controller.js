@@ -48,26 +48,40 @@ export const getNotifications = async (req, res) => {
 export const sendAssignment = async (req, res) => {
     try {
         // TODO: send emails to the users
-        console.log(req.body);
         const userId = req.user._id;
-        const { description, completed, assigned, important, due, message } = req.body;
+        // console.log(userId)
+        const { description, completed = false, assigned = true, important, due, message, partners } = req.body;
+        console.log(partners, typeof partners);
         if(!userId) return res.status(400).json({ message: 'User ID is required' });
         const user = await User.findById(userId);
         if(!user) return res.status(404).json({ message: 'User not found' });
         if(user.team.length === 0) return res.status(400).json({ message: 'User does not have a team' });
-        const partners = req.body.partners;
         let flag = true;
         const userGroup = await Group.findOne({ user: userId, name: 'Assigned by me' });
         if(!userGroup) return res.status(404).json({ message: 'Group not found' });
-        for(let partner of partners) {
+        console.log(user, userId);
+        
+        // Store created todos to include in response
+        const createdTodos = [];
+        
+        for(let partnerObj of partners) {
+            const partner = JSON.stringify(partnerObj);
             if(!partner) return res.status(400).json({ message: 'Partner ID is required' });
-            if(!user.team.includes(partner)) {
+            if(!user.team.includes(partnerObj)) {
                 flag = false;
                 continue;
             }
-            const partnerUser = await User.findOne({ name: partner }).select('-password');
+            const partnerUser = await User.findById(partnerObj).select('-password');
             if(!partnerUser) return res.status(404).json({ message: 'Partner user not found' });
-            const todo = new Todo({ description, completed, assigned, important, due, message, user: partnerUser._id });
+            const todo = new Todo({ 
+                description, 
+                completed: false, // explicitly set to false 
+                assigned: true, 
+                important, 
+                due, 
+                message, 
+                user: partnerUser._id 
+            });
             await todo.save();
 
             const group = await Group.findOne({ user: partnerUser._id, name: 'Assigned to me' });
@@ -75,16 +89,19 @@ export const sendAssignment = async (req, res) => {
             await group.save();
 
             userGroup.todo.push(todo._id);
+            createdTodos.push(todo);
 
             const waitlist = new Waitlist({ toUser: partnerUser._id, fromUser: userId, todo: todo._id, isRequest: false, isProcessed: false, isOfficial: false });
             await waitlist.save();
         }
         await userGroup.save();
         if(!flag) return res.status(400).json({ message: 'Invalid partner ID' });
-        res.status(200).json({ message: 'Assignment sent successfully' });
+        res.status(200).json({ 
+            message: 'Assignment sent successfully',
+            todos: createdTodos // Return the created todos for frontend use
+        });
     } catch (error) {
         res.status(500).json({ message: error.message });
-        
     }
 }
 

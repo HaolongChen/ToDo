@@ -199,7 +199,13 @@ export const AuthProvider = ({ children }) => {
       setLoading(true);
       setError(null);
       const response = await axios.post('/api/notification/send-assignment', assignment);
-      console.log(response.data);
+      
+      // We don't update the task count for the sender anymore, as assigned tasks
+      // shouldn't be counted in the sender's statistics
+      // (The recipients will have these tasks counted in their stats instead)
+      
+      // Return the created todos so they can be added to state immediately
+      return response.data;
     } catch (error) {
       setError(error.response?.data?.message || "Failed to send assignment");
       console.log(error);

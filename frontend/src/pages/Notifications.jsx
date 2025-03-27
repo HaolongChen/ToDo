@@ -32,6 +32,15 @@ export const Notifications = () => {
             toast.error("An error occurred while loading notifications.");
         }
     }, [loading, error]);
+    
+    // Sort notifications and requests by creation time
+    const sortedRequests = [...(requests || [])].sort((a, b) => {
+        return new Date(b.createdAt) - new Date(a.createdAt);
+    });
+    
+    const sortedNotifications = [...(notifications || [])].sort((a, b) => {
+        return new Date(b.createdAt) - new Date(a.createdAt);
+    });
 
     // console.log(notifications, requests);
 
@@ -104,11 +113,11 @@ export const Notifications = () => {
                     ) : (
                         <>
                             {/* Requests Section */}
-                            {requests && requests.length > 0 ? (
+                            {sortedRequests && sortedRequests.length > 0 ? (
                                 <div className="bg-base-100 rounded-box p-6 shadow-md mb-6">
                                     <h2 className="text-xl font-semibold mb-4">Team Requests</h2>
                                     <div className="space-y-4">
-                                        {requests.map((request) => (
+                                        {sortedRequests.map((request) => (
                                             <div key={request._id} className="flex items-center justify-between bg-base-200 p-4 rounded-lg">
                                                 <div className="flex items-center gap-3">
                                                     <div className="avatar">
@@ -163,11 +172,11 @@ export const Notifications = () => {
                             ) : null}
 
                             {/* Notifications Section */}
-                            {notifications && notifications.length > 0 ? (
+                            {sortedNotifications && sortedNotifications.length > 0 ? (
                                 <div className="bg-base-100 rounded-box p-6 shadow-md">
                                     <h2 className="text-xl font-semibold mb-4">Your Notifications</h2>
                                     <div className="space-y-4">
-                                        {notifications.map((notification) => (
+                                        {sortedNotifications.map((notification) => (
                                             <div key={notification._id} className="flex items-center justify-between bg-base-200 p-4 rounded-lg">
                                                 <div className="flex items-center gap-3">
                                                     <div className="avatar">

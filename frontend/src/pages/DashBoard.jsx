@@ -261,6 +261,33 @@ export function DashBoard() {
       const plannedResult = getPlannedTasks();
       currentTodos = plannedResult.tasks;
       sourceMapping = plannedResult.sourceMapping;
+    } else if (selectedGroup === 4) {
+      // For "Assigned by me" group, organize todos by description to show efficiently
+      // when the same task is assigned to multiple people
+      const tasksById = {}; // Group tasks by their description
+      
+      if (groups[selectedGroup]?.todo) {
+        groups[selectedGroup].todo.forEach(task => {
+          if (!tasksById[task.description]) {
+            tasksById[task.description] = {
+              ...task,
+              assignedTo: [task.user], // Track users this task is assigned to
+              originalIds: [task._id] // Keep track of all original IDs
+            };
+          } else {
+            // Add this user to the list for this task description
+            if (!tasksById[task.description].assignedTo.includes(task.user)) {
+              tasksById[task.description].assignedTo.push(task.user);
+            }
+            
+            // Keep track of all original IDs for this description
+            tasksById[task.description].originalIds.push(task._id);
+          }
+        });
+        
+        // Convert back to array for rendering
+        currentTodos = Object.values(tasksById);
+      }
     } else {
       // Regular group - use the group's todos
       currentTodos = groups[selectedGroup]?.todo || [];
@@ -379,7 +406,7 @@ export function DashBoard() {
     if (!newTodo.description.trim()) return;
 
     if(selectedGroup === 4){
-      // TODO: implement assigning tasks to teammates
+      // Implement assigning tasks to teammates
       setInputValue("");
       const todoToCreate = {
         ...newTodo,
@@ -397,23 +424,33 @@ export function DashBoard() {
       setTeammatesToSend([]);
       setCheckedTeammates([]);
       
-      const createdTodo = await toast.promise(
-        sendAssignment(todoToCreate),
-        {
-          loading: 'Creating task...',
-          success: 'Task created successfully',
-          error: 'Failed to create task'
+      try {
+        const response = await toast.promise(
+          sendAssignment(todoToCreate),
+          {
+            loading: 'Creating task...',
+            success: 'Task created successfully',
+            error: 'Failed to create task'
+          }
+        );
+        
+        // Add the newly created todos to the group
+        if (response && response.todos) {
+          setGroups(prevGroups => {
+            let updatedGroups = [...prevGroups];
+            updatedGroups[selectedGroup] = {
+              ...updatedGroups[selectedGroup],
+              todo: [
+                ...(updatedGroups[selectedGroup].todo || []), 
+                ...response.todos
+              ]
+            };
+            return updatedGroups;
+          });
         }
-      )
-
-      setGroups(prevGroups => {
-        let updatedGroups = [...prevGroups];
-        updatedGroups[selectedGroup] = {
-          ...updatedGroups[selectedGroup],
-          todo: [...(updatedGroups[selectedGroup].todo || []), createdTodo]
-        };
-        return updatedGroups;
-      });
+      } catch (error) {
+        console.error("Error sending assignment:", error);
+      }
       return;
     }
 
@@ -444,9 +481,6 @@ export function DashBoard() {
     }));
 
     setDateInput("");
-
-    // First call createTodo and await the response to get the server-generated _id
-    // const createdTodo = await createTodo(todoToCreate);
 
     const createdTodo = await toast.promise(
       createTodo(todoToCreate),
@@ -541,6 +575,12 @@ export function DashBoard() {
 
   const handleToggleTask = async (taskId, index) => {
     try {
+      // Don't allow toggling completed status in "Assigned by me" group
+      if (selectedGroup === 4) {
+        toast.error("You cannot mark tasks as completed in the 'Assigned by me' group");
+        return;
+      }
+
       const completedStatus = !todo[index].completed;
 
       if(completedStatus){
@@ -700,6 +740,64 @@ export function DashBoard() {
           };
           return updatedTodos;
         });
+      } else if (selectedGroup === 4) {
+        // For "Assigned by me" group, handle the special display structure
+        setTodo(prevTodos => {
+          const updatedTodos = [...prevTodos];
+          const taskToUpdate = updatedTodos[taskIndex];
+          
+          // Update the task description
+          updatedTodos[taskIndex] = {
+            ...taskToUpdate,
+            description: editValue
+          };
+          
+          return updatedTodos;
+        });
+        
+        // Also update in the groups state
+        // If we have originalIds, update all related tasks with the same description
+        setGroups(prevGroups => {
+          let updatedGroups = [...prevGroups];
+          const assignedByMeGroup = updatedGroups[selectedGroup];
+          
+          if (assignedByMeGroup && assignedByMeGroup.todo) {
+            const currentTask = todo[taskIndex];
+            
+            // If this task has originalIds (it's a task displayed in "Assigned by me" view)
+            if (currentTask.originalIds && currentTask.originalIds.length > 0) {
+              // Update all tasks in the group that match the original IDs
+              const updatedTodos = assignedByMeGroup.todo.map(t => {
+                if (currentTask.originalIds.includes(t._id)) {
+                  return { ...t, description: editValue };
+                }
+                return t;
+              });
+              
+              updatedGroups[selectedGroup] = {
+                ...assignedByMeGroup,
+                todo: updatedTodos
+              };
+            } else {
+              // Regular task update if no originalIds
+              const todoIndex = assignedByMeGroup.todo.findIndex(t => t._id === editingTaskId);
+              if (todoIndex !== -1) {
+                const updatedTodos = [...assignedByMeGroup.todo];
+                updatedTodos[todoIndex] = {
+                  ...updatedTodos[todoIndex],
+                  description: editValue
+                };
+                
+                updatedGroups[selectedGroup] = {
+                  ...assignedByMeGroup,
+                  todo: updatedTodos
+                };
+              }
+            }
+          }
+          
+          return updatedGroups;
+        });
       } else {
         // For regular groups, use the existing logic
         setGroups(prevGroups => {
@@ -761,6 +859,19 @@ export function DashBoard() {
         
         // Also update the local state for the current view
         setTodo(prevTodos => prevTodos.filter(t => t._id !== taskId));
+      } else if (selectedGroup === 4) {
+        // For "Assigned by me" group, just remove it from the view and database
+        setTodo(prevTodos => prevTodos.filter(t => t._id !== taskId));
+        
+        // Update the groups state too
+        setGroups(prevGroups => {
+          let updatedGroups = [...prevGroups];
+          updatedGroups[selectedGroup] = {
+            ...updatedGroups[selectedGroup],
+            todo: updatedGroups[selectedGroup].todo.filter(todo => todo._id !== taskId)
+          };
+          return updatedGroups;
+        });
       } else {
         // For regular groups, use the existing logic
         setGroups(prevGroups => {
@@ -1119,18 +1230,20 @@ export function DashBoard() {
                                 <li 
                                   ref={el => todoRefs.current[task._id] = el}
                                   className="flex items-center h-14 rounded-2xl shadow-white shadow-sm hover:cursor-pointer hover:bg-[#7f7f7f2b] border-gray-200 py-2 px-4 group"
-                                  onClick={() => editingTaskId !== task._id && handleToggleTask(task._id, index)}
                                 >
-                                  <input
-                                    type="checkbox"
-                                    checked={task.completed}
-                                    onChange={(e) => {
-                                      e.stopPropagation();
-                                      handleToggleTask(task._id, index);
-                                    }}
-                                    className="mr-2 checkbox checkbox-primary"
-                                    onClick={(e) => e.stopPropagation()}
-                                  />
+                                  {/* Don't show checkbox for "Assigned by me" group */}
+                                  {selectedGroup !== 4 && (
+                                    <input 
+                                      type="checkbox"
+                                      checked={task.completed}
+                                      onChange={(e) => {
+                                        e.stopPropagation();
+                                        handleToggleTask(task._id, index);
+                                      }}
+                                      className="mr-2 checkbox checkbox-primary"
+                                      onClick={(e) => e.stopPropagation()}
+                                    />
+                                  )}
                                   {editingTaskId === task._id ? (
                                     <div className="flex-1 editing-task" onClick={(e) => e.stopPropagation()}>
                                       <input
@@ -1152,6 +1265,12 @@ export function DashBoard() {
                                       {selectedGroup <= 2 && taskSourceGroups[task._id] && (
                                         <span className="ml-2 text-sm text-gray-500">
                                           (from {groups[taskSourceGroups[task._id].groupIndex]?.name})
+                                        </span>
+                                      )}
+                                      {/* Show assigned users info in "Assigned by me" group */}
+                                      {selectedGroup === 4 && task.assignedTo && (
+                                        <span className="ml-2 text-sm text-blue-600">
+                                          → Assigned to {task.assignedTo.length} user{task.assignedTo.length > 1 ? 's' : ''}
                                         </span>
                                       )}
                                       {task.due && (

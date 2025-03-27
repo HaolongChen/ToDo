@@ -204,8 +204,14 @@ export function Profile() {
   };
 
   // Calculate task completion percentage
-  const taskPercentage = user && user.totalTasks > 0
-    ? Math.round((user.completedTasks / user.totalTasks) * 100)
+  const totalTasks = (user?.totalTasks || 0) + 
+    // Include tasks in "Assigned to me" group (index 3) if they exist
+    (user?.assignedToMe ? user.assignedToMe.length : 0);
+  
+  const completedTasks = user?.completedTasks || 0;
+  
+  const taskPercentage = totalTasks > 0
+    ? Math.round((completedTasks / totalTasks) * 100)
     : 0;
 
   return (

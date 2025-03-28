@@ -1,8 +1,7 @@
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import { NavBar } from "../components/NavBar";
 import { useAuth } from "../context/AuthContext";
 import { FiMenu } from "react-icons/fi";
-import { useState } from "react";
 import { Task } from "../components/Task";
 import { NotImportant } from "../components/NotImportant";
 import { AssignedToMe } from "../components/AssignedToMe";
@@ -50,6 +49,7 @@ export function DashBoard() {
   const [checkedTeammates, setCheckedTeammates] = useState([]);
   const [teammatesPickerOpen, setTeammatesPickerOpen] = useState(false);
   const [allTeammates, setAllTeammates] = useState([]);
+  const [todoListExpanded, setTodoListExpanded] = useState(false);
   
   useEffect(() => {
     if (!user) return;
@@ -65,7 +65,7 @@ export function DashBoard() {
 
     fetchTeammateDetails();
   }, [user.team])
-  console.log(allTeammates);
+  // console.log(allTeammates);
   // Handle URL query parameters for highlighting groups or todos
   useEffect(() => {
     const queryParams = new URLSearchParams(location.search);
@@ -268,20 +268,20 @@ export function DashBoard() {
       
       if (groups[selectedGroup]?.todo) {
         groups[selectedGroup].todo.forEach(task => {
-          if (!tasksById[task.description]) {
-            tasksById[task.description] = {
+          if (!tasksById[task.uniqueMarker]) {
+            tasksById[task.uniqueMarker] = {
               ...task,
               assignedTo: [task.user], // Track users this task is assigned to
               originalIds: [task._id] // Keep track of all original IDs
             };
           } else {
-            // Add this user to the list for this task description
-            if (!tasksById[task.description].assignedTo.includes(task.user)) {
-              tasksById[task.description].assignedTo.push(task.user);
+            // Add this user to the list for this task uniqueMarker
+            if (!tasksById[task.uniqueMarker].assignedTo.includes(task.user)) {
+              tasksById[task.uniqueMarker].assignedTo.push(task.user);
             }
             
-            // Keep track of all original IDs for this description
-            tasksById[task.description].originalIds.push(task._id);
+            // Keep track of all original IDs for this uniqueMarker
+            tasksById[task.uniqueMarker].originalIds.push(task._id);
           }
         });
         
@@ -577,12 +577,14 @@ export function DashBoard() {
     
     return date;
   };
-
+  // console.log(groups);
   const handleToggleTask = async (taskId, index) => {
     try {
       // Don't allow toggling completed status in "Assigned by me" group
       if (selectedGroup === 4) {
-        toast.error("You cannot mark tasks as completed in the 'Assigned by me' group");
+        
+
+
         return;
       }
 
@@ -603,7 +605,7 @@ export function DashBoard() {
           completedTasks: (prevUser.completedTasks || 0) - 1
         }))
       } // completed tasks - 1
-      console.log("passed");
+      
       // For special groups (index <= 2), update the task in its original group
       if (selectedGroup <= 2) {
         const sourceInfo = taskSourceGroups[taskId];
@@ -1002,11 +1004,8 @@ export function DashBoard() {
       </div>
     ));
   };
-
-  const toggleTeammatesPicker = () => {
-    setTeammatesPickerOpen(!teammatesPickerOpen);
-    console.log(teammatesPickerOpen);
-  }
+  // console.log(teammatesToSend, checkedTeammates);
+  console.log(groups);
 
   return (
     <>
@@ -1367,10 +1366,10 @@ export function DashBoard() {
                                     className="flex items-center justify-between gap-2 select-none hover:bg-[#7f7f7f2b] hover:cursor-pointer rounded-2xl"
                                     onClick={() => {
                                       if(teammatesToSend.includes(teammate._id)){
-                                        setTeammatesToSend(teammates.filter((id) => id !== teammate._id));
+                                        setTeammatesToSend(teammatesToSend.filter((id) => id !== teammate._id));
                                       }
                                       else{
-                                        setTeammatesToSend([...teammates, teammate._id]);
+                                        setTeammatesToSend([...teammatesToSend, teammate._id]);
                                       }
                                     }}
                                   >

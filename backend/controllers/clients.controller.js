@@ -63,6 +63,7 @@ export const sendAssignment = async (req, res) => {
         
         // Store created todos to include in response
         const createdTodos = [];
+        const uniqueMarker = `${userId}-${Date.now()}`; // Unique marker for the todo
         
         for(let partnerObj of partners) {
             const partner = JSON.stringify(partnerObj);
@@ -80,7 +81,8 @@ export const sendAssignment = async (req, res) => {
                 important, 
                 due, 
                 message, 
-                user: partnerUser._id 
+                user: partnerUser._id ,
+                uniqueMarker: uniqueMarker
             });
             await todo.save();
 

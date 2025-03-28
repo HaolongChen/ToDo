@@ -32,7 +32,11 @@ const todoSchema = new mongoose.Schema({
     user:{
         type: mongoose.Schema.Types.ObjectId,
         ref: 'User'
-    }
+    },
+    uniqueMarker:{
+        type: String,
+        required: false
+    },
 }, {timestamps: true});
 
 const Todo = mongoose.model('Todo', todoSchema);

@@ -1230,6 +1230,7 @@ export function DashBoard() {
                                 <li 
                                   ref={el => todoRefs.current[task._id] = el}
                                   className="flex items-center h-14 rounded-2xl shadow-white shadow-sm hover:cursor-pointer hover:bg-[#7f7f7f2b] border-gray-200 py-2 px-4 group"
+                                  onClick={() => {handleToggleTask(task._id, index)}}
                                 >
                                   {/* Don't show checkbox for "Assigned by me" group */}
                                   {selectedGroup !== 4 && (

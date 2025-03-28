@@ -84,6 +84,9 @@ export const sendAssignment = async (req, res) => {
             });
             await todo.save();
 
+            partnerUser.totalTasks += 1;
+            await partnerUser.save();
+
             const group = await Group.findOne({ user: partnerUser._id, name: 'Assigned to me' });
             group.todo.push(todo._id);
             await group.save();

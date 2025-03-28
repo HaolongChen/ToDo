@@ -407,6 +407,11 @@ export function DashBoard() {
 
     if(selectedGroup === 4){
       // Implement assigning tasks to teammates
+      if(teammatesToSend.length === 0){
+        toast.error("No teammates have been selected");
+        return;
+      }
+
       setInputValue("");
       const todoToCreate = {
         ...newTodo,

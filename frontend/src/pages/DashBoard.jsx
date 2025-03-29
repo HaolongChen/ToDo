@@ -49,7 +49,9 @@ export function DashBoard() {
   const [checkedTeammates, setCheckedTeammates] = useState([]);
   const [teammatesPickerOpen, setTeammatesPickerOpen] = useState(false);
   const [allTeammates, setAllTeammates] = useState([]);
-  const [todoListExpanded, setTodoListExpanded] = useState(false);
+  const [todoListExpanded, setTodoListExpanded] = useState(() => {
+    return Array(1000000).fill(false);
+  });
   
   useEffect(() => {
     if (!user) return;
@@ -577,13 +579,26 @@ export function DashBoard() {
     
     return date;
   };
-  // console.log(groups);
+
   const handleToggleTask = async (taskId, index) => {
     try {
       // Don't allow toggling completed status in "Assigned by me" group
       if (selectedGroup === 4) {
         
-
+        if(todoListExpanded[index]){
+          setTodoListExpanded(prevState => {
+            const newState = [...prevState];
+            newState[index] = false;
+            return newState;
+          });
+        }
+        else{
+          setTodoListExpanded(prevState => {
+            const newState = [...prevState];
+            newState[index] = true;
+            return newState;
+          });
+        }
 
         return;
       }
@@ -1230,7 +1245,7 @@ export function DashBoard() {
                         <div className="w-full h-full">
                           <ul>
                             {todo.map((task, index) => (
-                              <div key={task._id} className="px-8 h-18">
+                              <div key={task._id} className="px-8 mb-4">
                                 <li 
                                   ref={el => todoRefs.current[task._id] = el}
                                   className="flex items-center h-14 rounded-2xl shadow-white shadow-sm hover:cursor-pointer hover:bg-[#7f7f7f2b] border-gray-200 py-2 px-4 group"
@@ -1318,6 +1333,7 @@ export function DashBoard() {
                                     </>
                                   )}
                                 </li>
+                                <div className={`${todoListExpanded[index] ? "block h-30 mt-4" : "none"} bg-amber-200`}></div>
                               </div>
                             ))}
                           </ul>

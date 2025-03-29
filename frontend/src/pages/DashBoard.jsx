@@ -67,7 +67,7 @@ export function DashBoard() {
 
     fetchTeammateDetails();
   }, [user.team])
-  // console.log(allTeammates);
+  // console.log(todo);
   // Handle URL query parameters for highlighting groups or todos
   useEffect(() => {
     const queryParams = new URLSearchParams(location.search);
@@ -1333,7 +1333,25 @@ export function DashBoard() {
                                     </>
                                   )}
                                 </li>
-                                <div className={`${todoListExpanded[index] ? "block h-30 mt-4" : "none"} bg-amber-200`}></div>
+                                <div className={`${todoListExpanded[index] ? "block h-auto mt-4" : "hidden"} `}>
+                                  {task.assignedTo && task.assignedTo.length > 0 && (task.assignedTo.map((teammate) => {
+                                    const assignedTeammate = allTeammates.find(user => user._id === teammate);
+                                    return (
+                                      <div key={teammate} className={`${todoListExpanded[index] ? "block h-auto mt-4" : "hidden"} `}>
+                                        {assignedTeammate.coverImg ? (
+                                          <img
+                                            src={assignedTeammate.coverImg}
+                                            alt="teammate profile picture"
+                                            className="w-6 h-6 rounded-full"
+                                          />
+                                        ) : (
+                                          <DefaultAvatar size={24} />
+                                        )}
+                                        <span>{assignedTeammate.username}</span>
+                                      </div>
+                                    );
+                                  }))}
+                                </div>
                               </div>
                             ))}
                           </ul>

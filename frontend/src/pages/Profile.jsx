@@ -46,6 +46,7 @@ export function Profile() {
   }, [user.email, user.bio, user.team]);
 
   // console.log("User data:", user);
+  // TODO: use teammate to optimize without fetching of user data
 
   const fetchTeammateDetails = async () => {
     try {

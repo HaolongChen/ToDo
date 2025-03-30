@@ -1308,7 +1308,7 @@ export function DashBoard() {
                                       )}
                                     </span>
                                   )}
-                                  {editingTaskId === task._id ? (
+                                  {selectedGroup !== 3 && (editingTaskId === task._id ? (
                                     <button 
                                       className="btn btn-circle btn-sm bg-transparent border-none hover:bg-gray-200/30 edit-confirm-btn" 
                                       onClick={(e) => {
@@ -1339,7 +1339,7 @@ export function DashBoard() {
                                         <span className="text-lg">❌</span>
                                       </button>
                                     </>
-                                  )}
+                                  ))}
                                 </li>
                                 <div className={`${todoListExpanded[index] ? "block h-auto mt-4" : "hidden"}`}>
                                   {task.assignedTo && task.assignedTo.length > 0 && (task.assignedTo.map((teammate) => {

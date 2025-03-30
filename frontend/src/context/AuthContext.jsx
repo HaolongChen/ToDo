@@ -295,6 +295,9 @@ export const AuthProvider = ({ children }) => {
       // Refresh user data to ensure team members are up to date
       try {
         const userResponse = await axios.get('/api/auth/user');
+        setTeammates(prevTeammates =>
+          prevTeammates.filter(teammate => teammate._id !== userId)
+        );
         setUser(userResponse.data); // Fixed: use consistent data structure
       } catch (refreshError) {
         console.error('Failed to refresh user data:', refreshError);

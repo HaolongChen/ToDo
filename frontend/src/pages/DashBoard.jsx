@@ -15,7 +15,7 @@ import { DefaultAvatar } from "../components/DefaultAvatar";
 export function DashBoard() {
   const location = useLocation();
   const navigate = useNavigate();
-  const { getAllGroups, groups, createTodo, user, setUser, loading, error, teammates, setGroups, deleteTodo, updateTodo, createGroup, updateGroup, deleteGroup, getNotifications, getRequests, sendAssignment } = useAuth(); // Added deleteGroup
+  const { getAllGroups, groups, createTodo, user, setUser, loading, error, teammates, setGroups, deleteTodo, updateTodo, createGroup, updateGroup, deleteGroup, getNotifications, getRequests, sendAssignment, editAssignment } = useAuth(); // Added deleteGroup
   const [drawerOpen, setDrawerOpen] = useState(true);
   const [selectedGroup, setSelectedGroup] = useState(0);
   const [inputValue, setInputValue] = useState("");
@@ -848,15 +848,28 @@ export function DashBoard() {
       // Update in the database
       // updateTodo(editingTaskId, { description: editValue });
 
-      toast.promise(
-        updateTodo(editingTaskId, { description: editValue }),
-        {
-          loading: 'Updating task...',
-          success: 'Task updated successfully',
-          error: 'Failed to update task'
-        }
-      
-      );
+      if(selectedGroup !== 4) {
+        toast.promise(
+          updateTodo(editingTaskId, { description: editValue }),
+          {
+            loading: 'Updating task...',
+            success: 'Task updated successfully',
+            error: 'Failed to update task'
+          }
+        
+        );
+      }
+      else{
+        console.log("todo[taskIndex]=", todo[taskIndex]);
+        toast.promise(
+          editAssignment({ description: editValue, todos: todo[taskIndex] }),
+          {
+            loading: 'Updating task...',
+            success: 'Task updated successfully',
+            error: 'Failed to update task'
+          }
+        );
+      }
 
       // Exit edit mode
       setEditingTaskId(null);

@@ -237,6 +237,23 @@ export const AuthProvider = ({ children }) => {
     }
   }
 
+  const editAssignment = async (req) => {
+    try {
+      console.log("loading edit assignment")
+      setLoading(true);
+      setError(null);
+      const response = await axios.post('/api/notification/edit-assignment', req);
+      return response.data;
+    } catch (error) {
+      setError(error.response?.data?.message || "Failed to edit assignment");
+      console.log(error);
+      throw error;
+    } finally {
+      setLoading(false);
+      console.log("loading edit assignment false")
+    }
+  }
+
   const sendRequest = async (request) => {
     try {
       console.log("loading send request")
@@ -777,6 +794,7 @@ export const AuthProvider = ({ children }) => {
         changePassword,
         getNotifications,
         sendAssignment,
+        editAssignment,
         sendRequest,
         removeFromTeam,
         acceptRequest,

@@ -10,7 +10,7 @@ import axios from "axios";
 
 export function Profile() {
   const navigate = useNavigate();
-  const { user, loading, error, changePassword, getUserInfo, uploadImage, logout, updateUserProfile } = useAuth();
+  const { user, loading, error, changePassword, getUserInfo, uploadImage, logout, updateUserProfile, teammates: authTeammates } = useAuth();
   const [oldPassword, setOldPassword] = useState("");
   const [newPassword, setNewPassword] = useState("");
   const [passwordError, setPasswordError] = useState("");
@@ -38,28 +38,16 @@ export function Profile() {
       }
       setEmail(user.email || "");
       setBio(user.bio || "");
-      // Fetch teammate details when user data is available
-      if (user.team && user.team.length > 0) {
-        fetchTeammateDetails();
+      
+      // Use the pre-fetched teammate data from AuthContext - it's already loaded during initial auth
+      if (authTeammates && authTeammates.length > 0) {
+        setTeammates(authTeammates);
       }
     }
-  }, [user.email, user.bio, user.team]);
+  }, [user, user?.email, user?.bio, authTeammates]);
 
   // console.log("User data:", user);
   // TODO: use teammate to optimize without fetching of user data
-
-  const fetchTeammateDetails = async () => {
-    try {
-      const teammatePromises = user.team.map(teammateId => 
-        axios.get(`/api/search/user/${teammateId}`)
-      );
-      const responses = await Promise.all(teammatePromises);
-      const teammateData = responses.map(response => response.data);
-      setTeammates(teammateData);
-    } catch (error) {
-      console.error('Error fetching teammate details:', error);
-    }
-  };
 
   useEffect(() => {
     if (!completedCrop || !previewCanvasRef.current || !imgRef.current) {
@@ -330,24 +318,42 @@ export function Profile() {
               <h2 className="text-xl font-semibold mb-4">Team Members</h2>
               {teammates.length > 0 ? (
                 <div className="flex flex-wrap gap-3">
-                  {teammates.map(member => (
-                    <div 
-                      key={member._id} 
-                      className="flex items-center gap-2 bg-base-200 p-2 rounded-lg cursor-pointer hover:bg-base-300 transition-colors"
-                      onClick={() => navigate(`/user/${member._id}`)}
-                    >
-                      <div className="avatar">
-                        <div className="w-8 h-8 rounded-full">
-                          {member.coverImg ? (
-                            <img src={member.coverImg} alt={member.username} />
-                          ) : (
-                            <DefaultAvatar username={member.username} size={32} />
-                          )}
+                  {teammates.map(member => {
+                    // Extract the correct user data from potential nested structures
+                    let userData = member;
+                    
+                    // Check if data has the nested structure from the API
+                    if (member && typeof member === 'object' && member.user) {
+                      userData = member.user;
+                    }
+                    
+                    // Now we have the correct user data to work with
+                    const memberId = userData && userData._id ? userData._id : null;
+                    
+                    if (!memberId) {
+                      console.error("Invalid teammate data:", member);
+                      return null;
+                    }
+                    
+                    return (
+                      <div 
+                        key={memberId} 
+                        className="flex items-center gap-2 bg-base-200 p-2 rounded-lg cursor-pointer hover:bg-base-300 transition-colors"
+                        onClick={() => navigate(`/user/${memberId}`)}
+                      >
+                        <div className="avatar">
+                          <div className="w-8 h-8 rounded-full">
+                            {userData.coverImg ? (
+                              <img src={userData.coverImg} alt={userData.username || "Team member"} />
+                            ) : (
+                              <DefaultAvatar size={32} />
+                            )}
+                          </div>
                         </div>
+                        <span>{userData.username || "Team member"}</span>
                       </div>
-                      <span>{member.username}</span>
-                    </div>
-                  ))}
+                    );
+                  })}
                 </div>
               ) : (
                 <p className="text-gray-500">No team members yet</p>

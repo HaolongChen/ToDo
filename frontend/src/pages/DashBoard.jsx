@@ -57,16 +57,21 @@ export function DashBoard() {
     if (!user) return;
     
     const fetchTeammateDetails = async () => {
-      let teammateDetails = [];
-      user.team.forEach(async teammateId => {
-        const response = await axios.get(`/api/search/user/${teammateId}`);
-        teammateDetails.push(response.data);
-      });
-      setAllTeammates(teammateDetails);
+      try {
+        // Use Promise.all to correctly wait for all teammate data to load
+        const teammatePromises = user.team.map(teammateId => 
+          axios.get(`/api/search/user/${teammateId}`)
+        );
+        const responses = await Promise.all(teammatePromises);
+        const teammateDetails = responses.map(response => response.data);
+        setAllTeammates(teammateDetails);
+      } catch (error) {
+        console.error('Error fetching teammate details:', error);
+      }
     };
 
     fetchTeammateDetails();
-  }, [user.team])
+  }, [user, user?.team])
   // console.log(todo);
   // Handle URL query parameters for highlighting groups or todos
   useEffect(() => {
@@ -605,15 +610,18 @@ export function DashBoard() {
 
       const completedStatus = !todo[index].completed;
 
-      if(completedStatus){
+      // Only update user completion statistics if this task belongs to the current user
+      // This fixes bug #1 - prevents completion count from changing for tasks assigned to others
+      const isCurrentUserTask = todo[index].user === user._id;
+      
+      if(completedStatus && isCurrentUserTask){
         axios.post('/api/todo/plus-completed');
         setUser(prevUser => ({
           ...prevUser,
           completedTasks: (prevUser.completedTasks || 0) + 1
         }))
       } // completed tasks + 1
-
-      else{
+      else if(!completedStatus && isCurrentUserTask){
         axios.post('/api/todo/minus-completed');
         setUser(prevUser => ({
           ...prevUser,
@@ -1020,7 +1028,7 @@ export function DashBoard() {
     ));
   };
   // console.log(teammatesToSend, checkedTeammates);
-  console.log(groups);
+  console.log(todo);
 
   return (
     <>
@@ -1333,21 +1341,30 @@ export function DashBoard() {
                                     </>
                                   )}
                                 </li>
-                                <div className={`${todoListExpanded[index] ? "block h-auto mt-4" : "hidden"} `}>
+                                <div className={`${todoListExpanded[index] ? "block h-auto mt-4" : "hidden"}`}>
                                   {task.assignedTo && task.assignedTo.length > 0 && (task.assignedTo.map((teammate) => {
                                     const assignedTeammate = allTeammates.find(user => user._id === teammate);
-                                    return (
-                                      <div key={teammate} className={`${todoListExpanded[index] ? "block h-auto mt-4" : "hidden"} `}>
-                                        {assignedTeammate.coverImg ? (
-                                          <img
-                                            src={assignedTeammate.coverImg}
-                                            alt="teammate profile picture"
-                                            className="w-6 h-6 rounded-full"
-                                          />
-                                        ) : (
-                                          <DefaultAvatar size={24} />
-                                        )}
-                                        <span>{assignedTeammate.username}</span>
+                                    // Only render if we have teammate data, otherwise show a loading state
+                                    return assignedTeammate ? (
+                                      <div className="flex flex-row justify-between items-center gap-2" key={teammate}>
+                                        <div className={`${todoListExpanded[index] ? "h-auto mt-4 flex flex-row gap-2" : "hidden"} `}>
+                                          {assignedTeammate.coverImg ? (
+                                            <img
+                                              src={assignedTeammate.coverImg}
+                                              alt="teammate profile picture"
+                                              className="w-6 h-6 rounded-full"
+                                            />
+                                          ) : (
+                                            <DefaultAvatar size={24} />
+                                          )}
+                                          <span>{assignedTeammate.username}</span>
+                                        </div>
+                                      </div>
+                                    ) : (
+                                      // Show a loading state while teammate data is being fetched
+                                      <div className="flex items-center gap-2 h-auto mt-4" key={teammate}>
+                                        <div className="skeleton w-6 h-6 rounded-full"></div>
+                                        <div className="skeleton h-4 w-20"></div>
                                       </div>
                                     );
                                   }))}

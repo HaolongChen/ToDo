@@ -13,7 +13,7 @@ export function UserProfile() {
   const [otherUser, setOtherUser] = useState(null);
   const [initLoading, setInitLoading] = useState(true);
   const [error, setError] = useState('');
-  const { user, sendAssignment, sendRequest, removeFromTeam } = useAuth();
+  const { user, sendAssignment, sendRequest, removeFromTeam, teammates: authTeammates } = useAuth();
 
   // Load other user's profile data
   useEffect(() => {
@@ -226,24 +226,33 @@ export function UserProfile() {
             <div className="mt-8">
               <h2 className="text-xl font-semibold mb-4">Team Members</h2>
               <div className="flex flex-wrap gap-3">
-                {otherUser.team.map(member => (
-                  <div 
-                    key={member._id} 
-                    className="flex items-center gap-2 bg-base-200 p-2 rounded-lg cursor-pointer hover:bg-base-300 transition-colors"
-                    onClick={() => navigate(`/user/${member._id}`)}
-                  >
-                    <div className="avatar">
-                      <div className="w-8 h-8 rounded-full">
-                        {member.coverImg ? (
-                          <img src={member.coverImg} alt={member.username} />
-                        ) : (
-                          <DefaultAvatar username={member.username} size={32} />
-                        )}
+                {otherUser.team.map(teammateId => {
+                  // First try to find the teammate in the pre-fetched authTeammates
+                  const authTeammate = authTeammates?.find(t => t._id === teammateId);
+                  // If found in pre-fetched data, use that (improves performance)
+                  // If not found, fall back to using data from otherUser.team
+                  const memberData = authTeammate || 
+                    (typeof teammateId === 'object' ? teammateId : { _id: teammateId });
+                  
+                  return (
+                    <div 
+                      key={memberData._id} 
+                      className="flex items-center gap-2 bg-base-200 p-2 rounded-lg cursor-pointer hover:bg-base-300 transition-colors"
+                      onClick={() => navigate(`/user/${memberData._id}`)}
+                    >
+                      <div className="avatar">
+                        <div className="w-8 h-8 rounded-full">
+                          {memberData.coverImg ? (
+                            <img src={memberData.coverImg} alt={memberData.username} />
+                          ) : (
+                            <DefaultAvatar username={memberData.username || "User"} size={32} />
+                          )}
+                        </div>
                       </div>
+                      <span>{memberData.username || "User"}</span>
                     </div>
-                    <span>{member.username}</span>
-                  </div>
-                ))}
+                  );
+                })}
               </div>
             </div>
           )}

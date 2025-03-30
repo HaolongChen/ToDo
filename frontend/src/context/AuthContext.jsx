@@ -51,6 +51,27 @@ export const AuthProvider = ({ children }) => {
           await getAllGroups();
           await getNotifications();
           await getRequests();
+          
+          // Always pre-fetch teammate details to prevent repeated fetching in various pages
+          if (user.team && user.team.length > 0) {
+            try {
+              console.log("Pre-fetching teammate data...");
+              // Fetch all teammate details in parallel for maximum efficiency
+              const teammatePromises = user.team.map(teammateId => 
+                axios.get(`/api/notification/get-user-info/${teammateId}`)
+              );
+              const responses = await Promise.all(teammatePromises);
+              const teammateData = responses.map(response => response.data);
+              setTeammates(teammateData);
+              console.log(`Teammate data pre-fetched for ${teammateData.length} teammates`);
+            } catch (error) {
+              console.error('Error pre-fetching teammate details:', error);
+            }
+          } else {
+            // Reset teammates to an empty array if user has no team members
+            setTeammates([]);
+          }
+          
           setInfoExists(true);
         } catch (error) {
           console.error('Error fetching initial data:', error);

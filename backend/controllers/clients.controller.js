@@ -50,8 +50,7 @@ export const sendAssignment = async (req, res) => {
         // TODO: send emails to the users
         const userId = req.user._id;
         // console.log(userId)
-        const { description, completed = false, assigned = true, important, due, message, partners } = req.body;
-        console.log(partners, typeof partners);
+        const { description, important, due, message, partners } = req.body;
         if(!userId) return res.status(400).json({ message: 'User ID is required' });
         const user = await User.findById(userId);
         if(!user) return res.status(404).json({ message: 'User not found' });
@@ -59,20 +58,18 @@ export const sendAssignment = async (req, res) => {
         let flag = true;
         const userGroup = await Group.findOne({ user: userId, name: 'Assigned by me' });
         if(!userGroup) return res.status(404).json({ message: 'Group not found' });
-        console.log(user, userId);
         
         // Store created todos to include in response
         const createdTodos = [];
         const uniqueMarker = `${userId}-${Date.now()}`; // Unique marker for the todo
         
-        for(let partnerObj of partners) {
-            const partner = JSON.stringify(partnerObj);
+        for(let partner of partners) {
             if(!partner) return res.status(400).json({ message: 'Partner ID is required' });
-            if(!user.team.includes(partnerObj)) {
+            if(!user.team.includes(partner)) {
                 flag = false;
                 continue;
             }
-            const partnerUser = await User.findById(partnerObj).select('-password');
+            const partnerUser = await User.findById(partner).select('-password');
             if(!partnerUser) return res.status(404).json({ message: 'Partner user not found' });
             const todo = new Todo({ 
                 description, 
@@ -105,6 +102,40 @@ export const sendAssignment = async (req, res) => {
             message: 'Assignment sent successfully',
             todos: createdTodos // Return the created todos for frontend use
         });
+    } catch (error) {
+        res.status(500).json({ message: error.message });
+    }
+}
+
+export const editAssignment = async (req, res) => {
+    try {
+        const userId = req.user._id;
+        const { description, todos } = req.body;
+        if(!userId) return res.status(400).json({ message: 'User ID is required' });
+        const user = await User.findById(userId);
+        if(!user) return res.status(404).json({ message: 'User not found' });
+        
+        if(user.team.length === 0) return res.status(400).json({ message: 'User does not have a team' });
+        let flag = true;
+        const userGroup = await Group.findOne({ user: userId, name: 'Assigned by me' });
+        if(!userGroup) return res.status(404).json({ message: 'Group not found' });
+
+        for(let todoId of todos.originalIds){
+            if(!todoId) return res.status(400).json({ message: 'Todo ID is required' });
+            const todo = await Todo.findById(todoId);
+            if(!todo) return res.status(404).json({ message: 'Todo not found' });
+            todo.description = description;
+            await todo.save();
+
+        }
+
+        for(let toUserId of todos.assignedTo){
+            const waitlist = new Waitlist({ toUser: toUserId, fromUser: userId, isRequest: false, isProcessed: false, isOfficial: false, message: "I have edited an assignment" });
+            await waitlist.save();
+        }
+
+
+        res.status(200).json({ message: 'Assignments updated successfully' });
     } catch (error) {
         res.status(500).json({ message: error.message });
     }

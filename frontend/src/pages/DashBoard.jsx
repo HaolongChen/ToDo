@@ -310,7 +310,7 @@ export function DashBoard() {
     setTodo(currentTodos);
     setTaskSourceGroups(sourceMapping);
   }, [groups, selectedGroup]);
-
+  console.log("currentTodo", todo);
   useEffect(() => {
     setNewTodo({...newTodo, description: inputValue});
   }, [inputValue]);
@@ -406,7 +406,7 @@ export function DashBoard() {
       console.error(error);
     }
   };
-
+  console.log(groups)
   const handleCreateTodo = async (event) => {
     event.preventDefault();
 
@@ -465,7 +465,7 @@ export function DashBoard() {
       }
       return;
     }
-
+    
     // Get the current groupId directly instead of using state
     const currentGroupId = groups[selectedGroup]?._id;
     

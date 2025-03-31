@@ -1,6 +1,6 @@
 import express from 'express';
 import { authMiddleware } from '../middleware/auth.middleware.js';
-import { getNotifications, sendAssignment, sendRequest, acceptRequest, deleteWaitlist, rejectRequest, getRequests, getAllteammates, getUserInfo, removeFromTeam, editAssignment } from '../controllers/clients.controller.js';
+import { getNotifications, sendAssignment, sendRequest, acceptRequest, deleteWaitlist, rejectRequest, getRequests, getAllteammates, getUserInfo, removeFromTeam, editAssignment, deleteAssignmentForSingleTeammate, deleteAssignmentForAllTeammates } from '../controllers/clients.controller.js';
 
 const router = express.Router();
 
@@ -15,5 +15,7 @@ router.get('/get-teammates', authMiddleware, getAllteammates);
 router.get('/get-user-info/:id', authMiddleware, getUserInfo);
 router.post('/remove-from-team', authMiddleware, removeFromTeam);
 router.post('/edit-assignment', authMiddleware, editAssignment);
+router.post('/delete-assignment-for-single-teammate', authMiddleware, deleteAssignmentForSingleTeammate);
+router.post('/delete-assignment-for-all-teammates', authMiddleware, deleteAssignmentForAllTeammates);
 
 export default router;

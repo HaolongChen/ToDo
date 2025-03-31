@@ -15,7 +15,7 @@ import { DefaultAvatar } from "../components/DefaultAvatar";
 export function DashBoard() {
   const location = useLocation();
   const navigate = useNavigate();
-  const { getAllGroups, groups, createTodo, user, setUser, loading, error, teammates, setGroups, deleteTodo, updateTodo, createGroup, updateGroup, deleteGroup, getNotifications, getRequests, sendAssignment, editAssignment } = useAuth(); // Added deleteGroup
+  const { getAllGroups, groups, createTodo, user, setUser, loading, error, teammates, setGroups, deleteTodo, updateTodo, createGroup, updateGroup, deleteGroup, getNotifications, getRequests, sendAssignment, editAssignment, deleteAssignmentForSingleTeammate, deleteAssignmentForAllTeammates } = useAuth(); // Added deleteGroup
   const [drawerOpen, setDrawerOpen] = useState(true);
   const [selectedGroup, setSelectedGroup] = useState(0);
   const [inputValue, setInputValue] = useState("");
@@ -884,37 +884,41 @@ export function DashBoard() {
       // For special groups (index <= 2), update the task in its original group
       if (selectedGroup <= 2) {
         const sourceInfo = taskSourceGroups[taskId];
-        if (sourceInfo) {
-          setGroups(prevGroups => {
-            let updatedGroups = [...prevGroups];
-            const sourceGroup = updatedGroups[sourceInfo.groupIndex];
-            
-            if (sourceGroup && sourceGroup.todo) {
-              updatedGroups[sourceInfo.groupIndex] = {
-                ...sourceGroup,
-                todo: sourceGroup.todo.filter(t => t._id !== taskId)
-              };
-            }
-            
-            return updatedGroups;
-          });
-        }
+        if(!sourceInfo) return; // Task not found in any group
+        if(sourceInfo.groupIndex === 3) return; // Don't delete from "Assigned to me" group
+        
+        setGroups(prevGroups => {
+          let updatedGroups = [...prevGroups];
+          const sourceGroup = updatedGroups[sourceInfo.groupIndex];
+          
+          if (sourceGroup && sourceGroup.todo) {
+            updatedGroups[sourceInfo.groupIndex] = {
+              ...sourceGroup,
+              todo: sourceGroup.todo.filter(t => t._id !== taskId)
+            };
+          }
+          
+          return updatedGroups;
+        });
+        
         
         // Also update the local state for the current view
         setTodo(prevTodos => prevTodos.filter(t => t._id !== taskId));
       } else if (selectedGroup === 4) {
         // For "Assigned by me" group, just remove it from the view and database
-        setTodo(prevTodos => prevTodos.filter(t => t._id !== taskId));
+        // setTodo(prevTodos => prevTodos.filter(t => t._id !== taskId));
         
-        // Update the groups state too
-        setGroups(prevGroups => {
-          let updatedGroups = [...prevGroups];
-          updatedGroups[selectedGroup] = {
-            ...updatedGroups[selectedGroup],
-            todo: updatedGroups[selectedGroup].todo.filter(todo => todo._id !== taskId)
-          };
-          return updatedGroups;
-        });
+        // // Update the groups state too
+        // setGroups(prevGroups => {
+        //   let updatedGroups = [...prevGroups];
+        //   updatedGroups[selectedGroup] = {
+        //     ...updatedGroups[selectedGroup],
+        //     todo: updatedGroups[selectedGroup].todo.filter(todo => todo._id !== taskId)
+        //   };
+        //   return updatedGroups;
+        // });
+        console.log("error");
+        return;
       } else {
         // For regular groups, use the existing logic
         setGroups(prevGroups => {
@@ -1346,7 +1350,15 @@ export function DashBoard() {
                                         className="btn btn-circle btn-sm bg-transparent border-none hover:bg-gray-200/30 hidden group-hover:flex" 
                                         onClick={(e) => {
                                           e.stopPropagation();
-                                          handleDeleteTask(task._id, task.completed);
+                                          if(selectedGroup !== 4) handleDeleteTask(task._id, task.completed);
+                                          else{
+                                            setGroups(prevGroups => {
+                                              let updatedGroups = [...prevGroups];
+                                              updateGroup[selectedGroup].todo = updatedGroups[selectedGroup].todo.filter(t => !task.originalIds.includes(t._id));
+                                              return updatedGroups;
+                                            });
+                                            deleteAssignmentForAllTeammates({todos: task});
+                                          }
                                         }}
                                       >
                                         <span className="text-lg">❌</span>

@@ -254,6 +254,40 @@ export const AuthProvider = ({ children }) => {
     }
   }
 
+  const deleteAssignmentForSingleTeammate = async (req) => {
+    try {
+      console.log("loading delete assignment for single teammate")
+      setLoading(true);
+      setError(null);
+      const response = await axios.post('/api/notification/delete-assignment-for-single-teammate', req);
+      return response.data;
+    } catch (error) {
+      setError(error.response?.data?.message || "Failed to delete assignment for single teammate");
+      console.log(error);
+      throw error;
+    } finally {
+      setLoading(false);
+      console.log("loading delete assignment for single teammate false")
+    }
+  }
+
+  const deleteAssignmentForAllTeammates = async (req) => {
+    try {
+      console.log("loading delete assignment for all teammates")
+      setLoading(true);
+      setError(null);
+      const response = await axios.post('/api/notification/delete-assignment-for-all-teammates', req);
+      return response.data;
+    } catch (error) {
+      setError(error.response?.data?.message || "Failed to delete assignment for all teammates");
+      console.log(error);
+      throw error;
+    } finally {
+      setLoading(false);
+      console.log("loading delete assignment for all teammates false")
+    }
+  }
+
   const sendRequest = async (request) => {
     try {
       console.log("loading send request")
@@ -795,6 +829,8 @@ export const AuthProvider = ({ children }) => {
         getNotifications,
         sendAssignment,
         editAssignment,
+        deleteAssignmentForSingleTeammate,
+        deleteAssignmentForAllTeammates,
         sendRequest,
         removeFromTeam,
         acceptRequest,

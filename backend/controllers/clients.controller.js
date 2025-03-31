@@ -156,8 +156,15 @@ export const deleteAssignmentForSingleTeammate = async (req, res) => {
         if(!todoId) return res.status(400).json({ message: 'Todo ID is required' });
         const todo = await Todo.findById(todoId);
         if(!todo) return res.status(404).json({ message: 'Todo not found' });
+
+        const waitlist = new Waitlist({ toUser: partnerId, fromUser: userId, isRequest: false, isProcessed: false, isOfficial: false, message: "I have deleted an assignment" });
+        await waitlist.save();
         
         await Todo.deleteOne({ _id: todoId });
+
+        partnerGroup.todo = partnerGroup.todo.filter(id => id.toString() !== todoId.toString());
+        await partnerGroup.save();
+
         userGroup.todo = userGroup.todo.filter(id => id.toString() !== todoId.toString());
         await userGroup.save();
         
@@ -165,6 +172,57 @@ export const deleteAssignmentForSingleTeammate = async (req, res) => {
     } catch (error) {
         res.status(500).json({ message: error.message });
         
+    }
+}
+
+export const deleteAssignmentForAllTeammates = async (req, res) => {
+    try {
+        const userId = req.user._id;
+        const { todos } = req.body;
+        if(!userId) return res.status(400).json({ message: 'User ID is required' });
+        const user = await User.findById(userId);
+        if(!user) return res.status(404).json({ message: 'User not found' });
+        
+        const len = todos.assignedTo.length;
+        const userGroup = await Group.findOne({ user: userId, name: 'Assigned by me' });
+        if(!userGroup) return res.status(404).json({ message: 'Group not found' });
+
+        for(let i = 0; i < len; i++){
+            const partnerId = todos.assignedTo[i];
+            if(!partnerId) return res.status(400).json({ message: 'Partner ID is required' });
+            const partnerUser = await User.findById(partnerId).select('-password');
+            if(!partnerUser) return res.status(404).json({ message: 'Partner user not found' });
+            const partnerGroup = await Group.findOne({ user: partnerUser._id, name: 'Assigned to me' });
+            if(!partnerGroup) return res.status(404).json({ message: 'Group not found' });
+            
+            const todoId = todos.originalIds[i];
+            if(!todoId) return res.status(400).json({ message: 'Todo ID is required' });
+            const todo = await Todo.findById(todoId);
+            if(!todo) return res.status(404).json({ message: 'Todo not found' });
+
+            const waitlist = new Waitlist({ toUser: partnerId, fromUser: req.user._id, isRequest: false, isProcessed: false, isOfficial: false, message: "I have deleted an assignment" });
+            await waitlist.save();
+            
+            await Todo.deleteOne({ _id: todoId });
+            partnerGroup.todo = partnerGroup.todo.filter(id => id.toString() !== todoId.toString());
+            await partnerGroup.save();
+            userGroup.todo = userGroup.todo.filter(id => id.toString() !== todos.originalIds[i].toString());
+        }
+
+        await userGroup.save();
+
+        res.status(200).json({ message: 'Assignments deleted successfully' });
+    } catch (error) {
+        res.status(500).json({ message: error.message });
+        
+    }
+}
+
+export const getAssignmentsStatus = async (req, res) => {
+    try {
+        
+    } catch (error) {
+        res.status(500).json({ message: error.message });
     }
 }
 

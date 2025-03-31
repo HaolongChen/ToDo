@@ -1355,7 +1355,7 @@ export function DashBoard() {
                                   ))}
                                 </li>
                                 <div className={`${todoListExpanded[index] ? "block h-auto" : "hidden"}`}>
-                                  {task.assignedTo && task.assignedTo.length > 0 && (task.assignedTo.map((teammate) => {
+                                  {task.assignedTo && task.assignedTo.length > 0 && (task.assignedTo.map((teammate, index) => {
                                     const assignedTeammate = allTeammates.find(user => user._id === teammate);
                                     // Only render if we have teammate data, otherwise show a loading state
                                     return assignedTeammate ? (

@@ -119,7 +119,7 @@ export const editAssignment = async (req, res) => {
         let flag = true;
         const userGroup = await Group.findOne({ user: userId, name: 'Assigned by me' });
         if(!userGroup) return res.status(404).json({ message: 'Group not found' });
-        console.log(todos)
+        
         for(let todoId of todos.originalIds){
             if(!todoId) return res.status(400).json({ message: 'Todo ID is required' });
             const todo = await Todo.findById(todoId);

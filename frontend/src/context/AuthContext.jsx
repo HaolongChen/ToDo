@@ -288,6 +288,22 @@ export const AuthProvider = ({ children }) => {
     }
   }
 
+  const getAssignmentsStatus = async (req) => {
+    try {
+      setLoading(true);
+      setError(null);
+      const response = await axios.get('/api/notification/get-assignments-status', req);
+      return response.data;
+    } catch (error) {      
+      setError(error.response?.data?.message || "Failed to get assignments status");
+      console.log(error);
+      throw error;
+    } finally {
+      setLoading(false);
+      console.log("loading get assignments status false")
+    }
+  }
+
   const sendRequest = async (request) => {
     try {
       console.log("loading send request")
@@ -831,6 +847,7 @@ export const AuthProvider = ({ children }) => {
         editAssignment,
         deleteAssignmentForSingleTeammate,
         deleteAssignmentForAllTeammates,
+        getAssignmentsStatus,
         sendRequest,
         removeFromTeam,
         acceptRequest,

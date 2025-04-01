@@ -17,6 +17,7 @@ export const AuthProvider = ({ children }) => {
   const [groups, setGroups] = useState([]);
   const [initialProcess, setInitialProcess] = useState(true);
   const [infoExists, setInfoExists] = useState(false);
+  const [assignmentsStatus, setAssignmentsStatus] = useState([]);
 
   // Check if user is logged in on component mount
   useEffect(() => {
@@ -293,6 +294,7 @@ export const AuthProvider = ({ children }) => {
       setLoading(true);
       setError(null);
       const response = await axios.get('/api/notification/get-assignments-status', req);
+      setAssignmentsStatus(response.data);
       return response.data;
     } catch (error) {      
       setError(error.response?.data?.message || "Failed to get assignments status");
@@ -838,6 +840,7 @@ export const AuthProvider = ({ children }) => {
         todos, 
         allTodos,
         groups,
+        assignmentsStatus,
         login, 
         signup, 
         logout, 

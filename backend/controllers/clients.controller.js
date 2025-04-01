@@ -220,7 +220,18 @@ export const deleteAssignmentForAllTeammates = async (req, res) => {
 
 export const getAssignmentsStatus = async (req, res) => {
     try {
-        
+        const { todos } = req.body;
+        let assignmentsStatus = [];
+        for(let todo of todos){
+            const len = todo.originalIds.length;
+            for(let i = 0; i < len; i++){
+                const todoId = todo.originalIds[i].toString();
+                const curTodo = await Todo.findById(todoId).select('completed');
+                if(!curTodo) return res.status(404).json({ message: 'Todo not found' });
+                assignmentsStatus[todoId] = curTodo.completed;
+            }
+        }
+        res.status(200).json(assignmentsStatus);
     } catch (error) {
         res.status(500).json({ message: error.message });
     }

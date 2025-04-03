@@ -83,7 +83,7 @@ export const AuthProvider = ({ children }) => {
     };
 
     getInfo();
-  }, [user, infoExists, initialProcess]); // Dependencies that determine when to fetch info
+  }, [infoExists, initialProcess]); // Dependencies that determine when to fetch info
 
   // Login function
   const login = async (username, password) => {

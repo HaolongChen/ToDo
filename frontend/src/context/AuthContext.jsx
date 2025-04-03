@@ -52,6 +52,8 @@ export const AuthProvider = ({ children }) => {
           await getAllGroups();
           await getNotifications();
           await getRequests();
+          const currentTodos = await generateAssignedTodos();
+          setAssignmentsStatus(getAssignmentsStatus(currentTodos));
           
           // Always pre-fetch teammate details to prevent repeated fetching in various pages
           if (user.team && user.team.length > 0) {

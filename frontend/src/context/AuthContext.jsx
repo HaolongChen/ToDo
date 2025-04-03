@@ -306,6 +306,29 @@ export const AuthProvider = ({ children }) => {
     }
   }
 
+  const generateAssignedTodos = async () => {
+    let tasksById = [];
+    let currentTodos = [];
+    if(groups[4]?.todo) {
+      groups[4].todo.forEach(task => {
+        if(!tasksById[task.uniqueMarker]) {
+          tasksById[task.uniqueMarker] = {
+            ...task,
+            assignedTo: [task.user],
+            originalIds: [task._id]
+          };
+        } else {
+          if(!tasksById[task.uniqueMarker].assignedTo.includes(task.user)) {
+            tasksById[task.uniqueMarker].assignedTo.push(task.user);
+          }
+          tasksById[task.uniqueMarker].originalIds.push(task._id);
+        }
+      })
+      currentTodos = Object.values(tasksById);
+    }
+    return currentTodos;
+  }
+
   const sendRequest = async (request) => {
     try {
       console.log("loading send request")

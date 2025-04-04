@@ -406,7 +406,7 @@ export function DashBoard() {
       console.error(error);
     }
   };
-  console.log(groups)
+  
   const handleCreateTodo = async (event) => {
     event.preventDefault();
 

@@ -856,7 +856,7 @@ export const AuthProvider = ({ children }) => {
       console.log("loading update profile false")
     }
   };
-  console.log(assignmentsStatus)
+  
   return (
     <AuthContext.Provider 
       value={{ 

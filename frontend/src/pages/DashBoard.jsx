@@ -310,7 +310,7 @@ export function DashBoard() {
     setTodo(currentTodos);
     setTaskSourceGroups(sourceMapping);
   }, [groups, selectedGroup]);
-  console.log("currentTodo", todo);
+  
   useEffect(() => {
     setNewTodo({...newTodo, description: inputValue});
   }, [inputValue]);

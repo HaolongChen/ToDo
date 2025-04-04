@@ -42,8 +42,8 @@ export const signin = async (req, res) => {
         console.log(req.body);
         const username = req.body.username;
         const password = req.body.password;
-        console.log(username);
-        console.log(password);
+        // console.log(username);
+        // console.log(password);
         if(!username){
             return res.status(400).json({message: 'Username cannot be empty'});
         }
@@ -72,7 +72,7 @@ export const signin = async (req, res) => {
 
 export const logout = (req, res) => {
     try {
-        console.log(req.cookies.jwt);
+        // console.log(req.cookies.jwt);
         res.cookie('jwt', '', {maxAge: 0});
         res.status(200).json({message: 'Logged out successfully'});
     } catch (error) {
@@ -84,7 +84,7 @@ export const logout = (req, res) => {
 export const getUser = async (req, res) => {
     try {
         const user = await User.findById(req.user._id).select('-password');
-        console.log(user);
+        // console.log(user);
         res.status(200).json(user);
     } catch (error) {
         console.log(error);

@@ -17,6 +17,6 @@ router.post('/remove-from-team', authMiddleware, removeFromTeam);
 router.post('/edit-assignment', authMiddleware, editAssignment);
 router.post('/delete-assignment-for-single-teammate', authMiddleware, deleteAssignmentForSingleTeammate);
 router.post('/delete-assignment-for-all-teammates', authMiddleware, deleteAssignmentForAllTeammates);
-router.get('/get-assignments-status', authMiddleware, getAssignmentsStatus);
+router.post('/get-assignments-status', authMiddleware, getAssignmentsStatus);
 
 export default router;

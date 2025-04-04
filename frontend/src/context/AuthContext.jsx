@@ -294,7 +294,7 @@ export const AuthProvider = ({ children }) => {
       setLoading(true);
       setError(null);
       console.log("req", req);
-      const response = await axios.get('/api/notification/get-assignments-status', req);
+      const response = await axios.post('/api/notification/get-assignments-status', {todos: req});
       setAssignmentsStatus(response.data);
       return response.data;
     } catch (error) {      
@@ -710,7 +710,7 @@ export const AuthProvider = ({ children }) => {
   const getAllGroups = async () => {
     try {
       console.log("loading get all groups")
-      // setLoading(true);
+      setLoading(true);
       setError(null);
       
       // First, get all groups
@@ -740,13 +740,16 @@ export const AuthProvider = ({ children }) => {
       // Set groups with todos already loaded
       setGroups(groupsWithTodos);
 
-      setAssignmentsStatus(await getAssignmentsStatus(generateAssignedTodos(groupsWithTodos)));
+      // setAssignmentsStatus(await getAssignmentsStatus(generateAssignedTodos(groupsWithTodos)));
+      const todos = generateAssignedTodos(groupsWithTodos);
+      const result = await getAssignmentsStatus(todos);
+      setAssignmentsStatus(result);
       
     } catch (error) {
       setError(error.response?.data?.message || "Failed to get groups");
       throw error;
     } finally {
-      // setLoading(false);
+      setLoading(false); // Uncommented to ensure loading state is reset
       console.log("loading get all groups false")
     }
   }

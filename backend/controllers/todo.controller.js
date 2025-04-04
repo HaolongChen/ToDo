@@ -17,7 +17,6 @@ export const createTodo = async (req, res) => {
         res.status(201).json(todo);
     } catch (error) {
         console.log(error);
-        console.log(req.body);
     }
 }
 

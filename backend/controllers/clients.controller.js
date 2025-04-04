@@ -221,11 +221,11 @@ export const deleteAssignmentForAllTeammates = async (req, res) => {
 export const getAssignmentsStatus = async (req, res) => {
     try {
         const { todos } = req.body;
-        let assignmentsStatus = [];
+        let assignmentsStatus = {};
         for(let todo of todos){
             const len = todo.originalIds.length;
             for(let i = 0; i < len; i++){
-                const todoId = todo.originalIds[i].toString();
+                const todoId = todo.originalIds[i];
                 const curTodo = await Todo.findById(todoId).select('completed');
                 if(!curTodo) return res.status(404).json({ message: 'Todo not found' });
                 assignmentsStatus[todoId] = curTodo.completed;
@@ -289,7 +289,7 @@ export const removeFromTeam = async (req, res) => {
         // Convert IDs to strings for proper comparison
         user.team = user.team.filter(member => member.toString() !== toUserId.toString());
         await user.save();
-        console.log({ user: userId, toUser: toUserId });
+        // console.log({ user: userId, toUser: toUserId });
 
         const toUser = await User.findById(toUserId).select('-password');
         if (!toUser) return res.status(404).json({ message: 'User not found' });
@@ -453,7 +453,7 @@ export const getRequests = async (req, res) => {
         const userId = req.user._id;
         let waitlist = await Waitlist.find({ toUser: userId, isRequest: true, isProcessed: false }).sort({ createdAt: -1 });
         
-        console.log(waitlist);
+        // console.log(waitlist);
         res.status(200).json(waitlist);
     } catch (error) {
         res.status(500).json({ message: error.message });

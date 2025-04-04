@@ -52,8 +52,6 @@ export const AuthProvider = ({ children }) => {
           await getAllGroups();
           await getNotifications();
           await getRequests();
-          const currentTodos = await generateAssignedTodos();
-          setAssignmentsStatus(getAssignmentsStatus(currentTodos));
           
           // Always pre-fetch teammate details to prevent repeated fetching in various pages
           if (user.team && user.team.length > 0) {
@@ -295,6 +293,7 @@ export const AuthProvider = ({ children }) => {
     try {
       setLoading(true);
       setError(null);
+      console.log("req", req);
       const response = await axios.get('/api/notification/get-assignments-status', req);
       setAssignmentsStatus(response.data);
       return response.data;
@@ -307,12 +306,12 @@ export const AuthProvider = ({ children }) => {
       console.log("loading get assignments status false")
     }
   }
-
-  const generateAssignedTodos = async () => {
+  
+  const generateAssignedTodos = (groupsWithTodos) => {
     let tasksById = [];
     let currentTodos = [];
-    if(groups[4]?.todo) {
-      groups[4].todo.forEach(task => {
+    if(groupsWithTodos[4]?.todo) {
+      groupsWithTodos[4].todo.forEach(task => {
         if(!tasksById[task.uniqueMarker]) {
           tasksById[task.uniqueMarker] = {
             ...task,
@@ -328,6 +327,8 @@ export const AuthProvider = ({ children }) => {
       })
       currentTodos = Object.values(tasksById);
     }
+    console.log('tasksbyid', tasksById);
+    console.log('currentTodos', currentTodos);
     return currentTodos;
   }
 
@@ -738,6 +739,8 @@ export const AuthProvider = ({ children }) => {
       
       // Set groups with todos already loaded
       setGroups(groupsWithTodos);
+
+      setAssignmentsStatus(await getAssignmentsStatus(generateAssignedTodos(groupsWithTodos)));
       
     } catch (error) {
       setError(error.response?.data?.message || "Failed to get groups");
@@ -850,7 +853,7 @@ export const AuthProvider = ({ children }) => {
       console.log("loading update profile false")
     }
   };
-
+  console.log(assignmentsStatus)
   return (
     <AuthContext.Provider 
       value={{ 

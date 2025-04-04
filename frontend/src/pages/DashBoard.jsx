@@ -15,7 +15,7 @@ import { DefaultAvatar } from "../components/DefaultAvatar";
 export function DashBoard() {
   const location = useLocation();
   const navigate = useNavigate();
-  const { getAllGroups, groups, createTodo, user, setUser, loading, error, teammates, setGroups, deleteTodo, updateTodo, createGroup, updateGroup, deleteGroup, getNotifications, getRequests, sendAssignment, editAssignment, deleteAssignmentForSingleTeammate, deleteAssignmentForAllTeammates } = useAuth(); // Added deleteGroup
+  const { getAllGroups, groups, createTodo, user, setUser, loading, error, teammates, setGroups, deleteTodo, updateTodo, createGroup, updateGroup, deleteGroup, getNotifications, getRequests, sendAssignment, editAssignment, deleteAssignmentForSingleTeammate, deleteAssignmentForAllTeammates, assignmentsStatus } = useAuth(); // Added deleteGroup
   const [drawerOpen, setDrawerOpen] = useState(true);
   const [selectedGroup, setSelectedGroup] = useState(0);
   const [inputValue, setInputValue] = useState("");

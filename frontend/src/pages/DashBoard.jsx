@@ -1367,32 +1367,34 @@ export function DashBoard() {
                                   ))}
                                 </li>
                                 <div className={`${todoListExpanded[index] ? "block h-auto" : "hidden"}`}>
-                                  {task.assignedTo && task.assignedTo.length > 0 && (task.assignedTo.map((teammate, index) => {
+                                  {task.assignedTo && task.assignedTo.length > 0 && (task.assignedTo.map((teammate, innerIndex) => {
                                     const assignedTeammate = allTeammates.find(user => user._id === teammate);
                                     // Only render if we have teammate data, otherwise show a loading state
                                     return assignedTeammate ? (
-                                      <div className="flex flex-row justify-between items-center gap-2 group" key={teammate}>
-                                        <div className={`${todoListExpanded[index] ? "h-auto mt-4 flex flex-row gap-2" : "hidden"} `}>
-                                          {assignedTeammate.coverImg ? (
-                                            <img
-                                              src={assignedTeammate.coverImg}
-                                              alt="teammate profile picture"
-                                              className="w-6 h-6 rounded-full"
-                                            />
-                                          ) : (
-                                            <DefaultAvatar size={24} />
-                                          )}
-                                          <span>{assignedTeammate.username}</span>
+                                      <div className="mt-4 flex flex-col">
+                                        <div className="flex flex-row justify-between items-center group" key={teammate}>
+                                          <div className={`${todoListExpanded[index] ? "flex flex-row gap-2" : "hidden"} `}>
+                                            {assignedTeammate.coverImg ? (
+                                              <img
+                                                src={assignedTeammate.coverImg}
+                                                alt="teammate profile picture"
+                                                className="w-6 h-6 rounded-full"
+                                              />
+                                            ) : (
+                                              <DefaultAvatar size={24} />
+                                            )}
+                                            <span>{assignedTeammate.username}</span>
+                                          </div>
+                                          <button 
+                                            className="btn btn-circle btn-sm bg-transparent border-none hover:bg-gray-200/30 hidden group-hover:flex" 
+                                            onClick={(e) => {
+                                              e.stopPropagation();
+                                              // handleDeleteTask(task._id, task.completed);
+                                            }}
+                                          >
+                                            <span className="text-lg">❌</span>
+                                          </button>
                                         </div>
-                                        <button 
-                                          className="btn btn-circle btn-sm bg-transparent border-none hover:bg-gray-200/30 hidden group-hover:flex" 
-                                          onClick={(e) => {
-                                            e.stopPropagation();
-                                            // handleDeleteTask(task._id, task.completed);
-                                          }}
-                                        >
-                                          <span className="text-lg">❌</span>
-                                        </button>
                                       </div>
                                     ) : (
                                       // Show a loading state while teammate data is being fetched

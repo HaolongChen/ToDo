@@ -1347,7 +1347,7 @@ export function DashBoard() {
                                         <span className="text-lg">✏️</span>
                                       </button>
                                       <button 
-                                        className="btn btn-circle btn-sm bg-transparent border-none hover:bg-gray-200/30 hidden group-hover:flex" 
+                                        className="btn btn-circle btn-sm bg-transparent border-none hover:bg-gray-200/30 opacity-0 group-hover:opacity-100 w-8 h-8 flex items-center justify-center" 
                                         onClick={(e) => {
                                           e.stopPropagation();
                                           if(selectedGroup !== 4) handleDeleteTask(task._id, task.completed);
@@ -1369,11 +1369,17 @@ export function DashBoard() {
                                 <div className={`${todoListExpanded[index] ? "block h-auto" : "hidden"}`}>
                                   {task.assignedTo && task.assignedTo.length > 0 && (task.assignedTo.map((teammate, innerIndex) => {
                                     const assignedTeammate = allTeammates.find(user => user._id === teammate);
+                                    // Check task completion status from assignmentsStatus
+                                    const isCompleted = assignmentsStatus && 
+                                                       task.originalIds && 
+                                                       task.originalIds[innerIndex] && 
+                                                       assignmentsStatus[task.originalIds[innerIndex]];
+                                    
                                     // Only render if we have teammate data, otherwise show a loading state
                                     return assignedTeammate ? (
-                                      <div className="mt-4 flex flex-col">
-                                        <div className="flex flex-row justify-between items-center group" key={teammate}>
-                                          <div className={`${todoListExpanded[index] ? "flex flex-row gap-2" : "hidden"} `}>
+                                      <div key={teammate} className="mt-2">
+                                        <div className="flex flex-row justify-between items-center group bg-base-200/30 rounded-lg px-3 py-1.5 h-10">
+                                          <div className="flex flex-row gap-2 items-center">
                                             {assignedTeammate.coverImg ? (
                                               <img
                                                 src={assignedTeammate.coverImg}
@@ -1383,22 +1389,51 @@ export function DashBoard() {
                                             ) : (
                                               <DefaultAvatar size={24} />
                                             )}
-                                            <span>{assignedTeammate.username}</span>
+                                            <span className="text-sm font-medium">{assignedTeammate.username}</span>
+                                            <div className={`badge badge-sm ${isCompleted ? 'badge-success' : 'badge-warning'} ml-2`}>
+                                              {isCompleted ? 'Completed' : 'Pending'}
+                                            </div>
                                           </div>
                                           <button 
-                                            className="btn btn-circle btn-sm bg-transparent border-none hover:bg-gray-200/30 hidden group-hover:flex" 
+                                            className="btn btn-circle btn-xs bg-transparent border-none hover:bg-gray-200/30 opacity-0 group-hover:opacity-100 flex items-center justify-center" 
                                             onClick={(e) => {
                                               e.stopPropagation();
-                                              // handleDeleteTask(task._id, task.completed);
+                                              deleteAssignmentForSingleTeammate({
+                                                todos: task,
+                                                index: innerIndex
+                                              });
+                                              setGroups(prevGroups => {
+                                                let updatedGroups = [...prevGroups];
+                                                const group = updatedGroups[selectedGroup];
+                                                const updatedTask = {
+                                                  ...task,
+                                                  assignedTo: task.assignedTo.filter((_, i) => i !== innerIndex),
+                                                  originalIds: task.originalIds.filter((_, i) => i !== innerIndex)
+                                                };
+                                                
+                                                // If no more assignees, remove the task
+                                                if (updatedTask.assignedTo.length === 0) {
+                                                  updatedGroups[selectedGroup].todo = group.todo.filter(t => 
+                                                    t.uniqueMarker !== task.uniqueMarker
+                                                  );
+                                                } else {
+                                                  // Otherwise update the task
+                                                  updatedGroups[selectedGroup].todo = group.todo.map(t => 
+                                                    t.uniqueMarker === task.uniqueMarker ? updatedTask : t
+                                                  );
+                                                }
+                                                
+                                                return updatedGroups;
+                                              });
                                             }}
                                           >
-                                            <span className="text-lg">❌</span>
+                                            <span className="text-sm">❌</span>
                                           </button>
                                         </div>
                                       </div>
                                     ) : (
                                       // Show a loading state while teammate data is being fetched
-                                      <div className="flex items-center gap-2 h-auto mt-4" key={teammate}>
+                                      <div className="flex items-center gap-2 h-auto mt-2 bg-base-200/30 rounded-lg px-3 py-1.5" key={teammate}>
                                         <div className="skeleton w-6 h-6 rounded-full"></div>
                                         <div className="skeleton h-4 w-20"></div>
                                       </div>

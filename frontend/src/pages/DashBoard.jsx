@@ -1369,12 +1369,6 @@ export function DashBoard() {
                                 <div className={`${todoListExpanded[index] ? "block h-auto" : "hidden"}`}>
                                   {task.assignedTo && task.assignedTo.length > 0 && (task.assignedTo.map((teammate, innerIndex) => {
                                     const assignedTeammate = allTeammates.find(user => user._id === teammate);
-                                    // Check task completion status from assignmentsStatus
-                                    const isCompleted = assignmentsStatus && 
-                                                       task.originalIds && 
-                                                       task.originalIds[innerIndex] && 
-                                                       assignmentsStatus[task.originalIds[innerIndex]];
-                                    
                                     // Only render if we have teammate data, otherwise show a loading state
                                     return assignedTeammate ? (
                                       <div key={teammate} className="mt-2">
@@ -1390,7 +1384,7 @@ export function DashBoard() {
                                               <DefaultAvatar size={24} />
                                             )}
                                             <span className="text-sm font-medium">{assignedTeammate.username}</span>
-                                            <div className={`badge badge-sm ${isCompleted ? 'badge-success' : 'badge-warning'} ml-2`}>
+                                            <div className={`badge badge-sm ${assignmentsStatus[task.originalIds[innerIndex]] ? 'badge-success' : 'badge-warning'} ml-2`}>
                                               {isCompleted ? 'Completed' : 'Pending'}
                                             </div>
                                           </div>

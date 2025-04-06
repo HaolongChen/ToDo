@@ -1305,7 +1305,11 @@ export function DashBoard() {
                                       />
                                     </div>
                                   ) : (
-                                    <span className={`flex-1 truncate ${task.completed ? "line-through text-gray-400" : ""}`}>
+                                    <span className={`flex-1 truncate ${
+                                      selectedGroup !== 4 
+                                        ? (task.completed ? "line-through text-gray-400" : "") 
+                                        : (task.originalIds && task.originalIds.every(id => assignmentsStatus[id]) ? "line-through text-gray-400" : "")
+                                    }`}>
                                       {task.description}
                                       {selectedGroup <= 2 && taskSourceGroups[task._id] && (
                                         <span className="ml-2 text-sm text-gray-500">

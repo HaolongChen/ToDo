@@ -260,7 +260,31 @@ export const AuthProvider = ({ children }) => {
       console.log("loading delete assignment for single teammate")
       setLoading(true);
       setError(null);
+      
+      // Check if the task was completed by the teammate before deleting
+      const { todos, index } = req;
+      const todoId = todos.originalIds[index];
+      const isCompleted = assignmentsStatus && assignmentsStatus[todoId];
+      const teammateId = todos.assignedTo[index];
+      
+      // Make the API call to delete the assignment
       const response = await axios.post('/api/notification/delete-assignment-for-single-teammate', req);
+      
+      // Update teammate's task counts directly through their todo endpoint
+      if (teammateId) {
+        try {
+          // Decrease totalTasks count
+          await axios.post(`/api/todo/decrement-total-tasks/${teammateId}`);
+          
+          // If the task was completed, also decrease completedTasks
+          if (isCompleted) {
+            await axios.post(`/api/todo/decrement-completed-tasks/${teammateId}`);
+          }
+        } catch (err) {
+          console.error("Failed to update teammate task counts:", err);
+        }
+      }
+      
       return response.data;
     } catch (error) {
       setError(error.response?.data?.message || "Failed to delete assignment for single teammate");
@@ -277,6 +301,35 @@ export const AuthProvider = ({ children }) => {
       console.log("loading delete assignment for all teammates")
       setLoading(true);
       setError(null);
+      
+      const { todos } = req;
+      
+      // Update task counts for each teammate before deleting assignments
+      if (todos && todos.assignedTo && todos.originalIds) {
+        const updatePromises = todos.assignedTo.map(async (teammateId, index) => {
+          const todoId = todos.originalIds[index];
+          const isCompleted = assignmentsStatus && assignmentsStatus[todoId];
+          
+          try {
+            // Decrease totalTasks count
+            await axios.post(`/api/todo/decrement-total-tasks/${teammateId}`);
+            
+            // If the task was completed, also decrease completedTasks
+            if (isCompleted) {
+              await axios.post(`/api/todo/decrement-completed-tasks/${teammateId}`);
+            }
+            return true;
+          } catch (err) {
+            console.error(`Failed to update task counts for teammate ${teammateId}:`, err);
+            return false;
+          }
+        });
+        
+        // Wait for all count updates to finish
+        await Promise.all(updatePromises);
+      }
+      
+      // Now delete the assignments
       const response = await axios.post('/api/notification/delete-assignment-for-all-teammates', req);
       return response.data;
     } catch (error) {

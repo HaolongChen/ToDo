@@ -1385,7 +1385,7 @@ export function DashBoard() {
                                             )}
                                             <span className="text-sm font-medium">{assignedTeammate.username}</span>
                                             <div className={`badge badge-sm ${assignmentsStatus[task.originalIds[innerIndex]] ? 'badge-success' : 'badge-warning'} ml-2`}>
-                                              {isCompleted ? 'Completed' : 'Pending'}
+                                              {assignmentsStatus[task.originalIds[innerIndex]] ? 'Completed' : 'Pending'}
                                             </div>
                                           </div>
                                           <button 

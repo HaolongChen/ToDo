@@ -2,14 +2,28 @@ import { useAuth } from "../context/AuthContext";
 import { DefaultAvatar } from "./DefaultAvatar"
 import { useNavigate } from "react-router-dom";
 import { useState, useEffect } from "react";
+import { set } from "mongoose";
 
 export const Avatar = ({size}) => {
     const { user, loading, error } = useAuth();
     const [initialLoading, setInitialLoading] = useState(true);
 
     useEffect(() => {
-        if(initialLoading) setInitialLoading(false);
-    }, [loading]);
+        // More robust loading handling:
+        // 1. Show skeleton on first render
+        // 2. Continue showing skeleton while auth is loading
+        // 3. Once loading is done, check if we have user data
+        // if (loading) {
+        //     setInitialLoading(true);
+        // } else if (user) {
+        //     // We have user data and loading is done
+        //     setInitialLoading(false);
+        // }
+        if(!initialLoading) return;
+        if(!loading && user){
+            setInitialLoading(false);
+        }
+    }, [loading, user]);
 
     const navigate = useNavigate();
     
@@ -25,11 +39,7 @@ export const Avatar = ({size}) => {
                         </div>
                     </div>
                 ) : (
-                    <div className="avatar">
-                        <div className="ring-primary ring-offset-base-100 rounded-full ring ring-offset-2">
-                            <DefaultAvatar size={size} alt="Default Avatar" />
-                        </div>
-                    </div>
+                    <DefaultAvatar username={user.username} size={size} />
                 )}
             </div>)}
         </div>

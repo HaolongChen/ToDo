@@ -162,10 +162,19 @@ export function DashBoard() {
   // }, []);
 
   useEffect(() => {
-    if(!loading && initialLoading) {
-      setInitialLoading(false);
-    }
-  }, [loading]);
+    // First render - always show skeleton on initial component mount
+    const checkDataLoaded = () => {
+      if (loading) {
+        // If still loading, keep initialLoading true
+        setInitialLoading(true);
+      } else if (groups.length > 0) {
+        // If we have groups data and not loading, we can stop showing skeletons
+        setInitialLoading(false);
+      }
+    };
+
+    checkDataLoaded();
+  }, [loading, groups]);
 
   // Helper functions for special groups
   const getMyDayTasks = () => {

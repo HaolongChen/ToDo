@@ -1344,6 +1344,11 @@ export function DashBoard() {
                                           <span className={`expand-arrow ml-1 ${todoListExpanded[task._id] ? "expanded" : ""}`}>▼</span>
                                         </span>
                                       )}
+                                      {selectedGroup === 3 && task.username && (
+                                        <span className="ml-2 text-sm text-blue-600 flex items-center">
+                                          Assigned by {task.username}
+                                        </span>
+                                      )}
                                       {task.due && (
                                         <span className="ml-2 text-sm text-cyan-600">
                                           Due {formatDate(new Date(task.due))}

@@ -78,7 +78,8 @@ export const sendAssignment = async (req, res) => {
                 important, 
                 due, 
                 message, 
-                user: partnerUser._id ,
+                user: partnerUser._id,
+                username: req.user.username,
                 uniqueMarker: uniqueMarker
             });
             await todo.save();

@@ -32,10 +32,6 @@ app.use(cookieParser());
 
 const port = process.env.PORT || 5000;
 
-app.get('/', (req, res) => {
-    res.send('Hello World!');
-});
-
 app.use('/api/todo', todoRoutes);
 app.use('/api/auth', authRoutes);
 app.use('/api/notification', clientsRoutes);

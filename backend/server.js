@@ -9,6 +9,7 @@ import clientsRoutes from './routes/clients.route.js';
 import imageRoutes from './routes/image.route.js';
 import searchRoutes from './routes/search.route.js';
 import { v2 as cloudinary } from 'cloudinary';
+import path from 'path';
 
 dotenv.config();
 
@@ -17,6 +18,8 @@ cloudinary.config({
     api_key: process.env.CLOUDINARY_API_KEY,
     api_secret: process.env.CLOUDINARY_API_SECRET,
 });
+
+const __dirname = path.resolve();
 
 const app = express();
 app.use(cors({
@@ -38,6 +41,13 @@ app.use('/api/auth', authRoutes);
 app.use('/api/notification', clientsRoutes);
 app.use('/api/image', imageRoutes);
 app.use('/api/search', searchRoutes);
+
+if(process.env.NODE_ENV === 'production'){
+    app.use(express.static(path.join(__dirname, '../frontend/dist')));
+    app.get('*', (req, res) => {
+        res.sendFile(path.join(__dirname, '../frontend/dist/index.html'));
+    });
+}
 
 app.listen(port, () => {
     console.log(`Server running on port ${port}`);

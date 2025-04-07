@@ -49,9 +49,8 @@ export function DashBoard() {
   const [checkedTeammates, setCheckedTeammates] = useState([]);
   const [teammatesPickerOpen, setTeammatesPickerOpen] = useState(false);
   const [allTeammates, setAllTeammates] = useState([]);
-  const [todoListExpanded, setTodoListExpanded] = useState(() => {
-    return Array(1000000).fill(false);
-  });
+  // Change from array to object with todo IDs as keys
+  const [todoListExpanded, setTodoListExpanded] = useState({});
   
   useEffect(() => {
     if (!user) return;
@@ -590,20 +589,11 @@ export function DashBoard() {
       // Don't allow toggling completed status in "Assigned by me" group
       if (selectedGroup === 4) {
         
-        if(todoListExpanded[index]){
-          setTodoListExpanded(prevState => {
-            const newState = [...prevState];
-            newState[index] = false;
-            return newState;
-          });
-        }
-        else{
-          setTodoListExpanded(prevState => {
-            const newState = [...prevState];
-            newState[index] = true;
-            return newState;
-          });
-        }
+        // Toggle the expanded state using the task ID as the key
+        setTodoListExpanded(prevState => ({
+          ...prevState,
+          [taskId]: !prevState[taskId]
+        }));
 
         return;
       }
@@ -1351,7 +1341,7 @@ export function DashBoard() {
                                       {selectedGroup === 4 && task.assignedTo && (
                                         <span className="ml-2 text-sm text-blue-600 flex items-center">
                                           → Assigned to {task.assignedTo.length} user{task.assignedTo.length > 1 ? 's' : ''}
-                                          <span className={`expand-arrow ml-1 ${todoListExpanded[index] ? "expanded" : ""}`}>▼</span>
+                                          <span className={`expand-arrow ml-1 ${todoListExpanded[task._id] ? "expanded" : ""}`}>▼</span>
                                         </span>
                                       )}
                                       {task.due && (
@@ -1390,7 +1380,11 @@ export function DashBoard() {
                                           else{
                                             setGroups(prevGroups => {
                                               let updatedGroups = [...prevGroups];
-                                              updateGroup[selectedGroup].todo = updatedGroups[selectedGroup].todo.filter(t => !task.originalIds.includes(t._id));
+                                              // Fix: The object reference was incorrect, causing "Cannot set properties of undefined"
+                                              updatedGroups[selectedGroup] = {
+                                                ...updatedGroups[selectedGroup],
+                                                todo: updatedGroups[selectedGroup].todo.filter(t => !task.originalIds.includes(t._id))
+                                              };
                                               return updatedGroups;
                                             });
                                             deleteAssignmentForAllTeammates({todos: task});
@@ -1402,7 +1396,7 @@ export function DashBoard() {
                                     </>
                                   ))}
                                 </li>
-                                <div className={`teammate-list-container ${todoListExpanded[index] ? "expanded" : "collapsed"}`}>
+                                <div className={`teammate-list-container ${todoListExpanded[task._id] ? "expanded" : "collapsed"}`}>
                                   {task.assignedTo && task.assignedTo.length > 0 && (task.assignedTo.map((teammate, innerIndex) => {
                                     const assignedTeammate = allTeammates.find(user => user._id === teammate);
                                     // Only render if we have teammate data, otherwise show a loading state

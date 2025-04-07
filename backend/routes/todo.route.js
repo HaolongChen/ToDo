@@ -1,5 +1,5 @@
 import express from 'express';
-import { createTodo, getTodos, updateTodo, deleteTodo, getAllTodos, getAllGroups, createGroup, updateGroup, deleteGroup, plusCompletedTasks, minusCompletedTasks } from '../controllers/todo.controller.js';
+import { createTodo, getTodos, updateTodo, deleteTodo, getAllTodos, getAllGroups, createGroup, updateGroup, deleteGroup, plusCompletedTasks, minusCompletedTasks, minusTeammateCompletedTasks, minusTeammateTotalTasks } from '../controllers/todo.controller.js';
 import { authMiddleware } from '../middleware/auth.middleware.js';
 const router = express.Router();
 
@@ -14,5 +14,7 @@ router.post('/update-group/:id', authMiddleware, updateGroup);
 router.post('/delete-group/:id', authMiddleware, deleteGroup);
 router.post('/plus-completed', authMiddleware, plusCompletedTasks);
 router.post('/minus-completed', authMiddleware, minusCompletedTasks);
+router.post('/decrement-completed-tasks/:id', authMiddleware, minusTeammateCompletedTasks);
+router.post('/decrement-total-tasks/:id', authMiddleware, minusTeammateTotalTasks);
 
 export default router; 

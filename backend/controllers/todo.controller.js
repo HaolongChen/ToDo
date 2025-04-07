@@ -147,3 +147,32 @@ export const minusCompletedTasks = async (req, res) => {
         console.log(error);
     }
 }
+
+export const minusTeammateCompletedTasks = async (req, res) => {
+    try {
+        
+        const teammateId = req.params.id || req.body.teammateId;
+        const teammate = await User.findById(teammateId);
+        if (!teammate) return res.status(404).json({ message: 'Teammate not found' });
+        teammate.completedTasks -= 1;
+        await teammate.save();
+        res.status(200).json({ message: 'Teammate completed tasks decremented' });
+    } catch (error) {
+        console.log(error);
+        
+    }
+}
+
+export const minusTeammateTotalTasks = async (req, res) => {
+    try {
+        const teammateId = req.params.id || req.body.teammateId;
+        const teammate = await User.findById(teammateId);
+        if (!teammate) return res.status(404).json({ message: 'Teammate not found' });
+        teammate.totalTasks -= 1;
+        await teammate.save();
+        res.status(200).json({ message: 'Teammate total tasks decremented' });
+    } catch (error) {
+        console.log(error);
+        
+    }
+}

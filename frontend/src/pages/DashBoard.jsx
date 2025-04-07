@@ -1061,6 +1061,37 @@ export function DashBoard() {
             50% { background-color: rgba(59, 130, 246, 0.4); }
             100% { background-color: transparent; }
           }
+          
+          .teammate-list-container {
+            overflow: hidden;
+            transition: all 0.3s ease-in-out;
+          }
+          
+          .teammate-list-container.expanded {
+            max-height: 500px;
+            opacity: 1;
+            transform: translateY(0);
+            margin-top: 8px;
+          }
+          
+          .teammate-list-container.collapsed {
+            max-height: 0;
+            opacity: 0;
+            transform: translateY(-10px);
+            margin-top: 0;
+          }
+          
+          .teammate-list-inner {
+            transform-origin: top;
+          }
+          
+          .expand-arrow {
+            transition: transform 0.3s ease;
+          }
+          
+          .expand-arrow.expanded {
+            transform: rotate(180deg);
+          }
         `}</style>
         <NavBar />
         <div className="flex flex-col flex-1 overflow-hidden">
@@ -1318,8 +1349,9 @@ export function DashBoard() {
                                       )}
                                       {/* Show assigned users info in "Assigned by me" group */}
                                       {selectedGroup === 4 && task.assignedTo && (
-                                        <span className="ml-2 text-sm text-blue-600">
+                                        <span className="ml-2 text-sm text-blue-600 flex items-center">
                                           → Assigned to {task.assignedTo.length} user{task.assignedTo.length > 1 ? 's' : ''}
+                                          <span className={`expand-arrow ml-1 ${todoListExpanded[index] ? "expanded" : ""}`}>▼</span>
                                         </span>
                                       )}
                                       {task.due && (
@@ -1370,7 +1402,7 @@ export function DashBoard() {
                                     </>
                                   ))}
                                 </li>
-                                <div className={`${todoListExpanded[index] ? "block h-auto" : "hidden"}`}>
+                                <div className={`teammate-list-container ${todoListExpanded[index] ? "expanded" : "collapsed"}`}>
                                   {task.assignedTo && task.assignedTo.length > 0 && (task.assignedTo.map((teammate, innerIndex) => {
                                     const assignedTeammate = allTeammates.find(user => user._id === teammate);
                                     // Only render if we have teammate data, otherwise show a loading state

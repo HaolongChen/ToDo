@@ -112,7 +112,9 @@ CLOUDINARY_API_SECRET=your_cloudinary_api_secret
 
 ## Deployment
 
-This application is ready to be deployed to platforms like Heroku, Render, or Vercel:
+This application is deployed and accessible at: https://todo-qkmo.onrender.com
+
+The application is ready to be deployed to platforms like Heroku, Render, or Vercel:
 
 - **Build Command**: `npm run build`
 - **Output Directory**: `frontend/dist`

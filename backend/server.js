@@ -23,7 +23,7 @@ const __dirname = path.resolve();
 
 const app = express();
 app.use(cors({
-    origin: ['http://localhost:5173', 'http://127.0.0.1:5173'],
+    origin: ['http://localhost:5173', 'http://127.0.0.1:5173', '*'],
     credentials: true,
 }));
 app.use(express.json({ limit: '50mb' }));
@@ -38,12 +38,14 @@ app.use('/api/notification', clientsRoutes);
 app.use('/api/image', imageRoutes);
 app.use('/api/search', searchRoutes);
 
-if(process.env.NODE_ENV === 'production'){
-    app.use(express.static(path.join(__dirname, '../frontend/dist')));
-    app.get('*', (req, res) => {
-        res.sendFile(path.join(__dirname, '../frontend/dist/index.html'));
-    });
-}
+// Serve static files and handle all routes for frontend
+app.use(express.static(path.join(__dirname, '/frontend/dist')));
+app.get('*', (req, res) => {
+    // API routes will be handled by their respective middleware
+    if (!req.path.startsWith('/api')) {
+        res.sendFile(path.resolve(__dirname, "frontend", "dist", "index.html"));
+    }
+});
 
 app.listen(port, () => {
     console.log(`Server running on port ${port}`);

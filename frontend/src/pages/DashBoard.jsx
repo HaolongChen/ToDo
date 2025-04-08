@@ -165,15 +165,14 @@ export function DashBoard() {
     // First render - always show skeleton on initial component mount
     const checkDataLoaded = () => {
       if (loading) {
-        // If still loading, keep initialLoading true
-        setInitialLoading(true);
+        return;
       } else if (groups.length > 0) {
         // If we have groups data and not loading, we can stop showing skeletons
         setInitialLoading(false);
       }
     };
 
-    checkDataLoaded();
+    if (initialLoading) checkDataLoaded();
   }, [loading, groups]);
 
   // Helper functions for special groups

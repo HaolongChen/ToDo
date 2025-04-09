@@ -32,9 +32,28 @@
     
     <!-- Canonical URL -->
     <link rel="canonical" href="https://todo-qkmo.onrender.com/">
-  </head>
-  <body>
+  </head>  <body>
     <div id="root"></div>
     <script type="module" src="/src/main.jsx"></script>
+    
+    <!-- Structured data (JSON-LD) for better search engine understanding -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "SoftwareApplication",
+      "name": "ToDo App",
+      "applicationCategory": "ProductivityApplication",
+      "operatingSystem": "Web",
+      "offers": {
+        "@type": "Offer",
+        "price": "0",
+        "priceCurrency": "USD"
+      },
+      "description": "A feature-rich task management application with team collaboration. Create, organize, and assign tasks, track progress, and boost your productivity.",
+      "url": "https://todo-qkmo.onrender.com/",
+      "featureList": "Task management, Team collaboration, Notifications, Custom categories, Assignment tracking",
+      "screenshot": "https://todo-qkmo.onrender.com/icon.svg"
+    }
+    </script>
   </body>
 </html>

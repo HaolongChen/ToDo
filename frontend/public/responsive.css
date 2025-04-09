@@ -1,0 +1,85 @@
+/* Mobile-specific styles that don't affect desktop layout */
+
+/* Small mobile devices (phones, 640px and below) */
+@media (max-width: 640px) {
+  /* Increase touch target sizes for better mobile usability */
+  button, 
+  [role="button"],
+  .btn,
+  input[type="button"],
+  input[type="submit"],
+  input[type="reset"],
+  .notification-button {
+    min-height: 44px !important;
+    min-width: 44px !important;
+  }
+
+  /* Increase font size for better readability */
+  body {
+    font-size: 16px !important;
+  }
+
+  /* Make search input expand to full width on small screens */
+  .navbar-search-container {
+    flex: 1 !important;
+  }
+
+  /* Optimize dropdown menus for touch */
+  .dropdown-content {
+    max-height: 70vh !important;
+    overflow-y: auto !important;
+    -webkit-overflow-scrolling: touch !important;
+  }
+  
+  /* Ensure task items are easily tappable */
+  .task-item {
+    padding: 12px !important;
+  }
+  
+  /* Make form inputs larger and easier to tap */
+  input, 
+  select, 
+  textarea {
+    font-size: 16px !important; /* Prevent iOS zoom on focus */
+    padding: 12px 8px !important;
+  }
+}
+
+/* Medium mobile devices (large phones, tablets, 768px and below) */
+@media (max-width: 768px) {
+  /* Adjustments for tablets and larger phones */
+  .container {
+    padding-left: 16px !important;
+    padding-right: 16px !important;
+  }
+  
+  /* Make the search results more compact */
+  .search-results-item {
+    padding: 8px !important;
+  }
+}
+
+/* Ensure buttons and interactive elements have proper states for touch devices */
+@media (hover: none) {
+  button:active,
+  [role="button"]:active,
+  .btn:active,
+  input[type="button"]:active,
+  input[type="submit"]:active,
+  input[type="reset"]:active {
+    opacity: 0.8 !important;
+  }
+}
+
+/* Fix iOS input field issues */
+@supports (-webkit-touch-callout: none) {
+  input, 
+  textarea {
+    font-size: 16px !important;
+  }
+}
+
+/* Fix for sticky hover states on mobile */
+@media (hover: hover) {
+  /* Only apply hover styles on devices that support hover */
+}

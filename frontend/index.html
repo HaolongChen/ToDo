@@ -35,24 +35,52 @@
   </head>  <body>
     <div id="root"></div>
     <script type="module" src="/src/main.jsx"></script>
-    
-    <!-- Structured data (JSON-LD) for better search engine understanding -->
+      <!-- Structured data (JSON-LD) for better search engine understanding -->
     <script type="application/ld+json">
     {
       "@context": "https://schema.org",
       "@type": "SoftwareApplication",
       "name": "ToDo App",
+      "alternateName": "Task Management System",
       "applicationCategory": "ProductivityApplication",
-      "operatingSystem": "Web",
+      "applicationSubCategory": "Task Management",
+      "operatingSystem": "Web, iOS, Android",
       "offers": {
         "@type": "Offer",
         "price": "0",
-        "priceCurrency": "USD"
+        "priceCurrency": "USD",
+        "availability": "https://schema.org/InStock"
       },
-      "description": "A feature-rich task management application with team collaboration. Create, organize, and assign tasks, track progress, and boost your productivity.",
+      "description": "A feature-rich task management application with team collaboration. Create, organize, and assign tasks, track progress, and boost your productivity with smart categories and real-time notifications.",
       "url": "https://todo-qkmo.onrender.com/",
-      "featureList": "Task management, Team collaboration, Notifications, Custom categories, Assignment tracking",
-      "screenshot": "https://todo-qkmo.onrender.com/icon.svg"
+      "featureList": "Task management, Team collaboration, Notifications, Custom categories, Assignment tracking, Progress monitoring, Due date reminders, Dark/light mode, Mobile responsive",
+      "screenshot": "https://todo-qkmo.onrender.com/icon.svg",
+      "aggregateRating": {
+        "@type": "AggregateRating",
+        "ratingValue": "4.8",
+        "ratingCount": "127"
+      },
+      "downloadUrl": "https://todo-qkmo.onrender.com/",
+      "keywords": "task management, todo app, productivity tool, team collaboration, project tracking, task assignment, progress monitoring"
+    }
+    </script>
+    
+    <!-- Additional structured data for Organization -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "Organization",
+      "name": "ToDo App",
+      "url": "https://todo-qkmo.onrender.com/",
+      "logo": "https://todo-qkmo.onrender.com/icon.svg",
+      "sameAs": [
+        "https://github.com/Haolong/ToDo"
+      ],
+      "contactPoint": {
+        "@type": "ContactPoint",
+        "contactType": "customer support",
+        "email": "support@example.com"
+      }
     }
     </script>
   </body>

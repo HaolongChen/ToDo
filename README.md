@@ -103,7 +103,7 @@ CLOUDINARY_API_SECRET=your_cloudinary_api_secret
 
 1. **Clone the repository**
    ```bash
-   git clone https://github.com/yourusername/ToDo.git
+   git clone https://github.com/HaolongChen/ToDo.git
    cd ToDo
    ```
 

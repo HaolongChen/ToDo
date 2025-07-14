@@ -4,17 +4,17 @@ import User from '../models/user.model.js';
 export const authMiddleware = async (req, res, next) => {
     try {
         if(!req.cookies){
-            console.log("No cookie");
+            // console.log("No cookie");
             return res.status(401).json({message: 'Unauthorized'});
         }
         const token = req.cookies.jwt;
         if(!token){
-            console.log("No token");
+            // console.log("No token");
             return res.status(401).json({message: 'Unauthorized'});
         }
         const decoded = jwt.verify(token, process.env.JWT_SECRET);
         if(!decoded){
-            console.log("verify failed");
+            // console.log("verify failed");
             return res.status(401).json({message: 'Unauthorized'});
         }
         const user = await User.findById(decoded.userId);

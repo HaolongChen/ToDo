@@ -2,7 +2,6 @@ import bcrypt from 'bcryptjs';
 import { generateToken } from '../utils/generateToken.js';
 import User from '../models/user.model.js';
 import Group from '../models/group.model.js';
-import { v2 as cloudinary } from 'cloudinary';
 
 export const signup = async (req, res) => {
     try {
@@ -32,7 +31,6 @@ export const signup = async (req, res) => {
         res.status(201).json(userData);
     } catch (error) {
         console.log(error);
-        
         res.status(500).json({message: 'Server error'});
     }
 }

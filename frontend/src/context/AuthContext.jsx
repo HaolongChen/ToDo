@@ -1,6 +1,5 @@
 import { createContext, useState, useEffect, useContext } from 'react';
 import axios from 'axios';
-import { set } from 'mongoose';
 
 const AuthContext = createContext();
 

@@ -35,8 +35,8 @@ spec:
         env:
         - name: MONGO_URI
           valueFrom:
-            configMapKeyRef:
-              name: todo-configmap
+            secretKeyRef:
+              name: todo-secret
               key: MONGO_URI
         - name: JWT_SECRET
           valueFrom:

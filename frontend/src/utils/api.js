@@ -2,7 +2,7 @@ import axios from 'axios';
 
 // Create an axios instance with default config
 const api = axios.create({
-  baseURL: '', // Use relative URLs instead of hardcoded localhost
+  baseURL: 'http://api.todo.local', 
   withCredentials: true, // Important for cookies/session authentication
   headers: {
     'Content-Type': 'application/json',

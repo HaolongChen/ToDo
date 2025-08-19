@@ -1,0 +1,50 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: todo-backend
+  namespace: todo-app
+spec:
+  replicas: 3
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 1
+  selector:
+    matchLabels:
+      app: todo-backend
+  template:
+    metadata:
+      labels:
+        app: todo-backend
+    spec:
+      containers:
+      - name: todo-backend
+        image: haolongc/todo-backend
+        imagePullPolicy: Always
+        env:
+        - name: MODE
+          value: "development"
+        resources:
+          limits:
+            memory: "128Mi"
+            cpu: "500m"
+        ports:
+        - containerPort: 5000
+        readinessProbe:
+          httpGet:
+            path: /healthz
+            port: 5000
+          initialDelaySeconds: 5
+          periodSeconds: 10
+        livenessProbe:
+          httpGet:
+            path: /healthz
+            port: 5000
+          initialDelaySeconds: 15
+          periodSeconds: 20
+        envFrom:
+        - secretRef:
+            name: todo-secret
+        - configMapRef:
+            name: todo-configmap

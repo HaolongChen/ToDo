@@ -1,5 +1,5 @@
 import { createContext, useState, useEffect, useContext } from 'react';
-import axios from 'axios';
+import api from '../utils/api.js';
 
 const AuthContext = createContext();
 
@@ -24,7 +24,7 @@ export const AuthProvider = ({ children }) => {
       try {
         if(!initialProcess) return;
         setLoading(true);
-        const response = await axios.get('/api/auth/user');
+        const response = await api.get('/api/auth/user');
         if(response.status === 200) {
           setInitialProcess(false);
           setUser(response.data);
@@ -58,7 +58,7 @@ export const AuthProvider = ({ children }) => {
               console.log("Pre-fetching teammate data...");
               // Fetch all teammate details in parallel for maximum efficiency
               const teammatePromises = user.team.map(teammateId => 
-                axios.get(`/api/notification/get-user-info/${teammateId}`)
+                api.get(`/api/notification/get-user-info/${teammateId}`)
               );
               const responses = await Promise.all(teammatePromises);
               const teammateData = responses.map(response => response.data);
@@ -90,7 +90,7 @@ export const AuthProvider = ({ children }) => {
       console.log("loading login")
       setLoading(true);
       setError(null);
-      const response = await axios.post('/api/auth/signin', { username, password });
+      const response = await api.post('/api/auth/signin', { username, password });
       setUser(response.data);
       setInitialProcess(false);
       return response.data;
@@ -109,7 +109,7 @@ export const AuthProvider = ({ children }) => {
       console.log("loading signup")
       setLoading(true);
       setError(null);
-      const response = await axios.post('/api/auth/signup', { username, password });
+      const response = await api.post('/api/auth/signup', { username, password });
       setUser(response.data);
       getAllGroups();
       setInitialProcess(false);
@@ -129,7 +129,7 @@ export const AuthProvider = ({ children }) => {
     try {
       console.log("loading logout")
       setLoading(true);
-      await axios.post('/api/auth/logout');
+      await api.post('/api/auth/logout');
       setUser(null);
       setNotifications([]);
       setRequests([]);
@@ -153,7 +153,7 @@ export const AuthProvider = ({ children }) => {
       console.log("loading change password")
       setLoading(true);
       setError(null);
-      await axios.post('/api/auth/change-password', { oldPassword, newPassword });
+      await api.post('/api/auth/change-password', { oldPassword, newPassword });
     } catch (error) {
       setError(error.response?.data?.message || "Failed to change password");
       throw error;
@@ -168,7 +168,7 @@ export const AuthProvider = ({ children }) => {
       console.log("loading get notifications")
       // setLoading(true);
       setError(null);
-      const response = await axios.get('/api/notification/get-notifications');
+      const response = await api.get('/api/notification/get-notifications');
 
       const initialNotifications = response.data || [];
 
@@ -219,7 +219,7 @@ export const AuthProvider = ({ children }) => {
       console.log("loading send assignment")
       setLoading(true);
       setError(null);
-      const response = await axios.post('/api/notification/send-assignment', assignment);
+      const response = await api.post('/api/notification/send-assignment', assignment);
       
       // We don't update the task count for the sender anymore, as assigned tasks
       // shouldn't be counted in the sender's statistics
@@ -242,7 +242,7 @@ export const AuthProvider = ({ children }) => {
       console.log("loading edit assignment")
       setLoading(true);
       setError(null);
-      const response = await axios.post('/api/notification/edit-assignment', req);
+      const response = await api.post('/api/notification/edit-assignment', req);
       return response.data;
     } catch (error) {
       setError(error.response?.data?.message || "Failed to edit assignment");
@@ -267,17 +267,17 @@ export const AuthProvider = ({ children }) => {
       const teammateId = todos.assignedTo[index];
       
       // Make the API call to delete the assignment
-      const response = await axios.post('/api/notification/delete-assignment-for-single-teammate', req);
+      const response = await api.post('/api/notification/delete-assignment-for-single-teammate', req);
       
       // Update teammate's task counts directly through their todo endpoint
       if (teammateId) {
         try {
           // Decrease totalTasks count
-          await axios.post(`/api/todo/decrement-total-tasks/${teammateId}`);
+          await api.post(`/api/todo/decrement-total-tasks/${teammateId}`);
           
           // If the task was completed, also decrease completedTasks
           if (isCompleted) {
-            await axios.post(`/api/todo/decrement-completed-tasks/${teammateId}`);
+            await api.post(`/api/todo/decrement-completed-tasks/${teammateId}`);
           }
         } catch (err) {
           console.error("Failed to update teammate task counts:", err);
@@ -311,11 +311,11 @@ export const AuthProvider = ({ children }) => {
           
           try {
             // Decrease totalTasks count
-            await axios.post(`/api/todo/decrement-total-tasks/${teammateId}`);
+            await api.post(`/api/todo/decrement-total-tasks/${teammateId}`);
             
             // If the task was completed, also decrease completedTasks
             if (isCompleted) {
-              await axios.post(`/api/todo/decrement-completed-tasks/${teammateId}`);
+              await api.post(`/api/todo/decrement-completed-tasks/${teammateId}`);
             }
             return true;
           } catch (err) {
@@ -329,7 +329,7 @@ export const AuthProvider = ({ children }) => {
       }
       
       // Now delete the assignments
-      const response = await axios.post('/api/notification/delete-assignment-for-all-teammates', req);
+      const response = await api.post('/api/notification/delete-assignment-for-all-teammates', req);
       return response.data;
     } catch (error) {
       setError(error.response?.data?.message || "Failed to delete assignment for all teammates");
@@ -346,7 +346,7 @@ export const AuthProvider = ({ children }) => {
       setLoading(true);
       setError(null);
       console.log("req", req);
-      const response = await axios.post('/api/notification/get-assignments-status', {todos: req});
+      const response = await api.post('/api/notification/get-assignments-status', {todos: req});
       setAssignmentsStatus(response.data);
       return response.data;
     } catch (error) {      
@@ -389,7 +389,7 @@ export const AuthProvider = ({ children }) => {
       console.log("loading send request")
       setLoading(true);
       setError(null);
-      const response = await axios.post('/api/notification/send-requests', {toUser: request});
+      const response = await api.post('/api/notification/send-requests', {toUser: request});
       
       // Update with correct pendingTeam property instead of pendingTeammates
       setUser(prevUser => {
@@ -406,7 +406,7 @@ export const AuthProvider = ({ children }) => {
       
       // Refresh user data after sending request
       try {
-        const userResponse = await axios.get('/api/auth/user');
+        const userResponse = await api.get('/api/auth/user');
         setUser(userResponse.data); // Fixed: use consistent data structure
       } catch (refreshError) {
         console.error('Failed to refresh user data:', refreshError);
@@ -425,7 +425,7 @@ export const AuthProvider = ({ children }) => {
       console.log("loading remove from team")
       setLoading(true);
       setError(null);
-      const response = await axios.post('/api/notification/remove-from-team', { toUser: userId });
+      const response = await api.post('/api/notification/remove-from-team', { toUser: userId });
       
       // Update user state to remove teammate from team array
       setUser(prevUser => {
@@ -441,7 +441,7 @@ export const AuthProvider = ({ children }) => {
       
       // Refresh user data to ensure team members are up to date
       try {
-        const userResponse = await axios.get('/api/auth/user');
+        const userResponse = await api.get('/api/auth/user');
         setTeammates(prevTeammates =>
           prevTeammates.filter(teammate => teammate._id !== userId)
         );
@@ -470,7 +470,7 @@ export const AuthProvider = ({ children }) => {
       const fromUserId = requestToAccept?.fromUser?._id || requestToAccept?.fromUser;
       
       // Call the API to accept the request
-      const response = await axios.post(`/api/notification/accept/${requestId}`);
+      const response = await api.post(`/api/notification/accept/${requestId}`);
       
       // Update the UI state
       setRequests(prevRequests => prevRequests.filter(request => request._id !== requestId));
@@ -492,7 +492,7 @@ export const AuthProvider = ({ children }) => {
       
       // Refresh user data to ensure team members are up to date
       try {
-        const userResponse = await axios.get('/api/auth/user');
+        const userResponse = await api.get('/api/auth/user');
         setUser(userResponse.data); // Fixed: use consistent data structure
       } catch (refreshError) {
         console.error('Failed to refresh user data:', refreshError);
@@ -514,7 +514,7 @@ export const AuthProvider = ({ children }) => {
       console.log("loading delete waitlist")
       
       // Make the API call first
-      await axios.post(`/api/notification/delete/${waitlistId}`);
+      await api.post(`/api/notification/delete/${waitlistId}`);
       
       // Only update UI state after successful API call
       setRequests(prevRequests => Array.isArray(prevRequests) 
@@ -543,7 +543,7 @@ export const AuthProvider = ({ children }) => {
       const requestToReject = requests.find(req => req._id === requestId);
       const fromUserId = requestToReject?.fromUser?._id || requestToReject?.fromUser;
       
-      const response = await axios.post(`/api/notification/reject/${requestId}`);
+      const response = await api.post(`/api/notification/reject/${requestId}`);
       setRequests(prevRequests => prevRequests.filter(request => request._id !== requestId));
       
       // Update user state with proper pendingTeam handling
@@ -560,7 +560,7 @@ export const AuthProvider = ({ children }) => {
       
       // Refresh user data to ensure team members are up to date
       try {
-        const userResponse = await axios.get('/api/auth/user');
+        const userResponse = await api.get('/api/auth/user');
         setUser(userResponse.data); // Fixed: use consistent data structure
       } catch (refreshError) {
         console.error('Failed to refresh user data:', refreshError);
@@ -581,7 +581,7 @@ export const AuthProvider = ({ children }) => {
       setError(null);
       
       // Fetch requests
-      const response = await axios.get('/api/notification/get-requests');
+      const response = await api.get('/api/notification/get-requests');
       
       // Store the initial requests
       const initialRequests = response.data || [];
@@ -638,7 +638,7 @@ export const AuthProvider = ({ children }) => {
       console.log("loading get teammates")
       setLoading(true);
       setError(null);
-      const response = await axios.get('/api/notification/get-teammates');
+      const response = await api.get('/api/notification/get-teammates');
       // setTeammates(response.data);
     } catch (error) {
       setError(error.response?.data?.message || "Failed to get teammates");
@@ -653,7 +653,7 @@ export const AuthProvider = ({ children }) => {
   //   try {
   //     setLoading(true);
   //     setError(null);
-  //     const response = await axios.get('/api/notification/get-waitlists');
+  //     const response = await api.get('/api/notification/get-waitlists');
   //     setNotifications(response.data);
   //   } catch (error) {
   //     setError(error.response?.data?.message || "Failed to get waitlists");
@@ -668,7 +668,7 @@ export const AuthProvider = ({ children }) => {
       console.log("loading get user info")
       setLoading(true);
       setError(null);
-      const response = await axios.get(`/api/notification/get-user-info/${userId}`);
+      const response = await api.get(`/api/notification/get-user-info/${userId}`);
       if(single) setProfile(response.data);
       else return response.data;
     } catch (error) {
@@ -685,7 +685,7 @@ export const AuthProvider = ({ children }) => {
       console.log("loading create todo")
       setLoading(true);
       setError(null);
-      const response = await axios.post('/api/todo/create', todo);
+      const response = await api.post('/api/todo/create', todo);
       console.log("loading create todo false");
       return response.data;
     } catch (error) {
@@ -701,7 +701,7 @@ export const AuthProvider = ({ children }) => {
       console.log("loading get todos")
       setLoading(true);
       setError(null);
-      const response = await axios.get(`/api/todo/get/${groupId}`);
+      const response = await api.get(`/api/todo/get/${groupId}`);
       setTodos(response.data);
       console.log("loading get todos false");
     } catch (error) {
@@ -718,7 +718,7 @@ export const AuthProvider = ({ children }) => {
       console.log("loading get all todos")
       setLoading(true);
       setError(null);
-      const response = await axios.get('/api/todo/getall');
+      const response = await api.get('/api/todo/getall');
       setAllTodos(response.data);
       console.log("loading get all todos false");
     } catch (error) {
@@ -734,7 +734,7 @@ export const AuthProvider = ({ children }) => {
       console.log("loading delete todo");
       setLoading(true);
       setError(null);
-      const response = await axios.post(`/api/todo/delete/${todoId}`);
+      const response = await api.post(`/api/todo/delete/${todoId}`);
       console.log("loading delete todo false");
     } catch (error) {
       setError(error.response?.data?.message || "Failed to delete todo");
@@ -749,7 +749,7 @@ export const AuthProvider = ({ children }) => {
       console.log("loading update todo")
       setLoading(true);
       setError(null);
-      const response = await axios.post(`/api/todo/update/${todoId}`, todo);
+      const response = await api.post(`/api/todo/update/${todoId}`, todo);
       console.log("loading update todo false");
     } catch (error) {
       setError(error.response?.data?.message || "Failed to update todo");
@@ -766,14 +766,14 @@ export const AuthProvider = ({ children }) => {
       setError(null);
       
       // First, get all groups
-      const response = await axios.get('/api/todo/get-groups');
+      const response = await api.get('/api/todo/get-groups');
       const groupsData = response.data.groups;
       
       // Then sequentially fetch todos for each group
       const groupsWithTodos = await Promise.all(
         groupsData.map(async (group) => {
           try {
-            const todosResponse = await axios.get(`/api/todo/get/${group._id}`);
+            const todosResponse = await api.get(`/api/todo/get/${group._id}`);
             // Create a new group object with todos included
             return {
               ...group,
@@ -811,7 +811,7 @@ export const AuthProvider = ({ children }) => {
       console.log("loading create group")
       setLoading(true);
       setError(null);
-      const response = await axios.post('/api/todo/create-group', group);
+      const response = await api.post('/api/todo/create-group', group);
       return response.data;
     } catch (error) {
       setError(error.response?.data?.message || "Failed to create group");
@@ -826,7 +826,7 @@ export const AuthProvider = ({ children }) => {
       console.log("loading update group")
       setLoading(true);
       setError(null);
-      const response = await axios.post(`/api/todo/update-group/${groupId}`, group);
+      const response = await api.post(`/api/todo/update-group/${groupId}`, group);
     } catch (error) {
       setError(error.response?.data?.message || "Failed to update group");
       throw error;
@@ -841,7 +841,7 @@ export const AuthProvider = ({ children }) => {
       console.log("loading delete group")
       setLoading(true);
       setError(null);
-      await axios.delete(`/api/todo/delete-group/${groupId}`);
+      await api.delete(`/api/todo/delete-group/${groupId}`);
       console.log("loading delete group false")
     } catch (error) {
       setError(error.response?.data?.message || "Failed to delete group");
@@ -856,11 +856,11 @@ export const AuthProvider = ({ children }) => {
       console.log("loading upload image")
       setLoading(true);
       setError(null);
-      const response = await axios.post('/api/image/upload', { image });
+      const response = await api.post('/api/image/upload', { image });
       
       // Refresh user data to update the avatar
       try {
-        const userResponse = await axios.get('/api/auth/user');
+        const userResponse = await api.get('/api/auth/user');
         setUser(userResponse.data); // Fixed: use consistent data structure
       } catch (refreshError) {
         console.error('Failed to refresh user data:', refreshError);
@@ -881,7 +881,7 @@ export const AuthProvider = ({ children }) => {
       setLoading(true);
       setError(null);
       console.log("loading get image")
-      const response = await axios.get('/api/image/get');
+      const response = await api.get('/api/image/get');
       console.log("loading get image false")
       return response.data.image;
     } catch (error) {
@@ -897,7 +897,7 @@ export const AuthProvider = ({ children }) => {
       console.log("loading update profile")
       setLoading(true);
       setError(null);
-      const response = await axios.post('/api/auth/update-profile', profileData);
+      const response = await api.post('/api/auth/update-profile', profileData);
       setUser(response.data);
       return response.data;
     } catch (error) {

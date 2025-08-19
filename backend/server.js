@@ -2,7 +2,7 @@ import express from 'express';
 import cors from 'cors';
 import connectDB from './database/db.js';
 import todoRoutes from './routes/todo.route.js';
-import dotenv from 'dotenv';
+// import dotenv from 'dotenv';
 import authRoutes from './routes/auth.route.js';
 import cookieParser from 'cookie-parser';
 import clientsRoutes from './routes/clients.route.js';
@@ -11,7 +11,7 @@ import searchRoutes from './routes/search.route.js';
 import { v2 as cloudinary } from 'cloudinary';
 import path from 'path';
 
-dotenv.config();
+// dotenv.config();
 
 cloudinary.config({
     cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
@@ -23,12 +23,16 @@ const __dirname = path.resolve();
 
 const app = express();
 app.use(cors({
-    origin: ['http://localhost:5173', 'http://127.0.0.1:5173', '*'],
+    origin: ['http://localhost:5173', 'http://127.0.0.1:5173', 'http://todo.local', 'http://api.todo.local'],
     credentials: true,
 }));
 app.use(express.json({ limit: '50mb' }));
 app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
+
+app.get('/healthz', (req, res) => {
+    res.status(200).json({ message: 'Server is healthy' });
+})
 
 const port = process.env.PORT || 5000;
 
@@ -39,13 +43,13 @@ app.use('/api/image', imageRoutes);
 app.use('/api/search', searchRoutes);
 
 // Serve static files and handle all routes for frontend
-app.use(express.static(path.join(__dirname, '/frontend/dist')));
-app.get('*', (req, res) => {
-    // API routes will be handled by their respective middleware
-    if (!req.path.startsWith('/api')) {
-        res.sendFile(path.resolve(__dirname, "frontend", "dist", "index.html"));
-    }
-});
+// app.use(express.static(path.join(__dirname, '/frontend/dist')));
+// app.get('*', (req, res) => {
+//     // API routes will be handled by their respective middleware
+//     if (!req.path.startsWith('/api')) {
+//         res.sendFile(path.resolve(__dirname, "frontend", "dist", "index.html"));
+//     }
+// });
 
 app.listen(port, () => {
     console.log(`Server running on port ${port}`);

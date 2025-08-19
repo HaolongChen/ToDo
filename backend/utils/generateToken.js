@@ -9,7 +9,8 @@ export const generateToken = (userId, res) => {
     res.cookie('jwt', token, {
         httpOnly: true,
         secure: process.env.MODE !== 'development',
-        sameSite: 'strict',
+        sameSite: 'lax',
+        domain: '.todo.local',
         maxAge: 1000 * 60 * 60 * 24 * 14,
     });
 }

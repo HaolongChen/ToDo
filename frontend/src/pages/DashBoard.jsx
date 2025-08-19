@@ -8,7 +8,7 @@ import { AssignedToMe } from "../components/AssignedToMe";
 import { AssignedByMe } from "../components/AssignedByme";
 import { useLocation, useNavigate } from "react-router-dom";
 import { Teammates } from "../components/Teammates";
-import axios from "axios";
+import api from "../utils/api.js";
 import toast, { Toaster } from "react-hot-toast";
 import { DefaultAvatar } from "../components/DefaultAvatar";
 
@@ -59,7 +59,7 @@ export function DashBoard() {
       try {
         // Use Promise.all to correctly wait for all teammate data to load
         const teammatePromises = user.team.map(teammateId => 
-          axios.get(`/api/search/user/${teammateId}`)
+          api.get(`/api/search/user/${teammateId}`)
         );
         const responses = await Promise.all(teammatePromises);
         const teammateDetails = responses.map(response => response.data);
@@ -613,14 +613,14 @@ export function DashBoard() {
       const isCurrentUserTask = todo[index].user === user._id;
       
       if(completedStatus && isCurrentUserTask){
-        axios.post('/api/todo/plus-completed');
+        api.post('/api/todo/plus-completed');
         setUser(prevUser => ({
           ...prevUser,
           completedTasks: (prevUser.completedTasks || 0) + 1
         }))
       } // completed tasks + 1
       else if(!completedStatus && isCurrentUserTask){
-        axios.post('/api/todo/minus-completed');
+        api.post('/api/todo/minus-completed');
         setUser(prevUser => ({
           ...prevUser,
           completedTasks: (prevUser.completedTasks || 0) - 1
@@ -931,7 +931,7 @@ export function DashBoard() {
       
       deleteTodo(taskId);
       if(completed){
-        axios.post('/api/todo/minus-completed');
+        api.post('/api/todo/minus-completed');
         setUser(prevUser => ({
           ...prevUser,
           completedTasks: (prevUser.completedTasks || 0) - 1

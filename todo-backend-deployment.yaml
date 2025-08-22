@@ -4,7 +4,7 @@ metadata:
   name: todo-backend
   namespace: todo-app
 spec:
-  replicas: 3
+  replicas: 1
   strategy:
     type: RollingUpdate
     rollingUpdate:

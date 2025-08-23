@@ -1,0 +1,55 @@
+apiVersion: serving.knative.dev/v1
+kind: Service
+metadata:
+  name: mern-backend
+  namespace: default
+  annotations:
+    networking.knative.dev/ingress-class: "istio.ingress.networking.knative.dev"
+    sidecar.istio.io/inject: "true"
+spec:
+  template:
+    metadata:
+      annotations:
+        autoscaling.knative.dev/minScale: "0"
+        autoscaling.knative.dev/maxScale: "10"
+        autoscaling.knative.dev/target: "10"
+        sidecar.istio.io/inject: "true"
+    spec:
+      containers:
+        - image: haolongc/todo-backend
+          ports:
+            - containerPort: 5000
+          envFrom:
+          - secretRef:
+              name: todo-secret
+          - configMapRef:
+              name: todo-configmap
+          resources:
+            requests:
+              memory: "128Mi"
+              cpu: "100m"
+            limits:
+              memory: "512Mi"
+              cpu: "500m"
+          readinessProbe:
+            httpGet:
+              path: /healthz
+              port: 5000
+            initialDelaySeconds: 5
+            periodSeconds: 10
+          livenessProbe:
+            httpGet:
+              path: /healthz
+              port: 5000
+            initialDelaySeconds: 15
+            periodSeconds: 20
+          securityContext:
+            allowPrivilegeEscalation: false
+            runAsNonRoot: true
+            runAsUser: 65534
+            capabilities:
+              drop:
+              - ALL
+            seccompProfile:
+              type: RuntimeDefault
+      containerConcurrency: 50

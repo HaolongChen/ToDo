@@ -1,0 +1,20 @@
+apiVersion: networking.istio.io/v1beta1
+kind: VirtualService
+metadata:
+  name: todo-backend-vs
+  namespace: default
+spec:
+  hosts:
+  - "api.todo.local"
+  gateways:
+  - todo-backend-gateway
+  http:
+  - match:
+    - uri:
+        prefix: "/"
+    route:
+    - destination:
+        host: istio-ingressgateway.istio-system.svc.cluster.local
+        port:
+          number: 80
+      weight: 100

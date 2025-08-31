@@ -31,7 +31,9 @@ app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
 
 app.get('/healthz', (req, res) => {
-    res.status(200).json({ message: 'Server is healthy' });
+    setTimeout(() => {
+        res.status(200).json({ message: 'Server is healthy' });
+    }, 3000)
 })
 
 const port = process.env.PORT || 5000;

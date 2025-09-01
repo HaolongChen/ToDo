@@ -12,9 +12,9 @@ spec:
       annotations:
         autoscaling.knative.dev/class: hpa.autoscaling.knative.dev
         autoscaling.knative.dev/metric: cpu
-        autoscaling.knative.dev/minScale: "0"
+        autoscaling.knative.dev/minScale: "1"
         autoscaling.knative.dev/maxScale: "10"
-        autoscaling.knative.dev/target: "80"
+        autoscaling.knative.dev/target: "70"
         sidecar.istio.io/inject: "true"
     spec:
       containers:
@@ -46,12 +46,3 @@ spec:
               port: 5000
             initialDelaySeconds: 15
             periodSeconds: 20
-          securityContext:
-            allowPrivilegeEscalation: false
-            runAsNonRoot: true
-            runAsUser: 65534
-            capabilities:
-              drop:
-              - ALL
-            seccompProfile:
-              type: RuntimeDefault

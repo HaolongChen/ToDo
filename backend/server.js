@@ -32,9 +32,13 @@ app.use(cookieParser());
 
 app.get('/healthz', (req, res) => {
     setTimeout(() => {
-        res.status(200).json({ message: 'Server is healthy' });
+        res.status(200).json({ message: 'Server is healthy.' });
     }, 3000)
 })
+
+app.get('/healthz/fast', (req, res) => {
+    res.status(200).json({ message: 'Server is healthy.' });
+});
 
 const port = process.env.PORT || 5000;
 

@@ -10,13 +10,16 @@ spec:
   template:
     metadata:
       annotations:
+        autoscaling.knative.dev/class: hpa.autoscaling.knative.dev
+        autoscaling.knative.dev/metric: cpu
         autoscaling.knative.dev/minScale: "0"
         autoscaling.knative.dev/maxScale: "10"
-        autoscaling.knative.dev/target: "10"
+        autoscaling.knative.dev/target: "80"
         sidecar.istio.io/inject: "true"
     spec:
       containers:
         - image: haolongc/todo-backend
+          imagePullPolicy: Always
           ports:
             - containerPort: 5000
           envFrom:
@@ -33,13 +36,13 @@ spec:
               cpu: "500m"
           readinessProbe:
             httpGet:
-              path: /healthz
+              path: /healthz/fast
               port: 5000
             initialDelaySeconds: 5
             periodSeconds: 10
           livenessProbe:
             httpGet:
-              path: /healthz
+              path: /healthz/fast
               port: 5000
             initialDelaySeconds: 15
             periodSeconds: 20
@@ -52,4 +55,3 @@ spec:
               - ALL
             seccompProfile:
               type: RuntimeDefault
-      containerConcurrency: 50

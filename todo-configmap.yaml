@@ -5,4 +5,5 @@ metadata:
   namespace: todo-app
 data:
   PORT: "5000"
+  MODE: "production"
   CLOUDINARY_CLOUD_NAME: "drksaby9a"

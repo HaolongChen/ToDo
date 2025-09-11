@@ -1,0 +1,23 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: nginx-ingress
+  namespace: todo-app
+  labels:
+    app.kubernetes.io/name: nginx-ingress
+spec:
+  tls:
+  - hosts:
+    - chl-backend.functorz.work
+    secretName: fzwork-cert
+  rules:
+  - host: chl-backend.functorz.work
+    http:
+      paths:
+      - pathType: Prefix
+        path: "/"
+        backend:
+          service:
+            name: mern-backend-bridge
+            port: 
+              number: 80

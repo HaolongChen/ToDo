@@ -6,17 +6,17 @@ metadata:
 data:
   default.conf: |
     # Server block for the Frontend UI
-    server {
-        listen 80;
-        server_name todo.local; # Route requests for this domain
+    # server {
+    #     listen 80;
+    #     server_name todo.local; # Route requests for this domain
 
-        location / {
-            # Forward the request to the internal frontend service
-            proxy_pass http://todo-frontend-service;
-            proxy_set_header Host $host;
-            proxy_set_header Cookie $http_cookie;
-        }
-    }
+    #     location / {
+    #         # Forward the request to the internal frontend service
+    #         proxy_pass http://todo-frontend-service;
+    #         proxy_set_header Host $host;
+    #         proxy_set_header Cookie $http_cookie;
+    #     }
+    # }
 
     # Server block for the Backend API
     server {

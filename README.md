@@ -4,7 +4,7 @@
 
 ![ToDo App Logo](frontend/public/icon.svg)
 
-[![Deployment Status](https://img.shields.io/website?url=https%3A%2F%2Ftodo-qkmo.onrender.com&style=for-the-badge&logo=render&logoColor=white&label=Deployment)](https://todo-qkmo.onrender.com)
+[![Deployment Status](https://img.shields.io/website?url=https%3A%2F%2Fchl-frontend.momen.cloud&style=for-the-badge&logo=render&logoColor=white&label=Deployment)](https://chl-frontend.momen.cloud)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg?style=for-the-badge)](LICENSE)
 [![MongoDB](https://img.shields.io/badge/MongoDB-4EA94B?style=for-the-badge&logo=mongodb&logoColor=white)](https://www.mongodb.com/)
 [![Express.js](https://img.shields.io/badge/Express.js-404D59?style=for-the-badge&logo=express&logoColor=white)](https://expressjs.com/)
@@ -17,7 +17,7 @@
 
 A modern, feature-rich task management application with robust collaboration capabilities. This full-stack MERN application allows users to create and manage tasks, collaborate with team members, assign tasks to others, and track progress in real-time.
 
-### ✨ [Live Demo](https://todo-qkmo.onrender.com)
+### ✨ [Live Demo](https://chl-frontend.momen.cloud)
 
 ## ✨ Key Features
 
@@ -144,7 +144,7 @@ CLOUDINARY_API_SECRET=your_cloudinary_api_secret
 ## 🌎 Deployment
 
 ### 🔗 Live Application
-The application is deployed and accessible at: **[https://todo-qkmo.onrender.com](https://todo-qkmo.onrender.com)**
+The application is deployed and accessible at: **[https://chl-frontend.momen.cloud](https://chl-frontend.momen.cloud)**
 
 ### 🚀 Deployment Instructions
 This application is optimized for deployment on platforms like Render, Heroku, or Vercel.

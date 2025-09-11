@@ -10,6 +10,7 @@ import imageRoutes from './routes/image.route.js';
 import searchRoutes from './routes/search.route.js';
 import { v2 as cloudinary } from 'cloudinary';
 import path from 'path';
+import { cookieCleanupMiddleware, cookieCorsMiddleware } from './middleware/cookie.middleware.js';
 
 // dotenv.config();
 
@@ -49,6 +50,11 @@ app.use(cors({
     allowedHeaders: ['Content-Type', 'Authorization', 'Cookie'],
     exposedHeaders: ['Set-Cookie']
 }));
+
+// Add cookie handling middleware
+app.use(cookieCorsMiddleware);
+app.use(cookieCleanupMiddleware);
+
 app.use(express.json({ limit: '50mb' }));
 app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());

@@ -129,7 +129,26 @@ export const AuthProvider = ({ children }) => {
     try {
       console.log("loading logout")
       setLoading(true);
+      
+      // Call backend logout endpoint
       await api.post('/api/auth/logout');
+      
+      // Force clear any remaining cookies on the frontend side
+      // This helps handle cases where backend cookie clearing might not work
+      const cookies = document.cookie.split(';');
+      cookies.forEach(cookie => {
+        const eqPos = cookie.indexOf('=');
+        const name = eqPos > -1 ? cookie.substr(0, eqPos).trim() : cookie.trim();
+        if (name === 'jwt') {
+          // Clear cookie with different domain configurations
+          document.cookie = `${name}=; expires=Thu, 01 Jan 1970 00:00:00 GMT; path=/`;
+          document.cookie = `${name}=; expires=Thu, 01 Jan 1970 00:00:00 GMT; path=/; domain=.todo.local`;
+          document.cookie = `${name}=; expires=Thu, 01 Jan 1970 00:00:00 GMT; path=/; domain=todo.local`;
+          document.cookie = `${name}=; expires=Thu, 01 Jan 1970 00:00:00 GMT; path=/; domain=localhost`;
+        }
+      });
+      
+      // Clear all application state
       setUser(null);
       setNotifications([]);
       setRequests([]);
@@ -140,11 +159,35 @@ export const AuthProvider = ({ children }) => {
       setProfile(null);
       setAllTodos([]);
       setGroups([]);
+      setAssignmentsStatus([]);
+      
+      // Clear any stored authentication state
+      localStorage.removeItem('authToken'); // In case you're using localStorage
+      sessionStorage.removeItem('authToken'); // In case you're using sessionStorage
+      
     } catch (error) {
       console.error('Logout failed:', error);
+      // Even if backend logout fails, clear frontend state
+      setUser(null);
+      setNotifications([]);
+      setRequests([]);
+      setTeammates([]);
+      setTodos([]);
+      setInitialProcess(true);
+      setInfoExists(false);
+      setProfile(null);
+      setAllTodos([]);
+      setGroups([]);
+      setAssignmentsStatus([]);
     } finally {
       console.log("loading logout false")
       setLoading(false);
+      
+      // Force a page reload to ensure clean state
+      // This is a more aggressive approach to ensure everything is cleared
+      setTimeout(() => {
+        window.location.reload();
+      }, 100);
     }
   };
 

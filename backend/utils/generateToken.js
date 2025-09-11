@@ -22,6 +22,14 @@ export const generateToken = (userId, res) => {
         cookieOptions.domain = '.todo.local';
     }
     
+    // Clear any existing jwt cookies first to prevent duplicates
+    res.cookie('jwt', '', { ...cookieOptions, maxAge: 0 });
+    
+    // Also clear without domain to handle edge cases
+    const fallbackClearOptions = { ...cookieOptions, maxAge: 0 };
+    delete fallbackClearOptions.domain;
+    res.cookie('jwt', '', fallbackClearOptions);
+    
     console.log('Setting cookie with options:', cookieOptions);
     res.cookie('jwt', token, cookieOptions);
 }

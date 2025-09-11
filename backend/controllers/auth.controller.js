@@ -71,17 +71,36 @@ export const signin = async (req, res) => {
 export const logout = (req, res) => {
     try {
         // console.log(req.cookies.jwt);
-        res.cookie('jwt', '', {
-            maxAge: 0,
+        
+        // Cookie configuration should match the one used in generateToken
+        let cookieOptions = {
             httpOnly: true,
-            secure: process.env.MODE !== 'development',
-            sameSite: 'lax',
-            domain: '.todo.local',
-        });
+            secure: true, // Always true for production HTTPS
+            sameSite: 'none', // Required for cross-site cookies
+            maxAge: 0, // Clear the cookie
+        };
+        
+        // For local development, match the generateToken settings
+        if (process.env.MODE === 'development') {
+            cookieOptions.secure = false;
+            cookieOptions.sameSite = 'lax';
+            cookieOptions.domain = '.todo.local';
+        }
+        
+        console.log('Clearing cookie with options:', cookieOptions);
+        
+        // Clear the jwt cookie
+        res.cookie('jwt', '', cookieOptions);
+        
+        // Also try clearing without domain in case there are multiple cookies
+        const fallbackOptions = { ...cookieOptions };
+        delete fallbackOptions.domain;
+        res.cookie('jwt', '', fallbackOptions);
+        
         res.status(200).json({message: 'Logged out successfully'});
     } catch (error) {
-        console.log(error);
-        
+        console.log('Logout error:', error);
+        res.status(500).json({message: 'Error during logout'});
     }
 }
 

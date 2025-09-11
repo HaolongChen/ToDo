@@ -48,6 +48,11 @@ function App() {
             <Notifications />
           </ProtectedRoute>
         } />
+        <Route path="/index.html" element={
+          <ProtectedRoute>
+            <DashBoard />
+          </ProtectedRoute>
+        } />
         <Route path="*" element={<NotFound />} />
       </Routes>
     </AuthProvider>

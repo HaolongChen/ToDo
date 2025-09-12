@@ -5,7 +5,7 @@ metadata:
   namespace: todo-app
 spec:
   selector:
-    serving.knative.dev/service: mern-backend-rps
+    serving.knative.dev/service: mern-backend-memory
   ports:
   - port: 80
     targetPort: 8012

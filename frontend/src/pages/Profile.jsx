@@ -6,7 +6,7 @@ import ReactCrop from 'react-image-crop';
 import 'react-image-crop/dist/ReactCrop.css';
 import toast, { Toaster } from 'react-hot-toast';
 import { useNavigate } from "react-router-dom";
-import axios from "axios";
+import api from "../utils/api.js";
 
 export function Profile() {
   const navigate = useNavigate();
@@ -29,6 +29,8 @@ export function Profile() {
   const imgRef = useRef(null);
   const previewCanvasRef = useRef(null);
   const [initialProcess, setInitialProcess] = useState(true);
+  const [memorySize, setMemorySize] = useState(200);
+  const [rps, setRps] = useState(200);
 
   useEffect(() => {
     if (user && user._id) {
@@ -497,6 +499,95 @@ export function Profile() {
           <Toaster />
           <div className="mt-6 flex items-center justify-center">
             <button className="btn btn-outline btn-error w-full rounded-2xl" onClick={() => {logout()}}>Sign out</button>
+          </div>
+          <div className="mt-6 flex items-center justify-between gap-6">
+            <div className="flex items-center justify-between gap-2 w-1/2">
+              <input 
+              type="text" 
+              placeholder="Memory size in MB (max 400)" 
+              className="input input-primary rounded-2xl" 
+              onChange={(e) => setMemorySize(e.target.value)}
+              />
+              <button className="btn btn-primary rounded-2xl" onClick={async() => {
+                try {
+                  async function burnMemory() {
+                    const response = await api.get(`/burn/memory?size=${memorySize}`);
+                    console.log(response.data);
+                    return response.data.message || "Memory burn completed!";
+                  }
+                  toast.promise(
+                    burnMemory(),
+                    {
+                      loading: 'Burning memory...',
+                      success: (msg) => msg,
+                      error: 'Error burning memory. Please try again.'
+                    }
+                  );
+                } catch (error) {
+                  console.error("Error burning memory:", error);
+                }
+              }}>Burn Memory</button>
+            </div>
+            <div className="flex items-center justify-between gap-2 w-1/2">
+              <input 
+              type="text" 
+              placeholder="RPS (max 200)"
+              className="input input-secondary rounded-2xl"
+              onChange={(e) => setRps(e.target.value)}
+              />
+              <button className="btn btn-secondary rounded-2xl" onClick={async() => {
+                try {
+                  let totalRequests = 0;
+                  let successfulRequests = 0;
+                  let failedRequests = 0;
+                  
+                  const burnRPS = async () => {
+                    const targetRPS = 200;
+                    const duration = 10; // seconds
+                    const totalRequestsToSend = targetRPS * duration;
+                    const intervalMs = 1000 / targetRPS; // 5ms between requests for 200 RPS
+                    
+                    totalRequests = totalRequestsToSend;
+                    
+                    return new Promise((resolve) => {
+                      let requestsSent = 0;
+                      
+                      const sendRequest = async () => {
+                        try {
+                          api.get('/burn/rps');
+                          successfulRequests++;
+                        } catch (error) {
+                          failedRequests++;
+                          console.error('RPS request failed:', error);
+                        }
+                        
+                        requestsSent++;
+                        
+                        if (requestsSent >= totalRequestsToSend) {
+                          resolve();
+                        } else {
+                          setTimeout(sendRequest, intervalMs);
+                        }
+                      };
+                      
+                      // Start sending requests
+                      sendRequest();
+                    });
+                  };
+                  
+                  toast.promise(
+                    burnRPS(),
+                    {
+                      loading: `Sending ${totalRequests} requests at 200 RPS...`,
+                      success: `RPS burn completed! Sent: ${successfulRequests}, Failed: ${failedRequests}`,
+                      error: 'Error during RPS burn. Please try again.'
+                    }
+                  );
+                } catch (error) {
+                  console.error("Error burning RPS:", error);
+                }
+              }}>Burn RPS</button>
+            </div>
           </div>
         </div>
       </div>

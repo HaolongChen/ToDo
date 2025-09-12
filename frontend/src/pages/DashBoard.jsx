@@ -1178,7 +1178,7 @@ export function DashBoard() {
                       <input
                         type="text"
                         placeholder="New Group"
-                        className="input input-bordered w-full h-15 rounded-4xl bg-white/10 backdrop-blur-md focus:outline-none shadow-md pr-24"
+                        className="input input-bordered w-full h-15 rounded-4xl bg-white/10 backdrop-blur-md focus:outline-none shadow-md pr-24 z-0"
                         value={newGroup}
                         maxLength={20}
                         onKeyDown={(e) => e.key === "Enter" && handleCreateGroup()}
@@ -1186,7 +1186,7 @@ export function DashBoard() {
                       />
                       <div className="absolute right-3">
                         <button
-                          className="btn btn-circle"
+                          className="btn btn-circle z-10"
                           onClick={handleCreateGroup}
                         >
                           ➕
@@ -1496,13 +1496,13 @@ export function DashBoard() {
                       placeholder="Add a new task..." 
                       maxLength={180}
                       onKeyDown={(e) => e.key === 'Enter' && handleCreateTodo(e)}
-                      className="input input-bordered w-full h-15 rounded-4xl bg-white/10 backdrop-blur-md focus:outline-none shadow-md pr-24"
+                      className="input input-bordered w-full h-15 rounded-4xl bg-white/10 backdrop-blur-md focus:outline-none shadow-md pr-24 z-0"
                     />
                     <div className="absolute right-3 flex space-x-2">
                       {/* Date picker button and implementation */}
 
                       {selectedGroup === 4 && (
-                        <button className="btn btn-circle btn-sm bg-transparent border-none hover:bg-gray-200/30"
+                        <button className="btn btn-circle btn-sm bg-transparent border-none hover:bg-gray-200/30 z-10"
                           onClick={() => {setTeammatesPickerOpen(!teammatesPickerOpen)}}
                         >
                           <Teammates size={18} />
@@ -1510,7 +1510,7 @@ export function DashBoard() {
                       )}
 
                       {selectedGroup === 4 && teammatesPickerOpen && (
-                        <div className="absolute bottom-10 right-32 z-50 date-picker-container">
+                        <div className="absolute bottom-10 right-32 z-50 date-picker-container z-10">
                           <div className="bg-base-100 border border-base-300 shadow-lg rounded-box p-2">
                             <div className="p-2">
                               {/* <input 
@@ -1588,7 +1588,7 @@ export function DashBoard() {
                       <div className="relative calendar-button">
                         {!newTodo.due ? (
                           <button 
-                            className="btn btn-circle btn-sm bg-transparent border-none hover:bg-gray-200/30"
+                            className="btn btn-circle btn-sm bg-transparent border-none hover:bg-gray-200/30 z-10"
                             onClick={toggleDatePicker}
                           >
                             <span className="text-lg">📅</span>
@@ -1614,17 +1614,17 @@ export function DashBoard() {
                                   value={dateInput}
                                   onChange={handleDateChange}
                                   onClick={(e) => e.stopPropagation()}
-                                  className="input input-bordered w-full date-input-field"
+                                  className="input input-bordered w-full date-input-field z-10"
                                 />
                                 <div className="flex justify-between mt-2">
                                   <button 
-                                    className="btn btn-sm btn-ghost"
+                                    className="btn btn-sm btn-ghost z-10"
                                     onClick={() => setDatePickerOpen(false)}
                                   >
                                     Cancel
                                   </button>
                                   <button 
-                                    className="btn btn-sm btn-primary"
+                                    className="btn btn-sm btn-primary z-10"
                                     onClick={handleDateSelect}
                                   >
                                     Apply
@@ -1637,13 +1637,13 @@ export function DashBoard() {
                       </div>
 
                       <button 
-                        className="btn btn-circle btn-sm bg-transparent border-none hover:bg-gray-200/30"
+                        className="btn btn-circle btn-sm bg-transparent border-none hover:bg-gray-200/30 z-10"
                         onClick={() => {setNewTodo({...newTodo, important: !newTodo.important})}}
                       >
                         {newTodo.important ? <span className="text-lg">⭐</span> : <NotImportant />}  
                       </button>
                       <button 
-                        className="btn btn-primary btn-sm rounded-full px-3"
+                        className="btn btn-primary btn-sm rounded-full px-3 z-10"
                         onClick={(event) => {handleCreateTodo(event)}}
                       >
                         Add

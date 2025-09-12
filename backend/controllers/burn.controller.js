@@ -1,3 +1,5 @@
+import { set } from "mongoose";
+
 export const burnMemory = (req, res) => {
     // Get memory allocation size from query parameter (default: 100MB)
     const sizeMB = Math.min(parseInt(req.query.size) || 100, 400); // Cap at 400MB for safety
@@ -31,5 +33,5 @@ export const burnMemory = (req, res) => {
 }
 
 export const burnRPS = (req, res) => {
-    res.send(`Pong`);
+    res.send("pong");
 }

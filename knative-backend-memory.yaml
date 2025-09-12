@@ -18,7 +18,7 @@ spec:
         sidecar.istio.io/inject: "true"
     spec:
       containers:
-        - image: registry.cn-shanghai.aliyuncs.com/functorz/chl:todo-backend-fixed
+        - image: registry.cn-shanghai.aliyuncs.com/functorz/chl:todo-backend
           imagePullPolicy: IfNotPresent
           ports:
             - containerPort: 5000

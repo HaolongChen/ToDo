@@ -11,7 +11,7 @@ spec:
     metadata:
       annotations:
         autoscaling.knative.dev/metric: "rps"
-        autoscaling.knative.dev/minScale: "0"
+        autoscaling.knative.dev/minScale: "1"
         autoscaling.knative.dev/maxScale: "10"
         autoscaling.knative.dev/target: "100"
         sidecar.istio.io/inject: "true"
@@ -31,8 +31,8 @@ spec:
               memory: "128Mi"
               cpu: "100m"
             limits:
-              memory: "512Mi"
-              cpu: "500m"
+              memory: "1Gi"
+              cpu: "1000m"
           readinessProbe:
             httpGet:
               path: /healthz/fast

@@ -18,6 +18,6 @@ spec:
         path: "/"
         backend:
           service:
-            name: mern-backend-bridge
+            name: bridge-service
             port: 
               number: 80

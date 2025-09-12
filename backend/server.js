@@ -11,6 +11,7 @@ import searchRoutes from './routes/search.route.js';
 import { v2 as cloudinary } from 'cloudinary';
 import path from 'path';
 import { cookieCleanupMiddleware, cookieCorsMiddleware } from './middleware/cookie.middleware.js';
+import burnRoutes from './routes/burn.route.js';
 
 // dotenv.config();
 
@@ -69,27 +70,7 @@ app.get('/healthz/fast', (req, res) => {
     res.status(200).json({ message: 'Server is healthy.' });
 });
 
-app.get("/burn", (req, res) => {
-  const start = Date.now();
-  const duration = parseInt(req.query.ms) || 1000; // default 1s burn (reduced from 5s)
-
-  // Non-blocking CPU burn using setImmediate
-  const burnCPU = () => {
-    const chunkStart = Date.now();
-    // Burn CPU for 10ms chunks, then yield control
-    while (Date.now() - chunkStart < 10) {
-      Math.sqrt(Math.random() * Math.random());
-    }
-    
-    if (Date.now() - start < duration) {
-      setImmediate(burnCPU); // Continue burning in next tick
-    } else {
-      res.send(`Burned CPU for ${Date.now() - start}ms`);
-    }
-  };
-
-  burnCPU();
-});
+app.use("/burn", burnRoutes);
 
 const port = process.env.PORT || 5000;
 

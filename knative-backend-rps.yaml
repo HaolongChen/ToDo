@@ -1,0 +1,56 @@
+apiVersion: serving.knative.dev/v1
+kind: Service
+metadata:
+  name: mern-backend-rps
+  namespace: todo-app
+  annotations:
+    networking.knative.dev/ingress-class: "istio.ingress.networking.knative.dev"
+    sidecar.istio.io/inject: "true"
+spec:
+  template:
+    metadata:
+      annotations:
+        autoscaling.knative.dev/metric: "rps"
+        autoscaling.knative.dev/minScale: "0"
+        autoscaling.knative.dev/maxScale: "10"
+        autoscaling.knative.dev/target: "100"
+        sidecar.istio.io/inject: "true"
+    spec:
+      containers:
+        - image: registry.cn-shanghai.aliyuncs.com/functorz/chl:todo-backend
+          imagePullPolicy: IfNotPresent
+          ports:
+            - containerPort: 5000
+          envFrom:
+          - secretRef:
+              name: todo-secret
+          - configMapRef:
+              name: todo-configmap
+          resources:
+            requests:
+              memory: "128Mi"
+              cpu: "100m"
+            limits:
+              memory: "512Mi"
+              cpu: "500m"
+          readinessProbe:
+            httpGet:
+              path: /healthz/fast
+              port: 5000
+            initialDelaySeconds: 5
+            periodSeconds: 10
+          livenessProbe:
+            httpGet:
+              path: /healthz/fast
+              port: 5000
+            initialDelaySeconds: 15
+            periodSeconds: 20
+          securityContext:
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop:
+                - ALL
+            runAsNonRoot: true
+            runAsUser: 1000
+            seccompProfile:
+              type: RuntimeDefault

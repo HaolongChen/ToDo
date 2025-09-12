@@ -1,7 +1,7 @@
 apiVersion: serving.knative.dev/v1
 kind: Service
 metadata:
-  name: mern-backend
+  name: mern-backend-memory
   namespace: todo-app
   annotations:
     networking.knative.dev/ingress-class: "istio.ingress.networking.knative.dev"
@@ -11,14 +11,14 @@ spec:
     metadata:
       annotations:
         autoscaling.knative.dev/class: hpa.autoscaling.knative.dev
-        autoscaling.knative.dev/metric: cpu
+        autoscaling.knative.dev/metric: "memory"
         autoscaling.knative.dev/minScale: "1"
         autoscaling.knative.dev/maxScale: "10"
-        autoscaling.knative.dev/target: "70"
+        autoscaling.knative.dev/target: "80"
         sidecar.istio.io/inject: "true"
     spec:
       containers:
-        - image: registry.cn-shanghai.aliyuncs.com/functorz/chl:todo-backend
+        - image: registry.cn-shanghai.aliyuncs.com/functorz/chl:todo-backend-fixed
           imagePullPolicy: IfNotPresent
           ports:
             - containerPort: 5000
@@ -29,11 +29,11 @@ spec:
               name: todo-configmap
           resources:
             requests:
-              memory: "128Mi"
+              memory: "256Mi"
               cpu: "100m"
             limits:
-              memory: "512Mi"
-              cpu: "500m"
+              memory: "10Gi"
+              cpu: "1000m"
           readinessProbe:
             httpGet:
               path: /healthz/fast
